@@ -51,6 +51,9 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
     private fun req(path: String) = Request.Builder()
         .url(if (path.isEmpty()) "$base/" else "$base/${encodePath(path)}")
         .header("Authorization", auth)
+        // Ohne Komprimierung: Reverse-Proxys (z. B. nginx mit gzip) machen ETags sonst „schwach“ (W/…),
+        // und If-Match schlägt dann immer fehl.
+        .header("Accept-Encoding", "identity")
 
     private fun exec(r: Request): Result = client.newCall(r).execute().use {
         Result(it.code, if (it.isSuccessful) it.body?.bytes() else null, it.header("ETag"))
@@ -70,7 +73,7 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
 
     fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int {
         val b = req(path).put(data.toRequestBody(type.toMediaType()))
-        if (ifMatch != null) b.header("If-Match", ifMatch)
+        if (ifMatch != null) b.header("If-Match", ifMatch.removePrefix("W/"))
         if (ifNoneMatch) b.header("If-None-Match", "*")
         return exec(b.build()).code
     }
@@ -141,6 +144,8 @@ object SyncManager {
         dav.ensureDir("photos")
         val db = ctx.repo.db
 
+        var previousEtag: String? = null
+        var etagUnreliable = false
         repeat(5) {
             val remote = dav.get(FILE)
             val remoteData: SyncData? = when {
@@ -181,10 +186,16 @@ object SyncManager {
                     FILE,
                     json.encodeToString(merged).toByteArray(),
                     "application/json",
-                    ifMatch = if (remoteData != null) remote.etag else null,
+                    ifMatch = if (remoteData != null && !etagUnreliable) remote.etag else null,
                     ifNoneMatch = remoteData == null,
                 )
-                if (code == 412) return@repeat // anderes Gerät war schneller → neu zusammenführen
+                if (code == 412) {
+                    // Hat sich die Datei seit dem letzten Versuch gar nicht verändert, ist es kein echter
+                    // Konflikt, sondern der Server/Proxy vergleicht das ETag nicht korrekt → ohne If-Match hochladen.
+                    if (remote.etag != null && remote.etag == previousEtag) etagUnreliable = true
+                    previousEtag = remote.etag
+                    return@repeat // sonst: anderes Gerät war schneller → neu zusammenführen
+                }
                 if (code !in 200..299) throw IOException(httpMessage(code))
             }
 
