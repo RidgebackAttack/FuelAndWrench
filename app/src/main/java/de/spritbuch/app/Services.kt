@@ -124,28 +124,23 @@ object LocationHelper {
         .readTimeout(15, TimeUnit.SECONDS)
         .build()
 
+    /** GPS braucht die genaue Standortberechtigung. */
     fun hasPermission(ctx: Context): Boolean =
-        ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
     @SuppressLint("MissingPermission")
     private fun lastKnown(lm: LocationManager): Location? =
-        listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER)
-            .mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
-            .maxByOrNull { it.time }
+        runCatching { lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) }.getOrNull()
 
     /** Aktuelle Position ohne Google-Dienste (funktioniert auch auf Geräten ohne Play Services). */
     @SuppressLint("MissingPermission")
     suspend fun current(ctx: Context): Location? {
         if (!hasPermission(ctx)) return null
         val lm = ctx.getSystemService(LocationManager::class.java) ?: return null
-        val allowNetwork = Prefs(ctx).useNetworkLocation
-        val provider = when {
-            lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
-            allowNetwork && lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
-            else -> return lastKnown(lm)
-        }
-        val fresh = withTimeoutOrNull(if (provider == LocationManager.GPS_PROVIDER) 30_000 else 20_000) {
+        // Ausschließlich GPS (Satelliten). Netzwerk-Ortung über WLAN/Mobilfunk wird nie verwendet.
+        if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) return null
+        val provider = LocationManager.GPS_PROVIDER
+        val fresh = withTimeoutOrNull(30_000) {
             suspendCancellableCoroutine<Location?> { cont ->
                 val signal = CancellationSignal()
                 cont.invokeOnCancellation { signal.cancel() }

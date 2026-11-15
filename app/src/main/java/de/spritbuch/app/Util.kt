@@ -221,10 +221,7 @@ class Prefs(ctx: Context) {
     var useGeocoder: Boolean
         get() = sp.getBoolean("useGeocoder", false)
         set(v) = sp.edit().putBoolean("useGeocoder", v).apply()
-    /** Datenschutz: Netzwerk-Ortung (WLAN/Mobilfunk, bei Google-Android über Google). Aus = nur GPS. */
-    var useNetworkLocation: Boolean
-        get() = sp.getBoolean("useNetworkLocation", false)
-        set(v) = sp.edit().putBoolean("useNetworkLocation", v).apply()
+
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 }

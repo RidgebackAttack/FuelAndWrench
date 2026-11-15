@@ -100,7 +100,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             try {
                 val loc = LocationHelper.current(ctx)
                 if (loc == null) {
-                    info = "Position nicht verfügbar (GPS aus?)"
+                    info = "Keine GPS-Position (GPS eingeschaltet? Freie Sicht zum Himmel?)"
                 } else {
                     lat = loc.latitude
                     lon = loc.longitude
@@ -122,7 +122,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     }
 
     val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
-        if (res.values.any { it }) locate() else info = "Standortberechtigung verweigert"
+        if (res[Manifest.permission.ACCESS_FINE_LOCATION] == true) locate()
+        else info = "Für GPS wird der genaue Standort benötigt (nicht „ungefähr“)"
     }
 
     fun requestLocate() {
@@ -413,7 +414,6 @@ fun SettingsScreen(nav: NavController) {
     var templates by remember { mutableStateOf(prefs.reminderTemplates) }
     var useOverpass by remember { mutableStateOf(prefs.useOverpass) }
     var useGeocoder by remember { mutableStateOf(prefs.useGeocoder) }
-    var useNetworkLocation by remember { mutableStateOf(prefs.useNetworkLocation) }
     var newTitle by remember { mutableStateOf("") }
     var newKm by remember { mutableStateOf("") }
     val status by SyncManager.status.collectAsStateWithLifecycle()
@@ -479,8 +479,10 @@ fun SettingsScreen(nav: NavController) {
             Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de.", style = MaterialTheme.typography.bodySmall)
             LabeledSwitch("Adresse über Android-Geocoder ermitteln", useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
             Text("Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.", style = MaterialTheme.typography.bodySmall)
-            LabeledSwitch("Netzwerk-Ortung erlauben", useNetworkLocation) { useNetworkLocation = it; prefs.useNetworkLocation = it }
-            Text("Aus = nur GPS (kein Netzverkehr, braucht freie Sicht zum Himmel).", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "Ortung erfolgt ausschließlich per GPS – die App nutzt keine WLAN- oder Mobilfunk-Ortung.",
+                style = MaterialTheme.typography.bodySmall,
+            )
             Text(
                 "Die Karte lädt Kartenkacheln von tile.openstreetmap.org; dabei sieht der Server den angezeigten Kartenausschnitt.",
                 style = MaterialTheme.typography.bodySmall,
