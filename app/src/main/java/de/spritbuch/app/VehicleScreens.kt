@@ -189,130 +189,21 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbar) },
-        topBar = {
-            TopAppBar(
-                title = { Text(v?.name ?: "") },
-                navigationIcon = { BackButton(nav) },
-                actions = {
-                    IconButton(onClick = { nav.navigate("map/$vehicleId") }) {
-                        Icon(Icons.Default.Map, contentDescription = "Karte")
-                    }
-                    IconButton(onClick = { importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream")) }) {
-                        Icon(Icons.Default.FileUpload, contentDescription = "Spritmonitor-Import")
-                    }
-                    IconButton(onClick = { nav.navigate("vehicleEdit/$vehicleId") }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Bearbeiten")
-                    }
-                },
-            )
+    VehicleDetailContent(
+        nav = nav,
+        vehicleId = vehicleId,
+        vehicle = v,
+        refuels = refuels,
+        reminders = reminders,
+        services = services,
+        stats = stats,
+        currentOdo = currentOdo,
+        snackbar = snackbar,
+        onImportRefuels = {
+            importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream"))
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { nav.navigate("refuelEdit/$vehicleId/new") },
-                icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
-                text = { Text("Tanken") },
-            )
-        },
-    ) { pad ->
-        if (v == null || v.deleted) return@Scaffold
-        LazyColumn(
-            modifier = Modifier.padding(pad),
-            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (v.archived) item {
-                Card(
-                    Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                ) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Fahrzeug ist archiviert. Erinnerungen sind pausiert.", modifier = Modifier.weight(1f))
-                        TextButton(onClick = { scope.launch { repo.saveVehicle(v.copy(archived = false)) } }) {
-                            Text("Reaktivieren")
-                        }
-                    }
-                }
-            }
-            if (v.photoVersion > 0) item { VehiclePhoto(v, Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT), large = true) }
-            item {
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        StatRow("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
-                        StatRow("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
-                        StatRow("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
-                        StatRow("Tankkosten gesamt", "${stats.totalCost.fmt()} $cur")
-                        StatRow("Servicekosten gesamt", "${services.sumOf { it.cost }.fmt()} $cur")
-                        StatRow("Getankt gesamt", "${stats.totalAmount.fmt(1)} $amt")
-                        StatRow("Erfasste Strecke", stats.distance.dist(du))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Kilometerstand", modifier = Modifier.weight(1f))
-                            Text(currentOdo.dist(du), fontWeight = FontWeight.SemiBold)
-                            IconButton(onClick = { odoDialog = true }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Kilometerstand ändern")
-                            }
-                        }
-                    }
-                }
-            }
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.weight(1f)) { SectionTitle("Erinnerungen") }
-                    TextButton(onClick = { nav.navigate("reminderEdit/$vehicleId/new") }) { Text("+ Neu") }
-                }
-            }
-            if (reminders.isEmpty()) item {
-                Text("Keine Erinnerungen angelegt.", style = MaterialTheme.typography.bodySmall)
-            }
-            items(reminders, key = { it.id }) { r ->
-                val remaining = r.dueKm - currentOdo
-                val due = remaining <= 0
-                val warn = remaining <= r.warnBeforeKm
-                Card(
-                    onClick = { nav.navigate("reminderEdit/$vehicleId/${r.id}") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = if (warn) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-                    else CardDefaults.cardColors(),
-                ) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(r.title, style = MaterialTheme.typography.titleSmall)
-                            Text(
-                                if (due) "Fällig seit ${(-remaining).dist(du)} (bei ${r.dueKm.dist(du)})"
-                                else "Noch ${remaining.dist(du)} (fällig bei ${r.dueKm.dist(du)})",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            Text("Intervall ${r.intervalKm.dist(du)}", style = MaterialTheme.typography.bodySmall)
-                        }
-                        OutlinedButton(onClick = {
-                            scope.launch {
-                                repo.completeReminder(r, currentOdo)
-                                snackbar.showSnackbar("Erledigt – Service-Eintrag angelegt")
-                            }
-                        }) { Text("Erledigt") }
-                    }
-                }
-            }
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.weight(1f)) { SectionTitle("Service (${services.size})") }
-                    TextButton(onClick = { nav.navigate("services/$vehicleId") }) { Text("Historie") }
-                    TextButton(onClick = { nav.navigate("serviceEdit/$vehicleId/new") }) { Text("+ Neu") }
-                }
-            }
-            if (services.isEmpty()) item {
-                Text("Noch keine Service-Einträge.", style = MaterialTheme.typography.bodySmall)
-            }
-            items(services.take(3), key = { "svc-" + it.id }) { s ->
-                ServiceCard(v, s) { nav.navigate("serviceEdit/$vehicleId/${s.id}") }
-            }
-            item { SectionTitle("Tankvorgänge (${refuels.size})") }
-            items(refuels, key = { it.id }) { r ->
-                RefuelCard(v, r, stats.perRefuel[r.id]) { nav.navigate("refuelEdit/$vehicleId/${r.id}") }
-            }
-        }
-    }
+        onEditOdometer = { odoDialog = true },
+    )
 
     pendingImport?.let { imp ->
         val mapping = remember(imp) {
@@ -436,7 +327,7 @@ private fun StatRow(label: String, value: String) {
 }
 
 @Composable
-private fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, onClick: () -> Unit) {
+fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, onClick: () -> Unit) {
     val unit = Units.amount(v, r.fuelType)
     val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
