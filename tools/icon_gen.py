@@ -2,8 +2,9 @@
 Aufruf: python3 tools/icon_gen.py [Tropfen-Skalierung, Standard 0.74]"""
 import sys
 
-S = float(sys.argv[1]) if len(sys.argv) > 1 else 0.74   # Größe Tropfen/Tacho
+S = float(sys.argv[1]) if len(sys.argv) > 1 else 0.64   # Größe Tropfen/Tacho
 Z = float(sys.argv[2]) if len(sys.argv) > 2 else 1.25   # Größe Zylinder (Proportionen bleiben)
+A = float(sys.argv[3]) if len(sys.argv) > 3 else 0.55   # Deckkraft des Glasrands (Kern bleibt undurchsichtig)
 CX, CY = 54, 62                                          # Mittelpunkt Tropfen
 RES = "app/src/main/res/drawable/"
 
@@ -41,7 +42,8 @@ ARC = "M44.8,72.2 A13,13 0 1,1 63.2,72.2"
 RED = "M58.6,58.7 A8,8 0 0,1 62,66"
 NEEDLE = "M52.9,63.9 L60.6,53.6 L55.1,65.4 Z"
 HUB = circ(54, 64, 2.3)
-SHINE = "M47,31 C44,35 41,40 39.5,45"
+SHINE = "M50,27 C45,33 40,41 38.5,49"
+SPARK = circ(39.6, 55, 1.6)
 
 chrome = [(0, "#FFFFFFFF"), (0.5, "#FFC3CCD7"), (1, "#FF6E7C8C")]
 gold = [(0, "#FFFFE29A"), (0.55, "#FFF2B544"), (1, "#FFB8741A")]
@@ -58,13 +60,18 @@ GROUP = (f'<group android:pivotX="54" android:pivotY="62" android:scaleX="{S}" a
 
 fg = HDR + f'''<path android:pathData="M12,38 L38,38 M8,44 L32,44 M70,38 L96,38 M76,44 L100,44" android:strokeColor="#1FFFFFFF" android:strokeWidth="1.6" android:strokeLineCap="round"/>
 {cyl_groups(lin("android:fillColor", 0, 52, 0, 72, chrome))}
-{GROUP}<path android:pathData="{DROP}">{lin("android:fillColor", 0, 19, 0, 83, gold)}</path>
+{GROUP}<path android:pathData="{DROP}" android:fillAlpha="{A}">{lin("android:fillColor", 0, 19, 0, 83, gold)}</path>
+<group android:pivotX="54" android:pivotY="60" android:scaleX="0.86" android:scaleY="0.86">
+<path android:pathData="{DROP}">{lin("android:fillColor", 0, 19, 0, 83, gold)}</path>
+</group>
+<path android:pathData="{DROP}" android:strokeColor="#FFFFF4D0" android:strokeAlpha="0.85" android:strokeWidth="1.4"/>
 <path android:pathData="{DIAL}"><aapt:attr name="android:fillColor"><gradient android:type="radial" android:centerX="54" android:centerY="57" android:gradientRadius="18"><item android:offset="0" android:color="#FF1B2B45"/><item android:offset="1" android:color="#FF060D1A"/></gradient></aapt:attr></path>
 <path android:pathData="{ARC}" android:strokeWidth="2.2" android:strokeLineCap="round">{lin("android:strokeColor", 0, 50, 0, 73, chrome)}</path>
 <path android:pathData="{RED}" android:strokeColor="#FFE63946" android:strokeWidth="2.2" android:strokeLineCap="round"/>
 <path android:pathData="{NEEDLE}" android:fillColor="#FFFF4D5A"/>
 <path android:pathData="{HUB}">{lin("android:fillColor", 0, 61.7, 0, 66.3, chrome)}</path>
-<path android:pathData="{SHINE}" android:strokeColor="#8CFFFFFF" android:strokeWidth="2" android:strokeLineCap="round"/>
+<path android:pathData="{SHINE}" android:strokeColor="#BFFFFFFF" android:strokeWidth="3.2" android:strokeLineCap="round"/>
+<path android:pathData="{SPARK}" android:fillColor="#B3FFFFFF"/>
 </group>
 </vector>
 '''
@@ -94,13 +101,16 @@ svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="4
 <g transform="translate({36+TX} 62) scale({Z}) translate(-36 -62)"><path d="{cylL}" fill="url(#chrome)"/></g>
 <g transform="translate({72-TX} 62) scale({Z}) translate(-72 -62)"><path d="{cylR}" fill="url(#chrome)"/></g>
 <g transform="{T}">
-<path d="{DROP}" fill="url(#gold)"/>
+<path d="{DROP}" fill="url(#gold)" fill-opacity="{A}"/>
+<g transform="translate(54 60) scale(0.86) translate(-54 -60)"><path d="{DROP}" fill="url(#gold)"/></g>
+<path d="{DROP}" fill="none" stroke="#FFF4D0" stroke-opacity="0.85" stroke-width="1.4"/>
 <path d="{DIAL}" fill="url(#dial)"/>
 <path d="{ARC}" fill="none" stroke="url(#chrome2)" stroke-width="2.2" stroke-linecap="round"/>
 <path d="{RED}" fill="none" stroke="#E63946" stroke-width="2.2" stroke-linecap="round"/>
 <path d="{NEEDLE}" fill="#FF4D5A"/>
 <path d="{HUB}" fill="#DDE3EA"/>
-<path d="{SHINE}" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="{SHINE}" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+<path d="{SPARK}" fill="#FFFFFF" fill-opacity="0.7"/>
 </g></g></svg>'''
 open("tools/icon_preview.svg", "w").write(svg)
 print("ok", S)
