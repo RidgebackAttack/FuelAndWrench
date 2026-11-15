@@ -51,6 +51,27 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         changed()
     }
 
+    /** Importiert Tankvorgänge; Einträge mit gleichem Kilometerstand und gleicher Menge werden übersprungen. */
+    suspend fun importRefuels(vehicleId: String, items: List<Refuel>): Pair<Int, Int> {
+        var added = 0
+        var duplicates = 0
+        db.withTransaction {
+            val existing = db.refuels().forVehicle(vehicleId)
+            val t = now()
+            for (r in items) {
+                val dup = existing.any { it.odometer == r.odometer && kotlin.math.abs(it.amount - r.amount) < 0.01 }
+                if (dup) { duplicates++; continue }
+                db.refuels().upsert(r.copy(vehicleId = vehicleId, updatedAt = t))
+                added++
+            }
+        }
+        if (added > 0) {
+            ReminderChecker.check(ctx, vehicleId)
+            changed()
+        }
+        return added to duplicates
+    }
+
     suspend fun deleteRefuel(id: String) {
         db.refuels().get(id)?.let { db.refuels().upsert(it.copy(deleted = true, updatedAt = now())) }
         changed()

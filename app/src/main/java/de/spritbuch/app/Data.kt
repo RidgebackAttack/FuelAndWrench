@@ -54,6 +54,7 @@ data class Vehicle(
     val initialOdometer: Int = 0,
     val manualOdometer: Int = 0,
     val photoVersion: Long = 0,
+    val archived: Boolean = false,
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 )

@@ -87,7 +87,7 @@ object ReminderChecker {
     suspend fun check(ctx: Context, vehicleId: String) {
         val repo = ctx.repo
         val v = repo.getVehicle(vehicleId) ?: return
-        if (v.deleted) return
+        if (v.deleted || v.archived) return
         val odo = repo.currentOdometer(vehicleId)
         val prefs = Prefs(ctx)
         val notified = prefs.notified.toMutableSet()

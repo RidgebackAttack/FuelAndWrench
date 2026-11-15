@@ -10,6 +10,8 @@ Android-App zum Erfassen von Tankvorgängen und Kraftstoffverbrauch, mit Synchro
 - Verbrauch nach Voll-zu-Voll-Methode, Kosten pro 100 km, Gesamtkosten
 - Wartungserinnerungen nach Kilometern (Vorwarnung + Fälligkeit als Benachrichtigung)
 - Sync über WebDAV (Nextcloud): automatisch nach jeder Änderung, beim Öffnen und alle 15 Min.; mehrere Geräte gleichzeitig (Zusammenführung pro Datensatz, ETag-Absicherung)
+- Import von CSV-Exporten (Spritmonitor.de und andere): Spalten werden anhand der Kopfzeile erkannt, Duplikate übersprungen
+- Fahrzeuge archivieren (Daten bleiben erhalten, Erinnerungen pausiert)
 - Keine Google-Dienste nötig
 
 ## Build
