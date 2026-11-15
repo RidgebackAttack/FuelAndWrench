@@ -34,6 +34,10 @@ object Options {
     val drivingStyles = listOf("Sparsam", "Normal", "Zügig", "Sportlich")
     val routeTypes = listOf("Stadt", "Landstraße", "Autobahn", "Gemischt")
     val tireTypes = listOf("Sommerreifen", "Winterreifen", "Ganzjahresreifen")
+    val vehicleTypes = listOf("Auto", "Motorrad")
+    fun tirePositions(vehicleType: String?) =
+        if (vehicleType == "Motorrad") listOf("V" to "Vorne", "H" to "Hinten")
+        else listOf("VL" to "Vorne links", "VR" to "Vorne rechts", "HL" to "Hinten links", "HR" to "Hinten rechts")
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
     val serviceSuggestions = listOf(
         "Ölwechsel", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
@@ -70,6 +74,8 @@ data class Vehicle(
     /** Bildausschnitt "x,y,zoom" für Miniatur bzw. große Ansicht. */
     @ColumnInfo(defaultValue = "0,0,1") val photoThumbPos: String = "0,0,1",
     @ColumnInfo(defaultValue = "0,0,1") val photoLargePos: String = "0,0,1",
+    /** "Auto" (4 Räder) oder "Motorrad" (2 Räder) – u. a. für die Profiltiefe. */
+    @ColumnInfo(defaultValue = "Auto") val vehicleType: String = "Auto",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 )
@@ -129,6 +135,8 @@ data class ServiceEntry(
     val cost: Double = 0.0,
     val workshop: String = "",
     val note: String = "",
+    /** Profiltiefe in mm je Position, Format "VL:alt:neu;VR:alt:neu;…" (leere Werte erlaubt). */
+    @ColumnInfo(defaultValue = "") val treadDepth: String = "",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 )
@@ -220,7 +228,7 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 3, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -251,9 +259,16 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN vehicleType TEXT NOT NULL DEFAULT 'Auto'")
+                db.execSQL("ALTER TABLE services ADD COLUMN treadDepth TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

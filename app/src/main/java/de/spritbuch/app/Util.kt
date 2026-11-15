@@ -238,3 +238,28 @@ class Prefs(ctx: Context) {
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 }
+
+
+/** Profiltiefe je Position: alt (ausgebaut/vorher) und neu (eingebaut/nachher), in mm. */
+data class Tread(val old: Double?, val new: Double?)
+
+object TreadCodec {
+    fun parse(s: String): Map<String, Tread> = s.split(";").mapNotNull { part ->
+        val p = part.split(":")
+        if (p.size < 3 || p[0].isBlank()) null
+        else p[0] to Tread(p[1].toDoubleOrNull(), p[2].toDoubleOrNull())
+    }.toMap()
+
+    fun encode(m: Map<String, Tread>): String = m.filterValues { it.old != null || it.new != null }
+        .entries.joinToString(";") { (k, t) -> "$k:${t.old ?: ""}:${t.new ?: ""}" }
+
+    fun summary(s: String): String = parse(s).entries.joinToString(" · ") { (k, t) ->
+        val o = t.old?.fmt(1)
+        val n = t.new?.fmt(1)
+        k + " " + when {
+            o != null && n != null -> "$o → $n mm"
+            n != null -> "$n mm"
+            else -> "$o mm (alt)"
+        }
+    }
+}

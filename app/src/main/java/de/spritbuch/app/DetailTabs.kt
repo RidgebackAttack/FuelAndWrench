@@ -55,7 +55,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -128,39 +130,73 @@ private fun StatLine(label: String, value: String) {
     }
 }
 
-/** Verbrauchsverlauf (chronologisch) mit gestrichelter Durchschnittslinie. */
+/**
+ * Verbrauchsverlauf (chronologisch): Fläche mit Farbverlauf unter der Linie, gestrichelte
+ * Durchschnittslinie, Punkte grün (unter Ø), gelb (um Ø) oder rot (deutlich über Ø).
+ */
 @Composable
 fun ConsumptionChart(values: List<Double>, format: (Double) -> String) {
     if (values.size < 2) return
     val line = MaterialTheme.colorScheme.primary
     val avgColor = MaterialTheme.colorScheme.outline
+    val good = Color(0xFF2E9E5B)
+    val mid = Color(0xFFE0A100)
+    val bad = Color(0xFFD64545)
     val avg = values.average()
+    fun colorFor(v: Double) = when {
+        v <= avg * 0.97 -> good
+        v >= avg * 1.05 -> bad
+        else -> mid
+    }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Verbrauchsverlauf (letzte ${values.size} Volltankungen)", style = MaterialTheme.typography.titleSmall)
-            Canvas(Modifier.fillMaxWidth().height(120.dp)) {
+            Canvas(Modifier.fillMaxWidth().height(140.dp)) {
                 val min = values.min()
                 val max = values.max()
                 val range = (max - min).takeIf { it > 0 } ?: 1.0
                 val padY = size.height * 0.1f
                 fun y(v: Double) = (size.height - padY - ((v - min) / range) * (size.height - 2 * padY)).toFloat()
                 val stepX = size.width / (values.size - 1)
+                val pts = values.mapIndexed { i, v -> Offset(i * stepX, y(v)) }
+
+                // Hintergrund-Bänder: unter Ø leicht grün, über Ø leicht rot
+                val avgY = y(avg)
+                drawRect(
+                    Brush.verticalGradient(listOf(bad.copy(alpha = 0.10f), bad.copy(alpha = 0.02f)), 0f, avgY),
+                    topLeft = Offset(0f, 0f), size = Size(size.width, avgY),
+                )
+                drawRect(
+                    Brush.verticalGradient(listOf(good.copy(alpha = 0.02f), good.copy(alpha = 0.10f)), avgY, size.height),
+                    topLeft = Offset(0f, avgY), size = Size(size.width, size.height - avgY),
+                )
+
+                // Fläche unter der Linie mit Farbverlauf
+                val area = Path().apply {
+                    moveTo(pts.first().x, size.height)
+                    pts.forEach { lineTo(it.x, it.y) }
+                    lineTo(pts.last().x, size.height)
+                    close()
+                }
+                drawPath(area, Brush.verticalGradient(listOf(line.copy(alpha = 0.35f), line.copy(alpha = 0.02f))))
+
                 drawLine(
-                    avgColor, Offset(0f, y(avg)), Offset(size.width, y(avg)),
+                    avgColor, Offset(0f, avgY), Offset(size.width, avgY),
                     strokeWidth = 1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 10f)),
                 )
                 val path = Path()
-                values.forEachIndexed { i, v ->
-                    val p = Offset(i * stepX, y(v))
-                    if (i == 0) path.moveTo(p.x, p.y) else path.lineTo(p.x, p.y)
-                }
+                pts.forEachIndexed { i, p -> if (i == 0) path.moveTo(p.x, p.y) else path.lineTo(p.x, p.y) }
                 drawPath(path, line, style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round))
-                values.forEachIndexed { i, v -> drawCircle(line, 3.dp.toPx(), Offset(i * stepX, y(v))) }
+                pts.forEachIndexed { i, p ->
+                    drawCircle(Color.White, 4.5.dp.toPx(), p)
+                    drawCircle(colorFor(values[i]), 3.5.dp.toPx(), p)
+                }
             }
-            Text(
-                "min ${format(values.min())} · Ø ${format(avg)} · max ${format(values.max())}",
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("min ${format(values.min())}", style = MaterialTheme.typography.bodySmall, color = good)
+                Text("Ø ${format(avg)}", style = MaterialTheme.typography.bodySmall)
+                Text("max ${format(values.max())}", style = MaterialTheme.typography.bodySmall, color = bad)
+            }
         }
     }
 }

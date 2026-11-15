@@ -59,6 +59,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -103,6 +104,10 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     style = MaterialTheme.typography.bodySmall,
                 )
                 if (s.workshop.isNotBlank()) Text(s.workshop, style = MaterialTheme.typography.bodySmall)
+                if (s.treadDepth.isNotBlank()) {
+                    Text("Profil: " + TreadCodec.summary(s.treadDepth), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary)
+                }
                 if (s.note.isNotBlank()) Text(s.note, style = MaterialTheme.typography.bodySmall)
             }
         }
@@ -249,6 +254,8 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     var cost by remember { mutableStateOf("") }
     var workshop by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    val treadOld = remember { mutableStateMapOf<String, String>() }
+    val treadNew = remember { mutableStateMapOf<String, String>() }
     var error by remember { mutableStateOf<String?>(null) }
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -265,6 +272,10 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         cost = if (s.cost > 0) s.cost.fmt(2) else ""
         workshop = s.workshop
         note = s.note
+        TreadCodec.parse(s.treadDepth).forEach { (k, t) ->
+            t.old?.let { treadOld[k] = it.fmt(1) }
+            t.new?.let { treadNew[k] = it.fmt(1) }
+        }
     }
 
     Scaffold(
@@ -285,6 +296,13 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                                     timestamp = timestamp, odometer = odometer.toIntKm() ?: 0, title = title.trim(),
                                     category = category, cost = cost.toDoubleDe() ?: 0.0,
                                     workshop = workshop.trim(), note = note.trim(),
+                                    treadDepth = if (category == "Reifen") {
+                                        TreadCodec.encode(
+                                            Options.tirePositions(veh?.vehicleType).associate { (k, _) ->
+                                                k to Tread(treadOld[k]?.toDoubleDe(), treadNew[k]?.toDoubleDe())
+                                            }
+                                        )
+                                    } else b.treadDepth,
                                 )
                             )
                             nav.popBackStack()
@@ -309,6 +327,20 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
             ChoiceField("Kategorie", category, Options.serviceCategories) { category = it }
             NumberField("Kilometerstand", odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
             NumberField("Kosten", cost, { cost = it }, suffix = Units.cur(veh))
+            if (category == "Reifen") {
+                SectionTitle("Profiltiefe")
+                Text(
+                    "Alt = Profil der ausgebauten Reifen bzw. vor der Messung, neu = eingebaute Reifen. Felder dürfen leer bleiben.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Options.tirePositions(veh?.vehicleType).forEach { (key, label) ->
+                    Text(label, style = MaterialTheme.typography.labelLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NumberField("Alt", treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField("Neu", treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                    }
+                }
+            }
             OutlinedTextField(
                 workshop, { workshop = it }, label = { Text("Werkstatt") }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(),

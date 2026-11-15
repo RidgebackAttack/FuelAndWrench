@@ -369,6 +369,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var thumbPos by remember { mutableStateOf(PhotoPos()) }
     var largePos by remember { mutableStateOf(PhotoPos()) }
     var distU by remember { mutableStateOf("km") }
+    var vType by remember { mutableStateOf("Auto") }
     var volU by remember { mutableStateOf("l") }
     var fmtU by remember { mutableStateOf("per100") }
     var cur by remember { mutableStateOf("€") }
@@ -385,6 +386,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         archived = v.archived
         thumbPos = PhotoPos.parse(v.photoThumbPos); largePos = PhotoPos.parse(v.photoLargePos)
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
+        vType = v.vehicleType
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -416,6 +418,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     photoVersion = photoVersion, archived = archived,
                                     photoThumbPos = thumbPos.encode(), photoLargePos = largePos.encode(),
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
+                                    vehicleType = vType,
                                 )
                             )
                             if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
@@ -442,6 +445,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             ) { Text(if (photoVersion > 0) "Foto ändern" else "Foto auswählen") }
             OutlinedTextField(name, { name = it }, label = { Text("Name (z. B. Golf)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text("Kennzeichen") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            ChoiceField("Fahrzeugart", vType, Options.vehicleTypes) { vType = it }
             ChoiceField("Standard-Kraftstoff", fuel, Options.fuelTypes) { fuel = it }
             val previewVehicle = b.copy(volumeUnit = volU, distanceUnit = distU)
             NumberField("Tankinhalt", tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
