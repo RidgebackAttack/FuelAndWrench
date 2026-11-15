@@ -3,6 +3,7 @@ package de.spritbuch.app
 import android.content.Context
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.roundToInt
 
 val Context.repo: Repository get() = (applicationContext as App).repo
 
@@ -24,8 +25,41 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         return maxOf(v.initialOdometer, v.manualOdometer, db.refuels().maxOdometer(vehicleId) ?: 0)
     }
 
+    /**
+     * Speichert ein Fahrzeug. Wurden Entfernungs- oder Volumeneinheit geändert, werden alle
+     * vorhandenen Tankvorgänge, Erinnerungen und Kilometerstände umgerechnet.
+     */
     suspend fun saveVehicle(v: Vehicle) {
-        db.vehicles().upsert(v.copy(updatedAt = now()))
+        val t = now()
+        db.withTransaction {
+            val old = db.vehicles().get(v.id)
+            var toSave = v
+            if (old != null && (old.distanceUnit != v.distanceUnit || old.volumeUnit != v.volumeUnit)) {
+                val df = Units.distFactorToKm(old.distanceUnit) / Units.distFactorToKm(v.distanceUnit)
+                val vf = Units.volFactorToL(old.volumeUnit) / Units.volFactorToL(v.volumeUnit)
+                fun d(x: Int) = (x * df).roundToInt()
+                db.refuels().forVehicle(v.id).forEach { r ->
+                    db.refuels().upsert(
+                        r.copy(
+                            odometer = d(r.odometer),
+                            amount = if (Units.isLiquid(r.fuelType)) r.amount * vf else r.amount,
+                            updatedAt = t,
+                        )
+                    )
+                }
+                db.reminders().forVehicle(v.id).forEach { r ->
+                    db.reminders().upsert(
+                        r.copy(intervalKm = d(r.intervalKm), lastDoneKm = d(r.lastDoneKm), warnBeforeKm = d(r.warnBeforeKm), updatedAt = t)
+                    )
+                }
+                toSave = v.copy(
+                    initialOdometer = d(v.initialOdometer),
+                    manualOdometer = d(v.manualOdometer),
+                    tankCapacity = if (Units.isLiquid(v.defaultFuelType)) v.tankCapacity?.let { it * vf } else v.tankCapacity,
+                )
+            }
+            db.vehicles().upsert(toSave.copy(updatedAt = t))
+        }
         ReminderChecker.check(ctx, v.id)
         changed()
     }

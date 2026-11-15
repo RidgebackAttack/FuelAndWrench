@@ -1,6 +1,7 @@
 package de.spritbuch.app
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -9,6 +10,8 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
@@ -55,6 +58,10 @@ data class Vehicle(
     val manualOdometer: Int = 0,
     val photoVersion: Long = 0,
     val archived: Boolean = false,
+    @ColumnInfo(defaultValue = "km") val distanceUnit: String = "km",
+    @ColumnInfo(defaultValue = "l") val volumeUnit: String = "l",
+    @ColumnInfo(defaultValue = "per100") val consumptionFormat: String = "per100",
+    @ColumnInfo(defaultValue = "€") val currency: String = "€",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 )
@@ -168,14 +175,25 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class], version = 1, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
     abstract fun reminders(): ReminderDao
 
     companion object {
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN distanceUnit TEXT NOT NULL DEFAULT 'km'")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN volumeUnit TEXT NOT NULL DEFAULT 'l'")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN consumptionFormat TEXT NOT NULL DEFAULT 'per100'")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN currency TEXT NOT NULL DEFAULT '€'")
+            }
+        }
+
         fun create(ctx: Context): AppDatabase =
-            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db").build()
+            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
+                .addMigrations(MIGRATION_1_2)
+                .build()
     }
 }

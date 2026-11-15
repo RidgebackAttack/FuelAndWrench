@@ -161,8 +161,7 @@ object CsvImport {
 
     /** Erkennt "1.234,56", "1234.56", "1234,5" sowie (bei km) "212.511" als Tausenderpunkt. */
     fun parseNum(raw: String, dotIsThousands: Boolean): Double? {
-        var s = raw.replace("€", "").replace("EUR", "", ignoreCase = true)
-            .replace("km", "", ignoreCase = true).replace("l", "").replace(" ", "").replace(" ", "").trim()
+        var s = raw.filter { it.isDigit() || it == '.' || it == ',' || it == '-' }
         if (s.isEmpty()) return null
         val lastComma = s.lastIndexOf(',')
         val lastDot = s.lastIndexOf('.')

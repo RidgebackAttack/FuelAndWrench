@@ -19,6 +19,44 @@ private val DE = Locale.GERMANY
 
 fun Double.fmt(decimals: Int = 2): String = String.format(DE, "%.${decimals}f", this)
 fun Int.km(): String = String.format(DE, "%,d km", this)
+fun Int.dist(unit: String): String = String.format(DE, "%,d %s", this, unit)
+
+/** Einheiten pro Fahrzeug. Werte werden in den Einheiten des Fahrzeugs gespeichert. */
+object Units {
+    val distanceUnits = linkedMapOf("km" to "Kilometer (km)", "mi" to "Meilen (mi)")
+    val volumeUnits = linkedMapOf("l" to "Liter (l)", "gal_us" to "US-Gallonen", "gal_uk" to "UK-Gallonen (imperial)")
+    val formats = linkedMapOf(
+        "per100" to "Menge pro 100 (z. B. l/100 km)",
+        "perUnit" to "Strecke pro Menge (z. B. km/l, mpg)",
+    )
+    val currencies = listOf("€", "DKK", "£", "\$", "CHF", "SEK", "NOK", "PLN", "CZK")
+
+    fun distFactorToKm(u: String) = if (u == "mi") 1.609344 else 1.0
+    fun volFactorToL(u: String) = when (u) { "gal_us" -> 3.785411784; "gal_uk" -> 4.54609; else -> 1.0 }
+    fun isLiquid(fuel: String) = fuel != "Strom" && fuel != "CNG"
+    fun amount(v: Vehicle?, fuel: String): String = when (fuel) {
+        "Strom" -> "kWh"
+        "CNG" -> "kg"
+        else -> if (v?.volumeUnit == "gal_us" || v?.volumeUnit == "gal_uk") "gal" else "l"
+    }
+    fun dist(v: Vehicle?) = v?.distanceUnit ?: "km"
+    fun cur(v: Vehicle?) = v?.currency ?: "€"
+
+    /** per100 = Menge je 100 Strecke in Fahrzeugeinheiten (aus computeStats). */
+    fun consumption(v: Vehicle?, fuel: String, per100: Double?): String {
+        if (per100 == null || per100 <= 0) return "–"
+        val amt = amount(v, fuel)
+        val d = dist(v)
+        return if (v?.consumptionFormat == "perUnit") {
+            val label = if (d == "mi" && amt == "gal") {
+                if (v.volumeUnit == "gal_uk") "mpg (UK)" else "mpg (US)"
+            } else "$d/$amt"
+            "${(100.0 / per100).fmt(1)} $label"
+        } else {
+            "${per100.fmt()} $amt/100 $d"
+        }
+    }
+}
 fun Long.dateTime(): String = SimpleDateFormat("dd.MM.yyyy HH:mm", DE).format(Date(this))
 fun Long.date(): String = SimpleDateFormat("dd.MM.yyyy", DE).format(Date(this))
 fun String.toDoubleDe(): Double? {

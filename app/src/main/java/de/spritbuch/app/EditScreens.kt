@@ -86,6 +86,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var tires by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var lastOdo by remember { mutableStateOf<Int?>(null) }
+    var veh by remember { mutableStateOf<Vehicle?>(null) }
     var locating by remember { mutableStateOf(false) }
     var info by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -126,8 +127,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
 
     LaunchedEffect(refuelId) {
         val last = repo.lastRefuel(vehicleId)
+        val v = repo.getVehicle(vehicleId)
+        veh = v
         val r = if (isNew) {
-            val v = repo.getVehicle(vehicleId)
             Refuel(
                 vehicleId = vehicleId,
                 fuelType = last?.fuelType ?: v?.defaultFuelType ?: "",
@@ -159,7 +161,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         if (isNew && LocationHelper.hasPermission(ctx)) locate()
     }
 
-    val unit = Options.unit(fuelType)
+    val unit = Units.amount(veh, fuelType)
+    val du = Units.dist(veh)
+    val cur = Units.cur(veh)
 
     fun recalcTotal() {
         val a = amount.toDoubleDe()
@@ -213,18 +217,18 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.dateTime())
             }
-            NumberField("Kilometerstand", odometer, { odometer = it }, suffix = "km", decimal = false)
-            lastOdo?.let { if (it > 0) Text("Bisher: ${it.km()}", style = MaterialTheme.typography.bodySmall) }
+            NumberField("Kilometerstand", odometer, { odometer = it }, suffix = du, decimal = false)
+            lastOdo?.let { if (it > 0) Text("Bisher: ${it.dist(du)}", style = MaterialTheme.typography.bodySmall) }
             ChoiceField("Kraftstoffart", fuelType, Options.fuelTypes) { fuelType = it }
             NumberField("Menge", amount, { amount = it; recalcTotal() }, suffix = unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField("Preis pro $unit", ppu, { ppu = it; recalcTotal() }, suffix = "€", modifier = Modifier.weight(1f))
+                NumberField("Preis pro $unit", ppu, { ppu = it; recalcTotal() }, suffix = cur, modifier = Modifier.weight(1f))
                 NumberField("Gesamt", total, {
                     total = it
                     val a = amount.toDoubleDe()
                     val t = it.toDoubleDe()
                     if (a != null && t != null && a > 0) ppu = (t / a).fmt(3)
-                }, suffix = "€", modifier = Modifier.weight(1f))
+                }, suffix = cur, modifier = Modifier.weight(1f))
             }
             LabeledSwitch("Vollgetankt", fullTank) { fullTank = it }
             LabeledSwitch("Vorherige Tankung nicht erfasst", missed) { missed = it }
@@ -319,10 +323,12 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
     var interval by remember { mutableStateOf("") }
     var lastDone by remember { mutableStateOf("") }
     var warn by remember { mutableStateOf("") }
+    var du by remember { mutableStateOf("km") }
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(reminderId) {
+        du = Units.dist(repo.getVehicle(vehicleId))
         val r = if (isNew) Reminder(vehicleId = vehicleId, lastDoneKm = repo.currentOdometer(vehicleId))
         else repo.getReminder(reminderId) ?: return@LaunchedEffect
         base = r
@@ -367,11 +373,11 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             SuggestField("Bezeichnung", title, Options.reminderSuggestions) { title = it }
-            NumberField("Intervall", interval, { interval = it }, suffix = "km", decimal = false)
-            NumberField("Zuletzt erledigt bei", lastDone, { lastDone = it }, suffix = "km", decimal = false)
-            NumberField("Vorwarnung", warn, { warn = it }, suffix = "km vorher", decimal = false)
+            NumberField("Intervall", interval, { interval = it }, suffix = du, decimal = false)
+            NumberField("Zuletzt erledigt bei", lastDone, { lastDone = it }, suffix = du, decimal = false)
+            NumberField("Vorwarnung", warn, { warn = it }, suffix = "$du vorher", decimal = false)
             val due = (lastDone.toIntKm() ?: 0) + (interval.toIntKm() ?: 0)
-            Text("Nächste Fälligkeit: ${due.km()}", style = MaterialTheme.typography.bodyMedium)
+            Text("Nächste Fälligkeit: ${due.dist(du)}", style = MaterialTheme.typography.bodyMedium)
         }
     }
 

@@ -104,10 +104,11 @@ object ReminderChecker {
             if (key in notified) continue
             notified += key
             changed = true
+            val u = v.distanceUnit
             val text = if (level == "due") {
-                "Fällig seit ${(-remaining).km()} (fällig bei ${r.dueKm.km()})"
+                "Fällig seit ${(-remaining).dist(u)} (fällig bei ${r.dueKm.dist(u)})"
             } else {
-                "Fällig in ${remaining.km()} (bei ${r.dueKm.km()})"
+                "Fällig in ${remaining.dist(u)} (bei ${r.dueKm.dist(u)})"
             }
             Notifications.show(ctx, (r.id + level).hashCode(), "${v.name}: ${r.title}", text)
         }

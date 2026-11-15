@@ -129,7 +129,6 @@ fun VehicleListScreen(nav: NavController) {
 @Composable
 private fun VehicleCard(nav: NavController, v: Vehicle, refuels: List<Refuel>) {
     val stats = remember(refuels, v.id) { computeStats(refuels.filter { it.vehicleId == v.id }) }
-    val unit = Options.unit(v.defaultFuelType)
     Card(
         onClick = { nav.navigate("vehicle/${v.id}") },
         modifier = Modifier.fillMaxWidth(),
@@ -143,7 +142,7 @@ private fun VehicleCard(nav: NavController, v: Vehicle, refuels: List<Refuel>) {
                 Text(v.name + if (v.archived) " (archiviert)" else "", style = MaterialTheme.typography.titleMedium)
                 if (v.plate.isNotBlank()) Text(v.plate, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    stats.avg?.let { "Ø ${it.fmt()} $unit/100 km" } ?: "Noch kein Verbrauch berechenbar",
+                    stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: "Noch kein Verbrauch berechenbar",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -164,7 +163,10 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     val stats = remember(refuels) { computeStats(refuels) }
     val v = vehicle
     val currentOdo = if (v == null) 0 else maxOf(v.initialOdometer, v.manualOdometer, refuels.maxOfOrNull { it.odometer } ?: 0)
-    val unit = Options.unit(v?.defaultFuelType ?: "")
+    val fuel = v?.defaultFuelType ?: ""
+    val amt = Units.amount(v, fuel)
+    val du = Units.dist(v)
+    val cur = Units.cur(v)
     val snackbar = remember { SnackbarHostState() }
     var pendingImport by remember { mutableStateOf<ImportResult?>(null) }
 
@@ -229,15 +231,15 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
             item {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        StatRow("Ø Verbrauch", stats.avg?.let { "${it.fmt()} $unit/100 km" } ?: "–")
-                        StatRow("Letzter Verbrauch", stats.last?.let { "${it.fmt()} $unit/100 km" } ?: "–")
-                        StatRow("Kosten pro 100 km", stats.costPer100?.let { "${it.fmt()} €" } ?: "–")
-                        StatRow("Gesamtkosten", "${stats.totalCost.fmt()} €")
-                        StatRow("Getankt gesamt", "${stats.totalAmount.fmt(1)} $unit")
-                        StatRow("Erfasste Strecke", stats.distance.km())
+                        StatRow("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
+                        StatRow("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
+                        StatRow("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
+                        StatRow("Gesamtkosten", "${stats.totalCost.fmt()} $cur")
+                        StatRow("Getankt gesamt", "${stats.totalAmount.fmt(1)} $amt")
+                        StatRow("Erfasste Strecke", stats.distance.dist(du))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Kilometerstand", modifier = Modifier.weight(1f))
-                            Text(currentOdo.km(), fontWeight = FontWeight.SemiBold)
+                            Text(currentOdo.dist(du), fontWeight = FontWeight.SemiBold)
                             IconButton(onClick = { odoDialog = true }) {
                                 Icon(Icons.Default.Edit, contentDescription = "Kilometerstand ändern")
                             }
@@ -268,11 +270,11 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         Column(Modifier.weight(1f)) {
                             Text(r.title, style = MaterialTheme.typography.titleSmall)
                             Text(
-                                if (due) "Fällig seit ${(-remaining).km()} (bei ${r.dueKm.km()})"
-                                else "Noch ${remaining.km()} (fällig bei ${r.dueKm.km()})",
+                                if (due) "Fällig seit ${(-remaining).dist(du)} (bei ${r.dueKm.dist(du)})"
+                                else "Noch ${remaining.dist(du)} (fällig bei ${r.dueKm.dist(du)})",
                                 style = MaterialTheme.typography.bodySmall,
                             )
-                            Text("Intervall ${r.intervalKm.km()}", style = MaterialTheme.typography.bodySmall)
+                            Text("Intervall ${r.intervalKm.dist(du)}", style = MaterialTheme.typography.bodySmall)
                         }
                         OutlinedButton(onClick = {
                             scope.launch { repo.saveReminder(r.copy(lastDoneKm = currentOdo)) }
@@ -282,7 +284,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
             }
             item { SectionTitle("Tankvorgänge (${refuels.size})") }
             items(refuels, key = { it.id }) { r ->
-                RefuelCard(r, stats.perRefuel[r.id]) { nav.navigate("refuelEdit/$vehicleId/${r.id}") }
+                RefuelCard(v, r, stats.perRefuel[r.id]) { nav.navigate("refuelEdit/$vehicleId/${r.id}") }
             }
         }
     }
@@ -322,7 +324,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
         AlertDialog(
             onDismissRequest = { odoDialog = false },
             title = { Text("Kilometerstand") },
-            text = { NumberField("Aktueller Stand", text, { text = it }, suffix = "km", decimal = false) },
+            text = { NumberField("Aktueller Stand", text, { text = it }, suffix = du, decimal = false) },
             confirmButton = {
                 TextButton(onClick = {
                     text.toIntKm()?.let { km -> scope.launch { repo.setManualOdometer(vehicleId, km) } }
@@ -343,18 +345,19 @@ private fun StatRow(label: String, value: String) {
 }
 
 @Composable
-private fun RefuelCard(r: Refuel, consumption: Double?, onClick: () -> Unit) {
-    val unit = Options.unit(r.fuelType)
+private fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, onClick: () -> Unit) {
+    val unit = Units.amount(v, r.fuelType)
+    val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row {
                 Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 if (consumption != null) {
-                    Text("${consumption.fmt()} $unit/100 km", style = MaterialTheme.typography.titleSmall,
+                    Text(Units.consumption(v, r.fuelType, consumption), style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary)
                 }
             }
-            Text("${r.odometer.km()} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} € (${r.pricePerUnit.fmt(3)} €/$unit)")
+            Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
             val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ")
             if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
             if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
@@ -381,6 +384,10 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var initialOdo by remember { mutableStateOf("") }
     var photoVersion by remember { mutableLongStateOf(0L) }
     var archived by remember { mutableStateOf(false) }
+    var distU by remember { mutableStateOf("km") }
+    var volU by remember { mutableStateOf("l") }
+    var fmtU by remember { mutableStateOf("per100") }
+    var cur by remember { mutableStateOf("€") }
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
@@ -392,6 +399,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         initialOdo = if (v.initialOdometer > 0) v.initialOdometer.toString() else ""
         photoVersion = v.photoVersion
         archived = v.archived
+        distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -421,6 +429,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     name = name.trim(), plate = plate.trim(), defaultFuelType = fuel,
                                     tankCapacity = tank.toDoubleDe(), initialOdometer = initialOdo.toIntKm() ?: 0,
                                     photoVersion = photoVersion, archived = archived,
+                                    distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                 )
                             )
                             if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
@@ -443,8 +452,31 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             OutlinedTextField(name, { name = it }, label = { Text("Name (z. B. Golf)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text("Kennzeichen") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             ChoiceField("Standard-Kraftstoff", fuel, Options.fuelTypes) { fuel = it }
-            NumberField("Tankinhalt", tank, { tank = it }, suffix = Options.unit(fuel))
-            NumberField("Kilometerstand bei Erfassungsbeginn", initialOdo, { initialOdo = it }, suffix = "km", decimal = false)
+            val previewVehicle = b.copy(volumeUnit = volU, distanceUnit = distU)
+            NumberField("Tankinhalt", tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
+            NumberField("Kilometerstand bei Erfassungsbeginn", initialOdo, { initialOdo = it }, suffix = distU, decimal = false)
+
+            SectionTitle("Einheiten")
+            ChoiceField("Entfernung", Units.distanceUnits[distU] ?: distU, Units.distanceUnits.values.toList()) { lbl ->
+                distU = Units.distanceUnits.entries.first { it.value == lbl }.key
+            }
+            ChoiceField("Volumen (flüssige Kraftstoffe)", Units.volumeUnits[volU] ?: volU, Units.volumeUnits.values.toList()) { lbl ->
+                volU = Units.volumeUnits.entries.first { it.value == lbl }.key
+            }
+            ChoiceField("Verbrauchsanzeige", Units.formats[fmtU] ?: fmtU, Units.formats.values.toList()) { lbl ->
+                fmtU = Units.formats.entries.first { it.value == lbl }.key
+            }
+            ChoiceField("Währung", cur, Units.currencies) { cur = it }
+            if (!isNew && (distU != b.distanceUnit || volU != b.volumeUnit)) {
+                Text(
+                    "Beim Speichern werden alle Tankvorgänge, Kilometerstände und Erinnerungen dieses Fahrzeugs in die neuen Einheiten umgerechnet.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
+            if (!isNew && cur != b.currency) {
+                Text("Hinweis: Beträge werden nicht umgerechnet, nur die Währungsangabe ändert sich.", style = MaterialTheme.typography.bodySmall)
+            }
             if (!isNew) {
                 LabeledSwitch("Archiviert (z. B. verkauft)", archived) { archived = it }
                 Text(
