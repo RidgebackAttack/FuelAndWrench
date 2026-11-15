@@ -7,11 +7,33 @@ import java.nio.charset.CodingErrorAction
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+/** Spalten, die Spritmonitor als Zahlencode exportiert und die der Nutzer beim Import zuordnet. */
+enum class CodeField(val label: String, val options: List<String>) {
+    FUEL("Kraftstoff", Options.fuelTypes),
+    TIRES("Reifen", listOf("") + Options.tireTypes),
+    STYLE("Fahrweise", listOf("") + Options.drivingStyles),
+    ROUTE("Strecken", listOf("") + Options.routeTypes),
+}
+
+data class CodeInfo(val raw: String, val count: Int, val suggestion: String)
+
 data class ImportResult(
     val refuels: List<Refuel>,
     val skipped: Int,
     val missingColumns: List<String>,
-)
+    val codes: Map<CodeField, List<CodeInfo>> = emptyMap(),
+) {
+    /** Ersetzt Zahlencodes durch die gewählten Werte. */
+    fun applyCodes(mapping: Map<CodeField, Map<String, String>>): List<Refuel> = refuels.map { r ->
+        fun m(f: CodeField, raw: String) = if (raw.isNotEmpty() && raw.all { it.isDigit() }) mapping[f]?.get(raw) ?: raw else raw
+        r.copy(
+            fuelType = m(CodeField.FUEL, r.fuelType),
+            tireType = m(CodeField.TIRES, r.tireType),
+            drivingStyle = m(CodeField.STYLE, r.drivingStyle),
+            routeType = m(CodeField.ROUTE, r.routeType),
+        )
+    }
+}
 
 /**
  * Import von CSV-Exporten (Spritmonitor.de, aber auch andere Apps).
@@ -51,7 +73,7 @@ object CsvImport {
         val cDate = col("datum", "date")
         val cTime = col("uhrzeit", "time", exclude = listOf("date"))
         val cOdo = col("kilometerstand", "tachostand", "km-stand", "kmstand", "odometer", "mileage", "tacho")
-        val cTrip = col("distanz", "tageskilometer", "trip", "distance", "gefahrene km", "km")
+        val cTrip = col("teil-km", "distanz", "tageskilometer", "trip", "distance", "gefahrene km", "km")
         val cAmount = col("menge", "quantity", "liter", "litres", "liters", "volume", "kwh",
             exclude = listOf("bc-", "bordcomputer", "/", "pro "))
         val cPpu = col("preis/l", "eur/l", "€/l", "preis pro", "price per", "literpreis", "price/l", "einzelpreis")
@@ -101,13 +123,15 @@ object CsvImport {
             }
             runningOdo = odo
             val ppu = if (cPpu >= 0) parseNum(v(cPpu), false) else null
-            val total = (if (cTotal >= 0) parseNum(v(cTotal), false) else null) ?: ppu?.let { it * amount } ?: 0.0
+            val noteNum = v(cNote).takeIf { Regex("""\d+([.,]\d{1,2})?""").matches(it) }?.let { parseNum(it, false) }
+            val total = (if (cTotal >= 0) parseNum(v(cTotal), false) else null) ?: ppu?.let { it * amount } ?: noteNum ?: 0.0
 
             val typeRaw = v(cType).lowercase()
+            // Spritmonitor: 1 = Volltankung, 2 = Teilbetankung, 3 = Erstbetankung, 4 = ungültig
             val partial = if (typeIsPartialFlag) isTruthy(typeRaw)
-            else typeRaw.contains("teil") || typeRaw.contains("partial")
-            val missed = typeRaw.contains("erst") || typeRaw.contains("first") || typeRaw.contains("ungültig") ||
-                typeRaw.contains("invalid") || typeRaw.contains("missed")
+            else typeRaw == "2" || typeRaw.contains("teil") || typeRaw.contains("partial") || typeRaw.contains("notfull")
+            val missed = typeRaw == "3" || typeRaw == "4" || typeRaw.contains("erst") || typeRaw.contains("first") ||
+                typeRaw.contains("ungültig") || typeRaw.contains("invalid") || typeRaw.contains("missed")
 
             val extras = mutableListOf<String>()
             extraCols.forEach { (name, i) -> if (isTruthy(v(i))) extras += name }
@@ -125,20 +149,40 @@ object CsvImport {
                 totalPrice = total,
                 fullTank = !partial,
                 missedPrevious = missed,
-                fuelType = mapFuel(v(cFuel)) ?: vehicle.defaultFuelType,
+                fuelType = v(cFuel).let { if (isCode(it)) it else mapFuel(it) ?: vehicle.defaultFuelType },
                 stationBrand = mapBrand(v(cStation)),
                 stationAddress = v(cLocation),
                 latitude = parseNum(v(cLat), false)?.takeIf { it != 0.0 },
                 longitude = parseNum(v(cLon), false)?.takeIf { it != 0.0 },
                 extras = Options.extras.filter { it in extras }.joinToString("|"),
-                drivingStyle = mapStyle(v(cStyle)),
-                routeType = mapRoute(v(cRoute)),
-                tireType = mapTires(v(cTires)),
-                note = v(cNote),
+                drivingStyle = v(cStyle).let { if (isCode(it)) it else mapStyle(it) },
+                routeType = v(cRoute).let { if (isCode(it)) it else mapRoute(it) },
+                tireType = v(cTires).let { if (isCode(it)) it else mapTires(it) },
+                note = if (noteNum != null && total == noteNum) "" else v(cNote),
             )
         }
-        return ImportResult(result, skipped, emptyList())
+        fun codes(field: CodeField, get: (Refuel) -> String, suggest: (String) -> String): List<CodeInfo> =
+            result.map(get).filter { isCode(it) }.groupingBy { it }.eachCount()
+                .toSortedMap(compareBy { it.toIntOrNull() ?: 0 })
+                .map { (raw, n) -> CodeInfo(raw, n, suggest(raw)) }
+
+        val codeMap = mapOf(
+            CodeField.FUEL to codes(CodeField.FUEL, { it.fuelType }) { vehicle.defaultFuelType },
+            CodeField.TIRES to codes(CodeField.TIRES, { it.tireType }) {
+                when (it) { "1" -> "Sommerreifen"; "2" -> "Winterreifen"; "3" -> "Ganzjahresreifen"; else -> "" }
+            },
+            CodeField.STYLE to codes(CodeField.STYLE, { it.drivingStyle }) {
+                when (it) { "1" -> "Sparsam"; "2" -> "Normal"; "3" -> "Sportlich"; else -> "" }
+            },
+            CodeField.ROUTE to codes(CodeField.ROUTE, { it.routeType }) {
+                // Bitmaske: mehrere gesetzte Bits = gemischte Strecken
+                if (Integer.bitCount(it.toIntOrNull() ?: 0) > 1) "Gemischt" else ""
+            },
+        ).filterValues { it.isNotEmpty() }
+        return ImportResult(result, skipped, emptyList(), codeMap)
     }
+
+    private fun isCode(s: String) = s.isNotEmpty() && s.all { it.isDigit() }
 
     private fun splitCsv(line: String, sep: Char): List<String> {
         val out = mutableListOf<String>()

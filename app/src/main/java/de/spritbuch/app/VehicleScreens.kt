@@ -51,6 +51,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -290,10 +291,16 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     }
 
     pendingImport?.let { imp ->
+        val mapping = remember(imp) {
+            mutableStateMapOf<String, String>().apply {
+                imp.codes.forEach { (f, list) -> list.forEach { put("${f.name}:${it.raw}", it.suggestion) } }
+            }
+        }
         AlertDialog(
             onDismissRequest = { pendingImport = null },
             title = { Text("Import") },
             text = {
+              Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     if (imp.missingColumns.isNotEmpty()) {
                         "Die Datei konnte nicht gelesen werden. Fehlende Spalten: ${imp.missingColumns.joinToString()}"
@@ -305,12 +312,33 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                             ".\n\nIn „${v?.name ?: ""}“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt."
                     }
                 )
+                if (imp.codes.isNotEmpty() && imp.refuels.isNotEmpty()) {
+                    Text(
+                        "Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    imp.codes.forEach { (field, list) ->
+                        SectionTitle(field.label)
+                        list.forEach { c ->
+                            val key = "${field.name}:${c.raw}"
+                            ChoiceField(
+                                "Code ${c.raw} (${c.count}×)",
+                                (mapping[key] ?: "").ifEmpty { "keine Angabe" },
+                                field.options.map { it.ifEmpty { "keine Angabe" } },
+                            ) { sel -> mapping[key] = if (sel == "keine Angabe") "" else sel }
+                        }
+                    }
+                }
+              }
             },
             confirmButton = {
                 if (imp.refuels.isNotEmpty()) TextButton(onClick = {
                     pendingImport = null
                     scope.launch {
-                        val (added, dups) = repo.importRefuels(vehicleId, imp.refuels)
+                        val map = CodeField.entries.associateWith { f ->
+                            imp.codes[f].orEmpty().associate { it.raw to (mapping["${f.name}:${it.raw}"] ?: "") }
+                        }
+                        val (added, dups) = repo.importRefuels(vehicleId, imp.applyCodes(map))
                         snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups Duplikate übersprungen" else "")
                     }
                 }) { Text("Importieren") }
