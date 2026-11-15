@@ -190,5 +190,15 @@ class Prefs(ctx: Context) {
         get() = sp.getStringSet("notified", emptySet())?.toSet() ?: emptySet()
         set(v) = sp.edit().putStringSet("notified", v).apply()
 
+    /** Vorlagen für automatisch angelegte Erinnerungen (Intervall in km). */
+    var reminderTemplates: List<Pair<String, Int>>
+        get() = (sp.getString("reminderTemplates", null) ?: "Ölwechsel|10000")
+            .split("\n").mapNotNull { line ->
+                val p = line.split("|")
+                val km = p.getOrNull(1)?.toIntOrNull()
+                if (p[0].isBlank() || km == null || km <= 0) null else p[0] to km
+            }
+        set(v) = sp.edit().putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" }).apply()
+
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 }

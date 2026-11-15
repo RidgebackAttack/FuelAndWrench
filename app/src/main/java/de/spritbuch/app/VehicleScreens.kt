@@ -169,6 +169,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     val du = Units.dist(v)
     val cur = Units.cur(v)
     val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(vehicleId) { repo.ensureDefaultReminders(vehicleId) }
     var pendingImport by remember { mutableStateOf<ImportResult?>(null) }
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->

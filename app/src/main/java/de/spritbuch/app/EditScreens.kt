@@ -405,6 +405,9 @@ fun SettingsScreen(nav: NavController) {
     var url by remember { mutableStateOf(prefs.url) }
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
+    var templates by remember { mutableStateOf(prefs.reminderTemplates) }
+    var newTitle by remember { mutableStateOf("") }
+    var newKm by remember { mutableStateOf("") }
     val status by SyncManager.status.collectAsStateWithLifecycle()
     val running by SyncManager.running.collectAsStateWithLifecycle()
 
@@ -413,7 +416,7 @@ fun SettingsScreen(nav: NavController) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Synchronisation") }, navigationIcon = { BackButton(nav) }) },
+        topBar = { TopAppBar(title = { Text("Einstellungen") }, navigationIcon = { BackButton(nav) }) },
     ) { pad ->
         Column(
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
@@ -456,6 +459,37 @@ fun SettingsScreen(nav: NavController) {
                 "Abgleich erfolgt automatisch nach jeder Änderung, beim Öffnen der App und alle 15 Minuten im Hintergrund.",
                 style = MaterialTheme.typography.bodySmall,
             )
+
+            HorizontalDivider()
+            SectionTitle("Standard-Erinnerungen")
+            Text(
+                "Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist. " +
+                    "Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            templates.forEachIndexed { i, (title, km) ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(title, modifier = Modifier.weight(1f))
+                    Text(km.km())
+                    IconButton(onClick = {
+                        templates = templates.toMutableList().also { it.removeAt(i) }
+                        prefs.reminderTemplates = templates
+                    }) { Icon(Icons.Default.Delete, contentDescription = "Entfernen") }
+                }
+            }
+            SuggestField("Bezeichnung", newTitle, Options.reminderSuggestions) { newTitle = it }
+            NumberField("Intervall", newKm, { newKm = it }, suffix = "km", decimal = false)
+            OutlinedButton(
+                onClick = {
+                    val km = newKm.toIntKm()
+                    if (newTitle.isNotBlank() && km != null && km > 0) {
+                        templates = templates + (newTitle.trim() to km)
+                        prefs.reminderTemplates = templates
+                        newTitle = ""; newKm = ""
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Vorlage hinzufügen") }
         }
     }
 }

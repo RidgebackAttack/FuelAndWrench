@@ -60,6 +60,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
             }
             db.vehicles().upsert(toSave.copy(updatedAt = t))
         }
+        ensureDefaultReminders(v.id)
         ReminderChecker.check(ctx, v.id)
         changed()
     }
@@ -79,8 +80,36 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         changed()
     }
 
+    /**
+     * Legt die Standard-Erinnerungen (Einstellungen) für ein Fahrzeug an, sobald ein Kilometerstand bekannt ist.
+     * Erledigt-Stand = aktueller Kilometerstand. Bereits vorhandene oder vom Nutzer gelöschte werden nicht erneut angelegt.
+     * Feste IDs verhindern Doppelte, wenn zwei Geräte gleichzeitig anlegen.
+     */
+    suspend fun ensureDefaultReminders(vehicleId: String) {
+        val v = db.vehicles().get(vehicleId) ?: return
+        if (v.deleted || v.archived) return
+        val odo = currentOdometer(vehicleId)
+        if (odo <= 0) return
+        val existing = db.reminders().forVehicleRaw(vehicleId)
+        var created = false
+        for ((title, km) in Prefs(ctx).reminderTemplates) {
+            val id = "$vehicleId-auto-" + title.lowercase().filter { it.isLetterOrDigit() }
+            if (existing.any { it.id == id || it.title.equals(title, ignoreCase = true) }) continue
+            val interval = (km / Units.distFactorToKm(v.distanceUnit)).roundToInt()
+            db.reminders().upsert(
+                Reminder(
+                    id = id, vehicleId = vehicleId, title = title, intervalKm = interval, lastDoneKm = odo,
+                    warnBeforeKm = (interval * 0.05).roundToInt().coerceAtLeast(100), updatedAt = now(),
+                )
+            )
+            created = true
+        }
+        if (created) changed()
+    }
+
     suspend fun saveRefuel(r: Refuel) {
         db.refuels().upsert(r.copy(updatedAt = now()))
+        ensureDefaultReminders(r.vehicleId)
         ReminderChecker.check(ctx, r.vehicleId)
         changed()
     }
@@ -100,6 +129,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
             }
         }
         if (added > 0) {
+            ensureDefaultReminders(vehicleId)
             ReminderChecker.check(ctx, vehicleId)
             changed()
         }

@@ -171,6 +171,9 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders")
     suspend fun getAllRaw(): List<Reminder>
 
+    @Query("SELECT * FROM reminders WHERE vehicleId = :vehicleId")
+    suspend fun forVehicleRaw(vehicleId: String): List<Reminder>
+
     @Upsert
     suspend fun upsert(item: Reminder)
 }
