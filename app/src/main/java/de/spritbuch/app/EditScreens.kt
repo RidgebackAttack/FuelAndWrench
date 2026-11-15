@@ -414,6 +414,7 @@ fun SettingsScreen(nav: NavController) {
     var templates by remember { mutableStateOf(prefs.reminderTemplates) }
     var useOverpass by remember { mutableStateOf(prefs.useOverpass) }
     var useGeocoder by remember { mutableStateOf(prefs.useGeocoder) }
+    var useNetworkLocation by remember { mutableStateOf(prefs.useNetworkLocation) }
     var newTitle by remember { mutableStateOf("") }
     var newKm by remember { mutableStateOf("") }
     val status by SyncManager.status.collectAsStateWithLifecycle()
@@ -479,8 +480,12 @@ fun SettingsScreen(nav: NavController) {
             Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de.", style = MaterialTheme.typography.bodySmall)
             LabeledSwitch("Adresse über Android-Geocoder ermitteln", useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
             Text("Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.", style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch("Netzwerk-Ortung (WLAN/Mobilfunk) erlauben", useNetworkLocation) {
+                useNetworkLocation = it; prefs.useNetworkLocation = it
+            }
             Text(
-                "Ortung erfolgt ausschließlich per GPS – die App nutzt keine WLAN- oder Mobilfunk-Ortung.",
+                "Aus = nur GPS, ohne Netzverkehr (braucht freie Sicht zum Himmel). " +
+                    "An = schnellere Ortung auch unter Dächern; auf Handys mit Google-Diensten läuft sie über Google.",
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(

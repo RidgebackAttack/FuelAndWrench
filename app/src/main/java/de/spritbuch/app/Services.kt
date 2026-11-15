@@ -132,14 +132,25 @@ object LocationHelper {
     private fun lastKnown(lm: LocationManager): Location? =
         runCatching { lm.getLastKnownLocation(LocationManager.GPS_PROVIDER) }.getOrNull()
 
+    @SuppressLint("MissingPermission")
+    private fun lastKnownAny(lm: LocationManager, allowNetwork: Boolean): Location? =
+        listOfNotNull(
+            lastKnown(lm),
+            if (allowNetwork) runCatching { lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) }.getOrNull() else null,
+        ).maxByOrNull { it.time }
+
     /** Aktuelle Position ohne Google-Dienste (funktioniert auch auf Geräten ohne Play Services). */
     @SuppressLint("MissingPermission")
     suspend fun current(ctx: Context): Location? {
         if (!hasPermission(ctx)) return null
         val lm = ctx.getSystemService(LocationManager::class.java) ?: return null
-        // Ausschließlich GPS (Satelliten). Netzwerk-Ortung über WLAN/Mobilfunk wird nie verwendet.
-        if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) return null
-        val provider = LocationManager.GPS_PROVIDER
+        // Standard: nur GPS. Netzwerk-Ortung (WLAN/Mobilfunk) nur, wenn in den Einstellungen eingeschaltet.
+        val allowNetwork = Prefs(ctx).useNetworkLocation
+        val provider = when {
+            lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            allowNetwork && lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            else -> return lastKnownAny(lm, allowNetwork)
+        }
         val fresh = withTimeoutOrNull(30_000) {
             suspendCancellableCoroutine<Location?> { cont ->
                 val signal = CancellationSignal()
@@ -149,7 +160,21 @@ object LocationHelper {
                 }
             }
         }
-        return fresh ?: lastKnown(lm)
+        if (fresh != null) return fresh
+        // GPS ohne Fix (z. B. unter dem Tankstellendach): bei erlaubter Netzwerk-Ortung darauf ausweichen
+        if (provider == LocationManager.GPS_PROVIDER && allowNetwork && lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            val net = withTimeoutOrNull(15_000) {
+                suspendCancellableCoroutine<Location?> { cont ->
+                    val signal = CancellationSignal()
+                    cont.invokeOnCancellation { signal.cancel() }
+                    LocationManagerCompat.getCurrentLocation(
+                        lm, LocationManager.NETWORK_PROVIDER, signal, ContextCompat.getMainExecutor(ctx)
+                    ) { loc -> if (cont.isActive) cont.resume(loc) }
+                }
+            }
+            if (net != null) return net
+        }
+        return lastKnownAny(lm, allowNetwork)
     }
 
     @Suppress("DEPRECATION")
