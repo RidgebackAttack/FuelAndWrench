@@ -1,0 +1,27 @@
+Categories:
+  - Money
+License: GPL-3.0-or-later
+AuthorName: RidgebackAttack
+SourceCode: https://github.com/RidgebackAttack/FuelConsumption
+IssueTracker: https://github.com/RidgebackAttack/FuelConsumption/issues
+Changelog: https://github.com/RidgebackAttack/FuelConsumption/releases
+
+AutoName: Fuel & Wrench
+
+RepoType: git
+Repo: https://github.com/RidgebackAttack/FuelConsumption.git
+
+Builds:
+  - versionName: 1.1.0
+    versionCode: 26
+    commit: v1.1.0
+    subdir: app
+    gradle:
+      - yes
+    rm:
+      - app/release.jks.enc
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 1.1.0
+CurrentVersionCode: 26

@@ -34,3 +34,11 @@ Siehe [PRIVACY.md](PRIVACY.md).
 
 ## Store-Texte
 F-Droid/Play-Metadaten im fastlane-Format unter `fastlane/metadata/android/`.
+
+## Neue Version veröffentlichen
+1. In `app/build.gradle.kts` `versionCode` und `versionName` erhöhen.
+2. Änderungsnotiz `fastlane/metadata/android/{de-DE,en-US}/changelogs/<versionCode>.txt` anlegen (max. 500 Zeichen).
+3. Push auf `main` → GitHub baut, signiert und legt Release + Tag `v<versionName>` an.
+4. F-Droid erkennt den neuen Tag automatisch (UpdateCheckMode: Tags).
+
+Die Vorlage für den F-Droid-Eintrag (fdroiddata) liegt unter `fdroid/`.

@@ -1,0 +1,6 @@
+First public release:
+• Fuel-ups, full-to-full consumption, costs and consumption chart
+• Service history, maintenance reminders, wheel sets with tread depth
+• Import from Spritmonitor.de and CSV
+• Sync via Nextcloud/WebDAV
+• Light/dark, colour schemes, AMOLED

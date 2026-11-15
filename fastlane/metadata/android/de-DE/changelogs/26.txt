@@ -1,0 +1,6 @@
+Erste öffentliche Version:
+• Tankvorgänge, Verbrauch (Voll-zu-Voll), Kosten und Verbrauchsverlauf
+• Service-Historie, Wartungserinnerungen, Radsätze mit Profiltiefe
+• Import aus Spritmonitor.de und CSV
+• Synchronisation über Nextcloud/WebDAV
+• Hell/Dunkel, Farbschemata, AMOLED

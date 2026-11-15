@@ -6,7 +6,6 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
 android {
     namespace = "de.spritbuch.app"
@@ -16,8 +15,10 @@ android {
         applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
         targetSdk = 35
-        versionCode = buildNumber
-        versionName = "1.0.$buildNumber"
+        // Feste Version (F-Droid liest sie von hier). Für jedes Release hochzählen
+        // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
+        versionCode = 26
+        versionName = "1.1.0"
     }
 
     // Release-Signatur: Schlüssel wird im CI aus app/release.jks.enc entschlüsselt (Passwort = Secret SIGNING_PASSWORD).
@@ -38,7 +39,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 

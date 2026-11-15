@@ -15,6 +15,9 @@ jobs:
       SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
@@ -25,14 +28,24 @@ jobs:
         with:
           gradle-version: 8.11.1
 
-      # Release-Schlüssel liegt verschlüsselt im Repo; das Passwort kommt aus dem Secret SIGNING_PASSWORD.
+      # Version aus app/build.gradle.kts; ein Release entsteht nur, wenn es den Tag v<Version> noch nicht gibt.
+      - name: Version ermitteln
+        run: |
+          VERSION=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          VCODE=$(grep -oP 'versionCode = \K[0-9]+' app/build.gradle.kts)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "VCODE=$VCODE" >> "$GITHUB_ENV"
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "NEW_RELEASE=false" >> "$GITHUB_ENV"
+            echo "::notice::Version $VERSION ist bereits veröffentlicht – es wird nur gebaut. Für ein Release versionCode/versionName erhöhen."
+          else
+            echo "NEW_RELEASE=true" >> "$GITHUB_ENV"
+          fi
+
+      # Release-Schlüssel liegt verschlüsselt im Repo; das Passwort steht im Secret SIGNING_PASSWORD.
       - name: Signaturschlüssel entschlüsseln
         if: env.SIGNING_PASSWORD != ''
         run: openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/release.jks.enc -out app/release.jks -pass env:SIGNING_PASSWORD
-
-      - name: Hinweis ohne Schlüssel
-        if: env.SIGNING_PASSWORD == ''
-        run: echo "::warning::Secret SIGNING_PASSWORD fehlt – APK wird nur mit Debug-Schlüssel gebaut und NICHT als Release veröffentlicht."
 
       - name: Build
         run: gradle assembleRelease --no-daemon --stacktrace
@@ -42,7 +55,9 @@ jobs:
         run: rm -f app/release.jks
 
       - name: APK umbenennen
-        run: cp app/build/outputs/apk/release/app-release.apk FuelAndWrench-1.0.${{ github.run_number }}.apk
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          cp "$APK" "FuelAndWrench-$VERSION.apk"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -50,9 +65,10 @@ jobs:
           path: FuelAndWrench-*.apk
 
       - name: Release veröffentlichen
-        if: env.SIGNING_PASSWORD != ''
+        if: env.SIGNING_PASSWORD != '' && env.NEW_RELEASE == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Fuel & Wrench 1.0.${{ github.run_number }}
+          tag_name: v${{ env.VERSION }}
+          name: Fuel & Wrench ${{ env.VERSION }}
+          body_path: fastlane/metadata/android/de-DE/changelogs/${{ env.VCODE }}.txt
           files: FuelAndWrench-*.apk
