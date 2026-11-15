@@ -87,7 +87,20 @@ fun AppNav() {
             ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
-    NavHost(navController = nav, startDestination = "vehicles") {
+    NavHost(
+        navController = nav,
+        startDestination = "vehicles",
+        enterTransition = {
+            androidx.compose.animation.slideInHorizontally(androidx.compose.animation.core.tween(280)) { it / 5 } +
+                androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(280))
+        },
+        exitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200)) },
+        popEnterTransition = { androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(280)) },
+        popExitTransition = {
+            androidx.compose.animation.slideOutHorizontally(androidx.compose.animation.core.tween(280)) { it / 5 } +
+                androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(220))
+        },
+    ) {
         composable("vehicles") { VehicleListScreen(nav) }
         composable("vehicle/{id}") { VehicleDetailScreen(nav, it.arguments?.getString("id") ?: "") }
         composable("vehicleEdit/{id}") { VehicleEditScreen(nav, it.arguments?.getString("id") ?: "new") }

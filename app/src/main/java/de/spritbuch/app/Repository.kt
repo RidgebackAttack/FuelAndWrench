@@ -10,6 +10,7 @@ val Context.repo: Repository get() = (applicationContext as App).repo
 class Repository(private val ctx: Context, val db: AppDatabase) {
     val vehicles: Flow<List<Vehicle>> = db.vehicles().observeAll()
     val allRefuels: Flow<List<Refuel>> = db.refuels().observeAll()
+    val allReminders: Flow<List<Reminder>> = db.reminders().observeAll()
 
     fun vehicle(id: String) = db.vehicles().observe(id)
     fun refuels(vehicleId: String) = db.refuels().observeForVehicle(vehicleId)

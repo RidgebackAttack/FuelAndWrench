@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Map
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,7 @@ fun VehicleListScreen(nav: NavController) {
     val repo = ctx.repo
     val vehicles by repo.vehicles.collectAsStateWithLifecycle(emptyList())
     val refuels by repo.allRefuels.collectAsStateWithLifecycle(emptyList())
+    val allReminders by repo.allReminders.collectAsStateWithLifecycle(emptyList())
     val syncing by SyncManager.running.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -104,7 +106,10 @@ fun VehicleListScreen(nav: NavController) {
     ) { pad ->
         if (vehicles.isEmpty()) {
             Box(Modifier.padding(pad).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Noch kein Fahrzeug angelegt.")
+                EmptyState(
+                    Icons.Default.DirectionsCar, "Willkommen bei Fuel & Wrench",
+                    "Lege dein erstes Fahrzeug über „Fahrzeug“ an. Danach kannst du tanken, Service erfassen oder Daten aus Spritmonitor importieren.",
+                )
             }
         } else {
             LazyColumn(
@@ -115,14 +120,14 @@ fun VehicleListScreen(nav: NavController) {
                 val active = vehicles.filter { !it.archived }
                 val archived = vehicles.filter { it.archived }
                 if (active.isEmpty()) item { Text("Alle Fahrzeuge sind archiviert.") }
-                items(active, key = { it.id }) { v -> VehicleCard(nav, v, refuels) }
+                items(active, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
                 if (archived.isNotEmpty()) {
                     item {
                         TextButton(onClick = { showArchived = !showArchived }) {
                             Text(if (showArchived) "Archiv ausblenden" else "Archiv anzeigen (${archived.size})")
                         }
                     }
-                    if (showArchived) items(archived, key = { it.id }) { v -> VehicleCard(nav, v, refuels) }
+                    if (showArchived) items(archived, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
                 }
             }
         }
@@ -327,17 +332,14 @@ private fun StatRow(label: String, value: String) {
 }
 
 @Composable
-fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, onClick: () -> Unit) {
+fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null, onClick: () -> Unit) {
     val unit = Units.amount(v, r.fuelType)
     val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row {
                 Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                if (consumption != null) {
-                    Text(Units.consumption(v, r.fuelType, consumption), style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary)
-                }
+                if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
             }
             Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
             val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ")

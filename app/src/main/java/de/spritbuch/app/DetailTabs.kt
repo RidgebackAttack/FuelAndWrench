@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.LocalGasStation
@@ -341,12 +342,21 @@ private fun LazyListScope.overviewItems(
             Text("Fahrzeug ist archiviert. Erinnerungen sind pausiert.", modifier = Modifier.padding(12.dp))
         }
     }
-    if (v.photoVersion > 0) item {
-        VehiclePhoto(v, Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT), large = true)
+    item(key = "hero") {
+        VehicleHero(v) {
+            Column {
+                if (v.plate.isNotBlank()) Text(v.plate, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                Text(
+                    listOf(v.defaultFuelType, if (refuels.isNotEmpty()) "${refuels.size} Tankungen" else "", if (services.isNotEmpty()) "${services.size} Services" else "")
+                        .filter { it.isNotBlank() }.joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f),
+                )
+            }
+        }
     }
-    item {
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    item(key = "kpi") {
+        KpiSection(v, stats, services.sumOf { it.cost }, currentOdo, onEditOdometer) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatLine("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
                 StatLine("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
                 StatLine("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
@@ -354,13 +364,7 @@ private fun LazyListScope.overviewItems(
                 StatLine("Servicekosten gesamt", "${services.sumOf { it.cost }.fmt()} $cur")
                 StatLine("Getankt gesamt", "${stats.totalAmount.fmt(1)} $amt")
                 StatLine("Erfasste Strecke", stats.distance.dist(du))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Kilometerstand", modifier = Modifier.weight(1f))
-                    Text(currentOdo.dist(du), fontWeight = FontWeight.SemiBold)
-                    IconButton(onClick = onEditOdometer) {
-                        Icon(Icons.Default.Edit, contentDescription = "Kilometerstand ändern")
-                    }
-                }
+                StatLine("Kilometerstand", currentOdo.dist(du))
             }
         }
     }
@@ -412,7 +416,7 @@ private fun LazyListScope.overviewItems(
     }
     refuels.firstOrNull()?.let { last ->
         item { SectionTitle("Letzte Tankung") }
-        item(key = "last-refuel") { RefuelCard(v, last, stats.perRefuel[last.id]) { openTab(1) } }
+        item(key = "last-refuel") { RefuelCard(v, last, stats.perRefuel[last.id], stats.avg) { openTab(1) } }
     }
     services.firstOrNull()?.let { last ->
         item { SectionTitle("Letzter Service") }
@@ -422,7 +426,12 @@ private fun LazyListScope.overviewItems(
 
 private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: List<Refuel>, stats: Stats) {
     if (refuels.isEmpty()) {
-        item { Text("Noch keine Tankvorgänge. Über „Tanken“ erfassen oder oben per Spritmonitor-Import übernehmen.") }
+        item {
+            EmptyState(
+                Icons.Default.LocalGasStation, "Noch keine Tankvorgänge",
+                "Über „Tanken“ erfassen oder oben per Spritmonitor-Import übernehmen.",
+            )
+        }
         return
     }
     val unit = Units.amount(v, v.defaultFuelType)
@@ -440,7 +449,7 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
             }
         }
         items(list, key = { it.id }) { r ->
-            RefuelCard(v, r, stats.perRefuel[r.id]) { nav.navigate("refuelEdit/${v.id}/${r.id}") }
+            RefuelCard(v, r, stats.perRefuel[r.id], stats.avg) { nav.navigate("refuelEdit/${v.id}/${r.id}") }
         }
     }
 }
@@ -481,7 +490,12 @@ private fun LazyListScope.serviceItems(
     dotColor: Color,
 ) {
     if (services.isEmpty()) {
-        item { Text("Noch keine Service-Einträge. Über „Service“ anlegen oder oben eine CSV importieren.") }
+        item {
+            EmptyState(
+                Icons.Default.Build, "Noch keine Service-Einträge",
+                "Über „Service“ anlegen oder oben eine CSV importieren.",
+            )
+        }
         return
     }
     item {
