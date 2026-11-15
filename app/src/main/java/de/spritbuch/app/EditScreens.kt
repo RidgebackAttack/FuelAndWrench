@@ -448,7 +448,15 @@ fun SettingsScreen(nav: NavController) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Einstellungen") }, navigationIcon = { BackButton(nav) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Einstellungen") },
+                navigationIcon = { BackButton(nav) },
+                actions = {
+                    TextButton(onClick = { nav.navigate("about") }) { Text("Über & Lizenzen") }
+                },
+            )
+        },
     ) { pad ->
         Column(
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),

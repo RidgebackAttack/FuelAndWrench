@@ -109,6 +109,8 @@ fun MapScreen(nav: NavController, vehicleId: String) {
                         mv.overlays.add(this)
                     }
                 }
+                // Pflichthinweis der OpenStreetMap-Lizenz
+                mv.overlays.add(org.osmdroid.views.overlay.CopyrightOverlay(ctx).apply { setTextSize(11) })
                 mv.invalidate()
                 if (!zoomed[0]) {
                     zoomed[0] = true

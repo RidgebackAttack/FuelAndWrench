@@ -111,6 +111,7 @@ fun AppNav() {
             ReminderEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
         composable("settings") { SettingsScreen(nav) }
+        composable("about") { AboutScreen(nav) }
         composable("map/{vehicleId}") { MapScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("services/{vehicleId}") { ServiceTimelineScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("tireSetEdit/{vehicleId}/{id}") {

@@ -13,29 +13,32 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "de.spritbuch.app"
+        applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
         targetSdk = 35
         versionCode = buildNumber
         versionName = "1.0.$buildNumber"
     }
 
+    // Release-Signatur: Schlüssel wird im CI aus app/release.jks.enc entschlüsselt (Passwort = Secret SIGNING_PASSWORD).
+    // Lokal ohne Passwort wird mit dem Debug-Schlüssel signiert.
+    val signingPassword = System.getenv("SIGNING_PASSWORD")
+    val releaseKeystore = file(System.getenv("RELEASE_KEYSTORE") ?: "release.jks")
     signingConfigs {
-        create("release") {
-            storeFile = file("spritbuch.keystore")
-            storePassword = "spritbuch"
-            keyAlias = "spritbuch"
-            keyPassword = "spritbuch"
+        if (signingPassword != null && releaseKeystore.exists()) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = signingPassword
+                keyAlias = "fuelandwrench"
+                keyPassword = signingPassword
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
-        }
-        debug {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

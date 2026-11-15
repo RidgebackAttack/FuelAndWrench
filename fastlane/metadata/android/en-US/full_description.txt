@@ -1,0 +1,21 @@
+Fuel & Wrench is the logbook for cars and motorcycles: fuel-ups, consumption, service history and tyres in one place – no ads, no tracking, no Google services.
+
+<b>Fuel & consumption</b>
+• Fuel-ups with fuel type, station, location, driving style, route, tyres and extra consumers
+• Full-to-full consumption, cost per 100 km, consumption chart
+• Per-vehicle units: km/miles, litres/gallons, l/100 km, km/l or mpg, any currency
+• Fuel stations on a map (OpenStreetMap)
+
+<b>Service & reminders</b>
+• Service history timeline with costs and workshop
+• Mileage-based maintenance reminders, created automatically
+• Wheel sets (summer/winter), wheel changes with tread depth at storage, different tyres per axle
+
+<b>Import & sync</b>
+• Import Spritmonitor.de exports and service histories (CSV)
+• Sync via your own Nextcloud / WebDAV – multiple devices at once
+
+<b>Privacy</b>
+All data stays on your device or your own server. Online services can be switched off individually.
+
+Open source under GPL-3.0.

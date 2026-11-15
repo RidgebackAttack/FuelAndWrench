@@ -11,6 +11,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,8 +25,21 @@ jobs:
         with:
           gradle-version: 8.11.1
 
+      # Release-Schlüssel liegt verschlüsselt im Repo; das Passwort kommt aus dem Secret SIGNING_PASSWORD.
+      - name: Signaturschlüssel entschlüsseln
+        if: env.SIGNING_PASSWORD != ''
+        run: openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/release.jks.enc -out app/release.jks -pass env:SIGNING_PASSWORD
+
+      - name: Hinweis ohne Schlüssel
+        if: env.SIGNING_PASSWORD == ''
+        run: echo "::warning::Secret SIGNING_PASSWORD fehlt – APK wird nur mit Debug-Schlüssel gebaut und NICHT als Release veröffentlicht."
+
       - name: Build
         run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Schlüssel entfernen
+        if: always()
+        run: rm -f app/release.jks
 
       - name: APK umbenennen
         run: cp app/build/outputs/apk/release/app-release.apk FuelAndWrench-1.0.${{ github.run_number }}.apk
@@ -35,6 +50,7 @@ jobs:
           path: FuelAndWrench-*.apk
 
       - name: Release veröffentlichen
+        if: env.SIGNING_PASSWORD != ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
