@@ -408,9 +408,30 @@ fun SettingsScreen(nav: NavController) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val prefs = remember { Prefs(ctx) }
-    var url by remember { mutableStateOf(prefs.url) }
+    // Bisherige Einrichtung (vollständige WebDAV-URL) in Server + Ordner zerlegen
+    val legacy = remember {
+        val u = prefs.url
+        if (prefs.server.isBlank() && u.contains("/remote.php/dav/files/")) {
+            val srv = u.substringBefore("/remote.php/dav/files/")
+            val rest = u.substringAfter("/remote.php/dav/files/").substringAfter('/', "")
+            srv to java.net.URLDecoder.decode(rest.replace("+", "%2B"), "UTF-8")
+        } else null
+    }
+    var server by remember { mutableStateOf(prefs.server.ifBlank { legacy?.first ?: prefs.url }) }
+    var folder by remember {
+        mutableStateOf(if (prefs.server.isNotBlank()) prefs.folder else legacy?.second ?: if (prefs.url.isBlank()) "NeedForFuel" else "")
+    }
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
+    var cloudInfo by remember { mutableStateOf<String?>(null) }
+    var loggingIn by remember { mutableStateOf(false) }
+    var pickerDav by remember { mutableStateOf<WebDavClient?>(null) }
+
+    /** WebDAV-Stamm ermitteln: bei Nextcloud automatisch, sonst die Adresse selbst. */
+    suspend fun resolveRoot(): String {
+        val srv = Nextcloud.normalizeServer(server)
+        return if (Nextcloud.isNextcloud(srv)) Nextcloud.davRoot(srv, user) else srv
+    }
     var templates by remember { mutableStateOf(prefs.reminderTemplates) }
     var useOverpass by remember { mutableStateOf(prefs.useOverpass) }
     var useGeocoder by remember { mutableStateOf(prefs.useGeocoder) }
@@ -431,18 +452,49 @@ fun SettingsScreen(nav: NavController) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            SectionTitle("Synchronisation")
             Text(
-                "WebDAV-Ordner, z. B. bei Nextcloud:\n" +
-                    "https://cloud.example.de/remote.php/dav/files/BENUTZER/NeedForFuel\n\n" +
-                    "Der Ordner wird bei Bedarf angelegt. Für Nextcloud ein App-Passwort verwenden " +
-                    "(Einstellungen → Sicherheit → Neues App-Passwort).",
+                "Adresse deiner Nextcloud eingeben, anmelden und Ordner wählen. " +
+                    "Andere WebDAV-Server: vollständige WebDAV-Adresse eingeben und Zugangsdaten von Hand eintragen.",
                 style = MaterialTheme.typography.bodySmall,
             )
             OutlinedTextField(
-                url, { url = it }, label = { Text("WebDAV-URL") }, singleLine = true,
+                server, { server = it }, label = { Text("Server (z. B. https://cloud.example.de)") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                 modifier = Modifier.fillMaxWidth(),
             )
+            Button(
+                enabled = server.isNotBlank() && !loggingIn,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    scope.launch {
+                        val srv = Nextcloud.normalizeServer(server)
+                        server = srv
+                        loggingIn = true
+                        try {
+                            val start = Nextcloud.startLogin(srv)
+                            ctx.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(start.loginUrl)))
+                            cloudInfo = "Bitte im Browser anmelden und den Zugriff erlauben, dann hierher zurückkehren …"
+                            repeat(600) {
+                                kotlinx.coroutines.delay(2000)
+                                val res = Nextcloud.poll(start)
+                                if (res != null) {
+                                    user = res.loginName
+                                    password = res.appPassword
+                                    cloudInfo = "Angemeldet als ${res.loginName}. Jetzt Ordner wählen."
+                                    return@launch
+                                }
+                            }
+                            cloudInfo = "Anmeldung abgelaufen – bitte erneut versuchen."
+                        } catch (e: Exception) {
+                            cloudInfo = "Anmeldung nicht möglich: ${e.message ?: "Server nicht erreichbar"}"
+                        } finally {
+                            loggingIn = false
+                        }
+                    }
+                },
+            ) { Text(if (loggingIn) "Warte auf Anmeldung …" else "Mit Nextcloud anmelden") }
+            cloudInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             OutlinedTextField(user, { user = it }, label = { Text("Benutzer") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(
                 password, { password = it }, label = { Text("App-Passwort") }, singleLine = true,
@@ -450,16 +502,38 @@ fun SettingsScreen(nav: NavController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
             )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Ordner", style = MaterialTheme.typography.labelMedium)
+                    Text("/" + folder, style = MaterialTheme.typography.bodyLarge)
+                }
+                OutlinedButton(
+                    enabled = server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
+                    onClick = {
+                        scope.launch {
+                            cloudInfo = "Verbinde …"
+                            val root = resolveRoot()
+                            cloudInfo = null
+                            pickerDav = WebDavClient(root, user, password)
+                        }
+                    },
+                ) { Text("Ordner wählen") }
+            }
             Button(
                 onClick = {
-                    prefs.url = url
-                    prefs.user = user
-                    prefs.password = password
-                    prefs.uploadedPhotos = emptySet()
-                    SyncScheduler.schedulePeriodic(ctx)
-                    scope.launch { SyncManager.sync(ctx) }
+                    scope.launch {
+                        val root = resolveRoot()
+                        prefs.server = Nextcloud.normalizeServer(server)
+                        prefs.folder = folder
+                        prefs.url = if (folder.isBlank()) root else root + "/" + encodePath(folder)
+                        prefs.user = user
+                        prefs.password = password
+                        prefs.uploadedPhotos = emptySet()
+                        SyncScheduler.schedulePeriodic(ctx)
+                        SyncManager.sync(ctx)
+                    }
                 },
-                enabled = !running,
+                enabled = !running && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Speichern und jetzt synchronisieren") }
             if (running) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -524,5 +598,14 @@ fun SettingsScreen(nav: NavController) {
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Vorlage hinzufügen") }
         }
+    }
+
+    pickerDav?.let { dav ->
+        FolderPickerDialog(
+            dav = dav,
+            initial = folder,
+            onPick = { folder = it; pickerDav = null },
+            onDismiss = { pickerDav = null },
+        )
     }
 }

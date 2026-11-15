@@ -49,7 +49,7 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
     class Result(val code: Int, val body: ByteArray?, val etag: String?)
 
     private fun req(path: String) = Request.Builder()
-        .url(if (path.isEmpty()) "$base/" else "$base/$path")
+        .url(if (path.isEmpty()) "$base/" else "$base/${encodePath(path)}")
         .header("Authorization", auth)
 
     private fun exec(r: Request): Result = client.newCall(r).execute().use {
@@ -57,6 +57,15 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
     }
 
     fun get(path: String) = exec(req(path).get().build())
+
+    fun propfind(path: String, xml: String): Result {
+        val url = if (path.isEmpty()) "$base/" else "$base/${encodePath(path)}/"
+        return exec(
+            Request.Builder().url(url).header("Authorization", auth).header("Depth", "1")
+                .method("PROPFIND", xml.toRequestBody("application/xml; charset=utf-8".toMediaType()))
+                .build()
+        )
+    }
     fun head(path: String): Int = exec(req(path).head().build()).code
 
     fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int {

@@ -65,12 +65,18 @@ fun PositionedPhoto(file: File, pos: PhotoPos, modifier: Modifier, onChange: ((P
     BoxWithConstraints(modifier.clipToBounds()) {
         val bw = constraints.maxWidth.toFloat()
         val bh = constraints.maxHeight.toFloat()
-        val intr = painter.intrinsicSize
+        // Bildgröße direkt aus der Datei lesen (zuverlässiger als über den Bildlader)
+        val dims = remember(file) {
+            val o = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            android.graphics.BitmapFactory.decodeFile(file.path, o)
+            o.outWidth.toFloat() to o.outHeight.toFloat()
+        }
+        val (iw, ih) = dims
         fun limits(zoom: Float): Pair<Float, Float> {
-            if (!intr.isSpecified || intr.width <= 0f || intr.height <= 0f || bw <= 0f || bh <= 0f) return 0f to 0f
-            val s = maxOf(bw / intr.width, bh / intr.height)
-            val cw = intr.width * s * zoom
-            val ch = intr.height * s * zoom
+            if (iw <= 0f || ih <= 0f || bw <= 0f || bh <= 0f) return 0f to 0f
+            val s = maxOf(bw / iw, bh / ih)
+            val cw = iw * s * zoom
+            val ch = ih * s * zoom
             return ((cw - bw) / 2f).coerceAtLeast(0f) to ((ch - bh) / 2f).coerceAtLeast(0f)
         }
         val (maxTx, maxTy) = limits(pos.zoom)

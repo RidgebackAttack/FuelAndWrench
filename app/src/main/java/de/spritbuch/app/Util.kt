@@ -180,6 +180,14 @@ class Prefs(ctx: Context) {
     var password: String
         get() = sp.getString("password", "") ?: ""
         set(v) = sp.edit().putString("password", v).apply()
+    /** Basisadresse des Servers (z. B. https://cloud.example.de). */
+    var server: String
+        get() = sp.getString("server", "") ?: ""
+        set(v) = sp.edit().putString("server", v.trim()).apply()
+    /** Gewählter Ordner relativ zum WebDAV-Stamm (unkodiert). */
+    var folder: String
+        get() = sp.getString("folder", "") ?: ""
+        set(v) = sp.edit().putString("folder", v.trim('/')).apply()
     var lastSync: String
         get() = sp.getString("lastSync", "") ?: ""
         set(v) = sp.edit().putString("lastSync", v).apply()
