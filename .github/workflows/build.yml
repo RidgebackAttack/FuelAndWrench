@@ -27,16 +27,16 @@ jobs:
         run: gradle assembleRelease --no-daemon --stacktrace
 
       - name: APK umbenennen
-        run: cp app/build/outputs/apk/release/app-release.apk Spritbuch-1.0.${{ github.run_number }}.apk
+        run: cp app/build/outputs/apk/release/app-release.apk NeedForFuel-1.0.${{ github.run_number }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Spritbuch-APK
-          path: Spritbuch-*.apk
+          name: NeedForFuel-APK
+          path: NeedForFuel-*.apk
 
       - name: Release veröffentlichen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
-          name: Spritbuch 1.0.${{ github.run_number }}
-          files: Spritbuch-*.apk
+          name: Need for Fuel 1.0.${{ github.run_number }}
+          files: NeedForFuel-*.apk

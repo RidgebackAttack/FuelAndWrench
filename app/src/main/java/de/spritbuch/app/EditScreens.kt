@@ -421,7 +421,7 @@ fun SettingsScreen(nav: NavController) {
         ) {
             Text(
                 "WebDAV-Ordner, z. B. bei Nextcloud:\n" +
-                    "https://cloud.example.de/remote.php/dav/files/BENUTZER/Spritbuch\n\n" +
+                    "https://cloud.example.de/remote.php/dav/files/BENUTZER/NeedForFuel\n\n" +
                     "Der Ordner wird bei Bedarf angelegt. Für Nextcloud ein App-Passwort verwenden " +
                     "(Einstellungen → Sicherheit → Neues App-Passwort).",
                 style = MaterialTheme.typography.bodySmall,

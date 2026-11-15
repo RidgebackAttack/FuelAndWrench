@@ -79,7 +79,7 @@ fun VehicleListScreen(nav: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Spritbuch") },
+                title = { Text("Need for Fuel") },
                 actions = {
                     IconButton(
                         onClick = { scope.launch { snackbar.showSnackbar(SyncManager.sync(ctx).message) } },

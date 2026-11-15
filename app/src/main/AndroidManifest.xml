@@ -12,7 +12,7 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
-        android:label="Spritbuch"
+        android:label="Need for Fuel"
         android:theme="@style/Theme.Spritbuch">
 
         <activity

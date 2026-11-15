@@ -1,4 +1,4 @@
-# Spritbuch
+# Need for Fuel
 
 Android-App zum Erfassen von Tankvorgängen und Kraftstoffverbrauch, mit Synchronisation über WebDAV/Nextcloud.
 
