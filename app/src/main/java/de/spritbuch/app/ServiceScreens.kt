@@ -1,6 +1,13 @@
 package de.spritbuch.app
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -108,13 +115,65 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
     val repo = LocalContext.current.repo
     val vehicle by repo.vehicle(vehicleId).collectAsStateWithLifecycle(null)
     val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    var pending by remember { mutableStateOf<ServiceImport.Result?>(null) }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val veh = vehicle
+        if (uri != null && veh != null) scope.launch {
+            val res = withContext(Dispatchers.IO) {
+                runCatching {
+                    val bytes = ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
+                    ServiceImport.parse(CsvImport.decode(bytes), veh)
+                }
+            }
+            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar("Import fehlgeschlagen: ${it.message}") }
+        }
+    }
     val lineColor = MaterialTheme.colorScheme.outlineVariant
     val dotColor = MaterialTheme.colorScheme.primary
+    pending?.let { imp ->
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text("Service-Import") },
+            text = {
+                Text(
+                    imp.error ?: (
+                        "${imp.entries.size} Einträge gefunden" +
+                            (if (imp.skipped > 0) ", ${imp.skipped} Zeilen übersprungen" else "") +
+                            " (${imp.entries.sumOf { it.cost }.fmt()} ${vehicle?.currency ?: "€"}).\n\n" +
+                            "Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen " +
+                            "(z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt."
+                        )
+                )
+            },
+            confirmButton = {
+                if (imp.entries.isNotEmpty()) TextButton(onClick = {
+                    pending = null
+                    scope.launch {
+                        val (added, dups) = repo.importServices(vehicleId, imp.entries)
+                        snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups bereits vorhanden" else "")
+                    }
+                }) { Text("Importieren") }
+            },
+            dismissButton = { TextButton(onClick = { pending = null }) { Text("Abbrechen") } },
+        )
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Service – ${vehicle?.name ?: ""}") }, navigationIcon = { BackButton(nav) })
+            TopAppBar(
+                title = { Text("Service – ${vehicle?.name ?: ""}") },
+                navigationIcon = { BackButton(nav) },
+                actions = {
+                    IconButton(onClick = {
+                        importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream"))
+                    }) { Icon(Icons.Default.FileUpload, contentDescription = "Service importieren") }
+                },
+            )
         },
+        snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { nav.navigate("serviceEdit/$vehicleId/new") },

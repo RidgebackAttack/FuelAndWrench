@@ -314,7 +314,7 @@ object CsvImport {
         "MM/dd/yyyy", "dd/MM/yyyy",
     )
 
-    private fun parseDate(date: String, time: String): Long? {
+    fun parseDate(date: String, time: String): Long? {
         val s = listOf(date, time).filter { it.isNotBlank() }.joinToString(" ").trim()
         if (s.isEmpty()) return null
         for (p in dateFormats) {
@@ -385,5 +385,80 @@ object CsvImport {
             1 -> if (city) "Stadt" else if (land) "Landstraße" else "Autobahn"
             else -> "Gemischt"
         }
+    }
+}
+
+/**
+ * Import von Service-Einträgen aus CSV.
+ * Spalten (Kopfzeile, Reihenfolge egal): Datum; Km-Stand; Titel; Kategorie; Kosten; Werkstatt; Notiz.
+ * Mehrzeilige Notizen in Anführungszeichen werden unterstützt.
+ */
+object ServiceImport {
+
+    /** CSV nach RFC 4180 (Zeilenumbrüche in Anführungszeichen erlaubt). */
+    fun parseCsv(text: String, sep: Char): List<List<String>> {
+        val rows = mutableListOf<List<String>>()
+        var row = mutableListOf<String>()
+        val sb = StringBuilder()
+        var quoted = false
+        var i = 0
+        while (i < text.length) {
+            val ch = text[i]
+            when {
+                quoted && ch == '"' && i + 1 < text.length && text[i + 1] == '"' -> { sb.append('"'); i++ }
+                ch == '"' -> quoted = !quoted
+                !quoted && ch == sep -> { row += sb.toString(); sb.clear() }
+                !quoted && (ch == '\n' || ch == '\r') -> {
+                    if (ch == '\r' && i + 1 < text.length && text[i + 1] == '\n') i++
+                    row += sb.toString(); sb.clear()
+                    if (row.any { it.isNotBlank() }) rows += row
+                    row = mutableListOf()
+                }
+                else -> sb.append(ch)
+            }
+            i++
+        }
+        row += sb.toString()
+        if (row.any { it.isNotBlank() }) rows += row
+        return rows
+    }
+
+    data class Result(val entries: List<ServiceEntry>, val skipped: Int, val error: String?)
+
+    fun parse(text: String, vehicle: Vehicle): Result {
+        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() } ?: return Result(emptyList(), 0, "Datei ist leer")
+        val sep = listOf(';', '\t', ',').maxBy { c -> firstLine.count { it == c } }
+        val rows = parseCsv(text, sep)
+        if (rows.size < 2) return Result(emptyList(), 0, "Keine Einträge gefunden")
+        val header = rows[0].map { it.trim().lowercase() }
+        fun col(vararg c: String) = header.indexOfFirst { h -> c.any { h == it || h.contains(it) } }
+        val cDate = col("datum", "date")
+        val cOdo = col("km-stand", "kilometerstand", "km", "odometer")
+        val cTitle = col("titel", "bezeichnung", "title", "arbeit")
+        val cCat = col("kategorie", "category")
+        val cCost = col("kosten", "betrag", "cost", "preis")
+        val cShop = col("werkstatt", "workshop", "garage")
+        val cNote = col("notiz", "bemerkung", "note", "beschreibung")
+        if (cDate < 0 || cTitle < 0) return Result(emptyList(), rows.size - 1, "Spalten „Datum“ und „Titel“ werden benötigt")
+
+        var skipped = 0
+        val list = rows.drop(1).mapNotNull { f ->
+            fun v(i: Int) = if (i in f.indices) f[i].trim() else ""
+            val date = CsvImport.parseDate(v(cDate), "")
+            val title = v(cTitle)
+            if (date == null || title.isBlank()) { skipped++; return@mapNotNull null }
+            val cat = v(cCat).let { c -> Options.serviceCategories.firstOrNull { it.equals(c, true) } ?: if (c.isBlank()) "Sonstiges" else c }
+            ServiceEntry(
+                vehicleId = vehicle.id,
+                timestamp = date,
+                odometer = CsvImport.parseNum(v(cOdo), true)?.toInt() ?: 0,
+                title = title,
+                category = cat,
+                cost = CsvImport.parseNum(v(cCost), false) ?: 0.0,
+                workshop = v(cShop),
+                note = v(cNote),
+            )
+        }
+        return Result(list, skipped, null)
     }
 }

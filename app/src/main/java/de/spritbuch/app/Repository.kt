@@ -33,6 +33,40 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         changed()
     }
 
+    /**
+     * Importiert Service-Einträge (Duplikate: gleicher km-Stand und Titel werden übersprungen).
+     * Erinnerungen, deren Name im Titel oder in der Notiz vorkommt (z. B. „Ölwechsel“), werden
+     * auf den höchsten passenden km-Stand als erledigt gesetzt.
+     */
+    suspend fun importServices(vehicleId: String, items: List<ServiceEntry>): Pair<Int, Int> {
+        var added = 0
+        var dups = 0
+        val t = now()
+        db.withTransaction {
+            val existing = db.services().forVehicle(vehicleId)
+            val imported = mutableListOf<ServiceEntry>()
+            for (s in items) {
+                if (existing.any { it.odometer == s.odometer && it.title.equals(s.title, true) && it.timestamp / 86_400_000 == s.timestamp / 86_400_000 }) {
+                    dups++; continue
+                }
+                val e = s.copy(vehicleId = vehicleId, updatedAt = t)
+                db.services().upsert(e)
+                imported += e
+                added++
+            }
+            for (r in db.reminders().forVehicle(vehicleId)) {
+                val km = imported.filter { (it.title + " " + it.note).contains(r.title, ignoreCase = true) }
+                    .maxOfOrNull { it.odometer } ?: continue
+                if (km > r.lastDoneKm) db.reminders().upsert(r.copy(lastDoneKm = km, updatedAt = t))
+            }
+        }
+        if (added > 0) {
+            ReminderChecker.check(ctx, vehicleId)
+            changed()
+        }
+        return added to dups
+    }
+
     suspend fun deleteService(id: String) {
         db.services().get(id)?.let { db.services().upsert(it.copy(deleted = true, updatedAt = now())) }
         changed()
