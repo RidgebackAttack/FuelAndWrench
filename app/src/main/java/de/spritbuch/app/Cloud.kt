@@ -60,7 +60,7 @@ object Nextcloud {
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
-    private const val UA = "Need for Fuel (Android)"
+    private const val UA = "Fuel & Wrench (Android)"
 
     fun normalizeServer(raw: String): String {
         var s = raw.trim().trimEnd('/')

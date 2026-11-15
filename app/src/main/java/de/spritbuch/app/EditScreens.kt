@@ -421,7 +421,7 @@ fun SettingsScreen(nav: NavController) {
     }
     var server by remember { mutableStateOf(prefs.server.ifBlank { legacy?.first ?: prefs.url }) }
     var folder by remember {
-        mutableStateOf(if (prefs.server.isNotBlank()) prefs.folder else legacy?.second ?: if (prefs.url.isBlank()) "NeedForFuel" else "")
+        mutableStateOf(if (prefs.server.isNotBlank()) prefs.folder else legacy?.second ?: if (prefs.url.isBlank()) "FuelAndWrench" else "")
     }
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
@@ -454,6 +454,20 @@ fun SettingsScreen(nav: NavController) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            SectionTitle("Darstellung")
+            val themeCfg by ThemeSettings.state.collectAsStateWithLifecycle()
+            val modeLabels = linkedMapOf("system" to "Wie System", "light" to "Hell", "dark" to "Dunkel")
+            SingleChips(modeLabels.values.toList(), modeLabels[themeCfg.mode] ?: "Wie System") { sel ->
+                val key = modeLabels.entries.firstOrNull { it.value == sel }?.key ?: "system"
+                ThemeSettings.update(ctx, themeCfg.copy(mode = key))
+            }
+            Text("Farbschema", style = MaterialTheme.typography.labelLarge)
+            PalettePicker(themeCfg.palette) { ThemeSettings.update(ctx, themeCfg.copy(palette = it)) }
+            LabeledSwitch("Reines Schwarz im dunklen Modus (AMOLED)", themeCfg.amoled) {
+                ThemeSettings.update(ctx, themeCfg.copy(amoled = it))
+            }
+
+            HorizontalDivider()
             SectionTitle("Synchronisation")
             Text(
                 "Adresse deiner Nextcloud eingeben, anmelden und Ordner wählen. " +

@@ -1,4 +1,4 @@
-# Need for Fuel
+# Fuel & Wrench
 
 Android-App zum Erfassen von Tankvorgängen und Kraftstoffverbrauch, mit Synchronisation über WebDAV/Nextcloud.
 

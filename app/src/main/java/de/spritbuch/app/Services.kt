@@ -194,7 +194,7 @@ object LocationHelper {
             val q = "[out:json][timeout:10];nwr(around:250,$lat,$lon)[amenity=fuel];out center tags;"
             val req = Request.Builder()
                 .url("https://overpass-api.de/api/interpreter")
-                .header("User-Agent", "NeedForFuel-Android/1.0")
+                .header("User-Agent", "FuelAndWrench-Android/1.0")
                 .post(FormBody.Builder().add("data", q).build())
                 .build()
             val body = http.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null }

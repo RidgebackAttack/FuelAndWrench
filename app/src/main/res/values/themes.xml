@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Spritbuch" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Startbildschirm: Icon auf nachtblauem Grund, danach das App-Design -->
+    <style name="Theme.Spritbuch.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Spritbuch</item>
+    </style>
+
+    <color name="splash_background">#0A1A33</color>
 </resources>
