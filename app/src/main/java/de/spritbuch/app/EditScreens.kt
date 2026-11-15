@@ -142,7 +142,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 stationBrand = last?.stationBrand ?: "",
                 drivingStyle = last?.drivingStyle ?: "Normal",
                 routeType = last?.routeType ?: "Gemischt",
-                tireType = last?.tireType ?: "",
+                tireType = repo.db.services().lastTireChange(vehicleId)
+                    ?.takeIf { it.timestamp > (last?.timestamp ?: 0L) }?.tireSeason
+                    ?: last?.tireType ?: "",
             )
         } else repo.getRefuel(refuelId) ?: return@LaunchedEffect
         lastOdo = if (isNew) repo.currentOdometer(vehicleId) else null

@@ -104,6 +104,9 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     style = MaterialTheme.typography.bodySmall,
                 )
                 if (s.workshop.isNotBlank()) Text(s.workshop, style = MaterialTheme.typography.bodySmall)
+                if (s.tireSummary().isNotBlank()) {
+                    Text(s.tireSummary(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                }
                 if (s.treadDepth.isNotBlank()) {
                     Text("Profil: " + TreadCodec.summary(s.treadDepth), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary)
@@ -254,6 +257,10 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     var cost by remember { mutableStateOf("") }
     var workshop by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var tireSeason by remember { mutableStateOf("") }
+    var tireBrand by remember { mutableStateOf("") }
+    var tireModel by remember { mutableStateOf("") }
+    var tireSize by remember { mutableStateOf("") }
     val treadOld = remember { mutableStateMapOf<String, String>() }
     val treadNew = remember { mutableStateMapOf<String, String>() }
     var error by remember { mutableStateOf<String?>(null) }
@@ -272,6 +279,11 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         cost = if (s.cost > 0) s.cost.fmt(2) else ""
         workshop = s.workshop
         note = s.note
+        tireSeason = s.tireSeason; tireBrand = s.tireBrand; tireModel = s.tireModel; tireSize = s.tireSize
+        // Neuer Eintrag: Reifendaten des letzten Reifenwechsels vorschlagen
+        if (isNew) repo.db.services().lastTireChange(vehicleId)?.let { last ->
+            tireSeason = last.tireSeason; tireBrand = last.tireBrand; tireModel = last.tireModel; tireSize = last.tireSize
+        }
         TreadCodec.parse(s.treadDepth).forEach { (k, t) ->
             t.old?.let { treadOld[k] = it.fmt(1) }
             t.new?.let { treadNew[k] = it.fmt(1) }
@@ -296,6 +308,10 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                                     timestamp = timestamp, odometer = odometer.toIntKm() ?: 0, title = title.trim(),
                                     category = category, cost = cost.toDoubleDe() ?: 0.0,
                                     workshop = workshop.trim(), note = note.trim(),
+                                    tireSeason = if (category == "Reifen") tireSeason else "",
+                                    tireBrand = if (category == "Reifen") tireBrand.trim() else "",
+                                    tireModel = if (category == "Reifen") tireModel.trim() else "",
+                                    tireSize = if (category == "Reifen") tireSize.trim() else "",
                                     treadDepth = if (category == "Reifen") {
                                         TreadCodec.encode(
                                             Options.tirePositions(veh?.vehicleType).associate { (k, _) ->
@@ -328,6 +344,17 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
             NumberField("Kilometerstand", odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
             NumberField("Kosten", cost, { cost = it }, suffix = Units.cur(veh))
             if (category == "Reifen") {
+                SectionTitle("Reifen")
+                SingleChips(Options.tireTypes, tireSeason) { tireSeason = it }
+                SuggestField("Hersteller", tireBrand, Options.tireBrands) { tireBrand = it }
+                OutlinedTextField(
+                    tireModel, { tireModel = it }, label = { Text("Reifenname (z. B. Pilot Sport 5)") }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    tireSize, { tireSize = it }, label = { Text("Größe (z. B. 245/40 R19 98Y)") }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 SectionTitle("Profiltiefe")
                 Text(
                     "Alt = Profil der ausgebauten Reifen bzw. vor der Messung, neu = eingebaute Reifen. Felder dürfen leer bleiben.",

@@ -38,9 +38,13 @@ object Options {
     fun tirePositions(vehicleType: String?) =
         if (vehicleType == "Motorrad") listOf("V" to "Vorne", "H" to "Hinten")
         else listOf("VL" to "Vorne links", "VR" to "Vorne rechts", "HL" to "Hinten links", "HR" to "Hinten rechts")
+    val tireBrands = listOf(
+        "Michelin", "Continental", "Bridgestone", "Pirelli", "Goodyear", "Dunlop", "Metzeler",
+        "Hankook", "Nokian", "Vredestein", "Falken", "Kumho", "Toyo", "Yokohama", "Uniroyal", "Firestone",
+    )
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
     val serviceSuggestions = listOf(
-        "Ölwechsel", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
+        "Ölwechsel", "Reifenwechsel", "Profiltiefe gemessen", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
         "Luftfilter", "Innenraumfilter", "Batterie", "Wischerblätter", "Kette/Ritzel",
     )
     val reminderSuggestions = listOf(
@@ -137,9 +141,20 @@ data class ServiceEntry(
     val note: String = "",
     /** Profiltiefe in mm je Position, Format "VL:alt:neu;VR:alt:neu;…" (leere Werte erlaubt). */
     @ColumnInfo(defaultValue = "") val treadDepth: String = "",
+    // Reifen (nur bei Kategorie „Reifen“)
+    @ColumnInfo(defaultValue = "") val tireSeason: String = "",
+    @ColumnInfo(defaultValue = "") val tireBrand: String = "",
+    @ColumnInfo(defaultValue = "") val tireModel: String = "",
+    @ColumnInfo(defaultValue = "") val tireSize: String = "",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
-)
+) {
+    fun tireSummary(): String = listOf(
+        tireSeason,
+        listOf(tireBrand, tireModel).filter { it.isNotBlank() }.joinToString(" "),
+        tireSize,
+    ).filter { it.isNotBlank() }.joinToString(" · ")
+}
 
 @Dao
 interface ServiceDao {
@@ -154,6 +169,9 @@ interface ServiceDao {
 
     @Query("SELECT * FROM services")
     suspend fun getAllRaw(): List<ServiceEntry>
+
+    @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId AND tireSeason != '' ORDER BY timestamp DESC LIMIT 1")
+    suspend fun lastTireChange(vehicleId: String): ServiceEntry?
 
     @Upsert
     suspend fun upsert(item: ServiceEntry)
@@ -228,7 +246,7 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 4, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -266,9 +284,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
+                    db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
+                }
+            }
+        }
+
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
     }
 }
