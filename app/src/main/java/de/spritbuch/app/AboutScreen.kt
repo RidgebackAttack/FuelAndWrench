@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-const val SOURCE_URL = "https://github.com/RidgebackAttack/FuelConsumption"
+const val SOURCE_URL = "https://github.com/RidgebackAttack/FuelAndWrench"
 
 /** Verwendete Open-Source-Bibliotheken (alle Apache License 2.0). */
 private val libraries = listOf(

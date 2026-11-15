@@ -2,14 +2,14 @@ Categories:
   - Money
 License: GPL-3.0-or-later
 AuthorName: RidgebackAttack
-SourceCode: https://github.com/RidgebackAttack/FuelConsumption
-IssueTracker: https://github.com/RidgebackAttack/FuelConsumption/issues
-Changelog: https://github.com/RidgebackAttack/FuelConsumption/releases
+SourceCode: https://github.com/RidgebackAttack/FuelAndWrench
+IssueTracker: https://github.com/RidgebackAttack/FuelAndWrench/issues
+Changelog: https://github.com/RidgebackAttack/FuelAndWrench/releases
 
 AutoName: Fuel & Wrench
 
 RepoType: git
-Repo: https://github.com/RidgebackAttack/FuelConsumption.git
+Repo: https://github.com/RidgebackAttack/FuelAndWrench.git
 
 Builds:
   - versionName: 1.1.0
