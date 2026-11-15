@@ -14,6 +14,36 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
     fun vehicle(id: String) = db.vehicles().observe(id)
     fun refuels(vehicleId: String) = db.refuels().observeForVehicle(vehicleId)
     fun reminders(vehicleId: String) = db.reminders().observeForVehicle(vehicleId)
+    fun services(vehicleId: String) = db.services().observeForVehicle(vehicleId)
+    suspend fun getService(id: String) = db.services().get(id)
+
+    /**
+     * Speichert einen Service-Eintrag. Gibt es eine Erinnerung mit gleichem Namen, wird deren
+     * "zuletzt erledigt" auf den Kilometerstand des Eintrags gesetzt.
+     */
+    suspend fun saveService(s: ServiceEntry) {
+        val t = now()
+        db.withTransaction {
+            db.services().upsert(s.copy(updatedAt = t))
+            db.reminders().forVehicle(s.vehicleId)
+                .filter { it.title.equals(s.title.trim(), ignoreCase = true) && s.odometer > it.lastDoneKm }
+                .forEach { db.reminders().upsert(it.copy(lastDoneKm = s.odometer, updatedAt = t)) }
+        }
+        ReminderChecker.check(ctx, s.vehicleId)
+        changed()
+    }
+
+    suspend fun deleteService(id: String) {
+        db.services().get(id)?.let { db.services().upsert(it.copy(deleted = true, updatedAt = now())) }
+        changed()
+    }
+
+    /** Erinnerung als erledigt markieren und dabei einen Service-Eintrag anlegen. */
+    suspend fun completeReminder(r: Reminder, odometer: Int) {
+        saveService(ServiceEntry(vehicleId = r.vehicleId, odometer = odometer, title = r.title, category = "Wartung"))
+        db.reminders().get(r.id)?.let { db.reminders().upsert(it.copy(lastDoneKm = odometer, updatedAt = now())) }
+        changed()
+    }
 
     suspend fun getVehicle(id: String) = db.vehicles().get(id)
     suspend fun getRefuel(id: String) = db.refuels().get(id)
@@ -47,6 +77,9 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
                         )
                     )
                 }
+                db.services().forVehicle(v.id).forEach { s ->
+                    db.services().upsert(s.copy(odometer = d(s.odometer), updatedAt = t))
+                }
                 db.reminders().forVehicle(v.id).forEach { r ->
                     db.reminders().upsert(
                         r.copy(intervalKm = d(r.intervalKm), lastDoneKm = d(r.lastDoneKm), warnBeforeKm = d(r.warnBeforeKm), updatedAt = t)
@@ -76,6 +109,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
             db.vehicles().get(id)?.let { db.vehicles().upsert(it.copy(deleted = true, updatedAt = t)) }
             db.refuels().forVehicle(id).forEach { db.refuels().upsert(it.copy(deleted = true, updatedAt = t)) }
             db.reminders().forVehicle(id).forEach { db.reminders().upsert(it.copy(deleted = true, updatedAt = t)) }
+            db.services().forVehicle(id).forEach { db.services().upsert(it.copy(deleted = true, updatedAt = t)) }
         }
         changed()
     }

@@ -198,7 +198,33 @@ class Prefs(ctx: Context) {
                 val km = p.getOrNull(1)?.toIntOrNull()
                 if (p[0].isBlank() || km == null || km <= 0) null else p[0] to km
             }
-        set(v) = sp.edit().putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" }).apply()
+        set(v) = sp.edit()
+            .putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" })
+            .putLong("templatesUpdatedAt", now())
+            .apply()
+
+    val templatesUpdatedAt: Long get() = sp.getLong("templatesUpdatedAt", 0L)
+
+    /** Übernahme vom Sync, ohne den Zeitstempel neu zu setzen. */
+    fun setTemplatesFromSync(v: List<Pair<String, Int>>, ts: Long) {
+        sp.edit()
+            .putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" })
+            .putLong("templatesUpdatedAt", ts)
+            .apply()
+    }
+
+    /** Datenschutz: Tankstellensuche über OpenStreetMap (Overpass-API). */
+    var useOverpass: Boolean
+        get() = sp.getBoolean("useOverpass", true)
+        set(v) = sp.edit().putBoolean("useOverpass", v).apply()
+    /** Datenschutz: Adresse über den Android-Geocoder (bei Google-Android: Google-Server). */
+    var useGeocoder: Boolean
+        get() = sp.getBoolean("useGeocoder", false)
+        set(v) = sp.edit().putBoolean("useGeocoder", v).apply()
+    /** Datenschutz: Netzwerk-Ortung (WLAN/Mobilfunk, bei Google-Android über Google). Aus = nur GPS. */
+    var useNetworkLocation: Boolean
+        get() = sp.getBoolean("useNetworkLocation", false)
+        set(v) = sp.edit().putBoolean("useNetworkLocation", v).apply()
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 }

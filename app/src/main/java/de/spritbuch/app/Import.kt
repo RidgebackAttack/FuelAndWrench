@@ -225,7 +225,7 @@ object CsvImport {
         // Bedeutungen abgeglichen mit der Spritmonitor-Detailansicht (Symbole je Eintrag)
         val codeMap = mapOf(
             CodeField.FUEL to codes({ it.fuelType }) {
-                when (it) { "1" -> "Diesel"; "4" -> "Premium-Diesel"; else -> vehicle.defaultFuelType }
+                when (it) { "1", "4" -> "Diesel"; else -> vehicle.defaultFuelType }
             },
             CodeField.TIRES to codes({ it.tireType }) {
                 when (it) { "1" -> "Sommerreifen"; "2" -> "Winterreifen"; "3" -> "Ganzjahresreifen"; else -> "" }

@@ -79,7 +79,13 @@ data class SyncData(
     val vehicles: List<Vehicle> = emptyList(),
     val refuels: List<Refuel> = emptyList(),
     val reminders: List<Reminder> = emptyList(),
+    val services: List<ServiceEntry> = emptyList(),
+    val reminderTemplates: List<TemplateItem> = emptyList(),
+    val templatesUpdatedAt: Long = 0,
 )
+
+@Serializable
+data class TemplateItem(val title: String, val km: Int)
 
 data class SyncResult(val ok: Boolean, val message: String)
 
@@ -135,18 +141,31 @@ object SyncManager {
             }
             val r = remoteData ?: SyncData()
 
+            // Vorlagen für Standard-Erinnerungen: die zuletzt geänderte Liste gewinnt
+            val remoteTplNewer = r.templatesUpdatedAt > prefs.templatesUpdatedAt
+            if (remoteTplNewer) {
+                prefs.setTemplatesFromSync(r.reminderTemplates.map { it.title to it.km }, r.templatesUpdatedAt)
+            }
+            val tplList = prefs.reminderTemplates.map { TemplateItem(it.first, it.second) }
+            val tplTs = prefs.templatesUpdatedAt
+
             val merged = db.withTransaction {
                 SyncData(
+                    reminderTemplates = tplList,
+                    templatesUpdatedAt = tplTs,
                     vehicles = mergeInto(db.vehicles().getAllRaw(), r.vehicles, { it.id }, { it.updatedAt }) { db.vehicles().upsert(it) },
                     refuels = mergeInto(db.refuels().getAllRaw(), r.refuels, { it.id }, { it.updatedAt }) { db.refuels().upsert(it) },
                     reminders = mergeInto(db.reminders().getAllRaw(), r.reminders, { it.id }, { it.updatedAt }) { db.reminders().upsert(it) },
+                    services = mergeInto(db.services().getAllRaw(), r.services, { it.id }, { it.updatedAt }) { db.services().upsert(it) },
                 )
             }
 
             val remoteChanged = remoteData == null ||
                 merged.vehicles.toSet() != r.vehicles.toSet() ||
                 merged.refuels.toSet() != r.refuels.toSet() ||
-                merged.reminders.toSet() != r.reminders.toSet()
+                merged.reminders.toSet() != r.reminders.toSet() ||
+                merged.services.toSet() != r.services.toSet() ||
+                merged.templatesUpdatedAt != r.templatesUpdatedAt || merged.reminderTemplates != r.reminderTemplates
 
             if (remoteChanged) {
                 val code = dav.put(

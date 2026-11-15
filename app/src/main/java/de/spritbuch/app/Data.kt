@@ -34,6 +34,11 @@ object Options {
     val drivingStyles = listOf("Sparsam", "Normal", "Zügig", "Sportlich")
     val routeTypes = listOf("Stadt", "Landstraße", "Autobahn", "Gemischt")
     val tireTypes = listOf("Sommerreifen", "Winterreifen", "Ganzjahresreifen")
+    val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
+    val serviceSuggestions = listOf(
+        "Ölwechsel", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
+        "Luftfilter", "Innenraumfilter", "Batterie", "Wischerblätter", "Kette/Ritzel",
+    )
     val reminderSuggestions = listOf(
         "Ölwechsel", "Inspektion", "Zahnriemen", "Bremsflüssigkeit", "Luftfilter",
         "Reifen tauschen", "Zündkerzen"
@@ -62,6 +67,9 @@ data class Vehicle(
     @ColumnInfo(defaultValue = "l") val volumeUnit: String = "l",
     @ColumnInfo(defaultValue = "per100") val consumptionFormat: String = "per100",
     @ColumnInfo(defaultValue = "€") val currency: String = "€",
+    /** Bildausschnitt "x,y,zoom" für Miniatur bzw. große Ansicht. */
+    @ColumnInfo(defaultValue = "0,0,1") val photoThumbPos: String = "0,0,1",
+    @ColumnInfo(defaultValue = "0,0,1") val photoLargePos: String = "0,0,1",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 )
@@ -107,6 +115,40 @@ data class Reminder(
     val deleted: Boolean = false,
 ) {
     val dueKm: Int get() = lastDoneKm + intervalKm
+}
+
+@Serializable
+@Entity(tableName = "services", indices = [Index("vehicleId")])
+data class ServiceEntry(
+    @PrimaryKey val id: String = newId(),
+    val vehicleId: String = "",
+    val timestamp: Long = now(),
+    val odometer: Int = 0,
+    val title: String = "",
+    val category: String = "Wartung",
+    val cost: Double = 0.0,
+    val workshop: String = "",
+    val note: String = "",
+    val updatedAt: Long = now(),
+    val deleted: Boolean = false,
+)
+
+@Dao
+interface ServiceDao {
+    @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY timestamp DESC, odometer DESC")
+    fun observeForVehicle(vehicleId: String): Flow<List<ServiceEntry>>
+
+    @Query("SELECT * FROM services WHERE id = :id")
+    suspend fun get(id: String): ServiceEntry?
+
+    @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId")
+    suspend fun forVehicle(vehicleId: String): List<ServiceEntry>
+
+    @Query("SELECT * FROM services")
+    suspend fun getAllRaw(): List<ServiceEntry>
+
+    @Upsert
+    suspend fun upsert(item: ServiceEntry)
 }
 
 @Dao
@@ -178,11 +220,12 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class], version = 2, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
     abstract fun reminders(): ReminderDao
+    abstract fun services(): ServiceDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -194,9 +237,23 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN photoThumbPos TEXT NOT NULL DEFAULT '0,0,1'")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN photoLargePos TEXT NOT NULL DEFAULT '0,0,1'")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `services` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, " +
+                        "`timestamp` INTEGER NOT NULL, `odometer` INTEGER NOT NULL, `title` TEXT NOT NULL, " +
+                        "`category` TEXT NOT NULL, `cost` REAL NOT NULL, `workshop` TEXT NOT NULL, `note` TEXT NOT NULL, " +
+                        "`updatedAt` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_services_vehicleId` ON `services` (`vehicleId`)")
+            }
+        }
+
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }

@@ -104,11 +104,16 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 } else {
                     lat = loc.latitude
                     lon = loc.longitude
-                    val st = LocationHelper.nearbyStation(loc.latitude, loc.longitude)
+                    val p = Prefs(ctx)
+                    val st = if (p.useOverpass) LocationHelper.nearbyStation(loc.latitude, loc.longitude) else null
                     st?.brand?.let { brand = it }
-                    val addr = st?.address ?: LocationHelper.address(ctx, loc.latitude, loc.longitude)
+                    val addr = st?.address ?: if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null
                     addr?.let { address = it }
-                    info = if (st != null) "Tankstelle erkannt" else "Keine Tankstelle in der Nähe gefunden – bitte Betreiber prüfen"
+                    info = when {
+                        !p.useOverpass -> "Position übernommen (Tankstellensuche ist in den Einstellungen aus)"
+                        st != null -> "Tankstelle erkannt"
+                        else -> "Keine Tankstelle in der Nähe gefunden – bitte Betreiber prüfen"
+                    }
                 }
             } finally {
                 locating = false
@@ -406,6 +411,9 @@ fun SettingsScreen(nav: NavController) {
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
     var templates by remember { mutableStateOf(prefs.reminderTemplates) }
+    var useOverpass by remember { mutableStateOf(prefs.useOverpass) }
+    var useGeocoder by remember { mutableStateOf(prefs.useGeocoder) }
+    var useNetworkLocation by remember { mutableStateOf(prefs.useNetworkLocation) }
     var newTitle by remember { mutableStateOf("") }
     var newKm by remember { mutableStateOf("") }
     val status by SyncManager.status.collectAsStateWithLifecycle()
@@ -461,9 +469,27 @@ fun SettingsScreen(nav: NavController) {
             )
 
             HorizontalDivider()
+            SectionTitle("Datenschutz")
+            Text(
+                "Die App hat keine Werbung, kein Tracking und keine Analyse. Daten gehen nur an deinen WebDAV-Server " +
+                    "und – wenn unten eingeschaltet – an die genannten Dienste.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            LabeledSwitch("Tankstelle über OpenStreetMap suchen", useOverpass) { useOverpass = it; prefs.useOverpass = it }
+            Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de.", style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch("Adresse über Android-Geocoder ermitteln", useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
+            Text("Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.", style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch("Netzwerk-Ortung erlauben", useNetworkLocation) { useNetworkLocation = it; prefs.useNetworkLocation = it }
+            Text("Aus = nur GPS (kein Netzverkehr, braucht freie Sicht zum Himmel).", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "Die Karte lädt Kartenkacheln von tile.openstreetmap.org; dabei sieht der Server den angezeigten Kartenausschnitt.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            HorizontalDivider()
             SectionTitle("Standard-Erinnerungen")
             Text(
-                "Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist. " +
+                "Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist, und mit allen Geräten synchronisiert. " +
                     "Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.",
                 style = MaterialTheme.typography.bodySmall,
             )

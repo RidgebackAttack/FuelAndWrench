@@ -139,12 +139,13 @@ object LocationHelper {
     suspend fun current(ctx: Context): Location? {
         if (!hasPermission(ctx)) return null
         val lm = ctx.getSystemService(LocationManager::class.java) ?: return null
+        val allowNetwork = Prefs(ctx).useNetworkLocation
         val provider = when {
             lm.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
-            lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            allowNetwork && lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
             else -> return lastKnown(lm)
         }
-        val fresh = withTimeoutOrNull(20_000) {
+        val fresh = withTimeoutOrNull(if (provider == LocationManager.GPS_PROVIDER) 30_000 else 20_000) {
             suspendCancellableCoroutine<Location?> { cont ->
                 val signal = CancellationSignal()
                 cont.invokeOnCancellation { signal.cancel() }

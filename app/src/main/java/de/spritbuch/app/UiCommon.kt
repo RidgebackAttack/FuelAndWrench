@@ -107,6 +107,11 @@ fun AppNav() {
             ReminderEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
         composable("settings") { SettingsScreen(nav) }
+        composable("map/{vehicleId}") { MapScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
+        composable("services/{vehicleId}") { ServiceTimelineScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
+        composable("serviceEdit/{vehicleId}/{id}") {
+            ServiceEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
+        }
     }
 }
 
@@ -114,27 +119,6 @@ fun AppNav() {
 fun BackButton(nav: NavController) {
     IconButton(onClick = { nav.popBackStack() }) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
-    }
-}
-
-@Composable
-fun VehiclePhoto(v: Vehicle, modifier: Modifier) {
-    val ctx = LocalContext.current
-    val file = if (v.photoVersion > 0) PhotoStore.file(ctx, v.id, v.photoVersion) else null
-    if (file != null && file.exists()) {
-        AsyncImage(
-            model = file,
-            contentDescription = v.name,
-            contentScale = ContentScale.Crop,
-            modifier = modifier.clip(RoundedCornerShape(12.dp)),
-        )
-    } else {
-        Box(
-            modifier.clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Default.DirectionsCar, contentDescription = null, modifier = Modifier.size(40.dp))
-        }
     }
 }
 

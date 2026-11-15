@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.material.icons.filled.LocalGasStation
@@ -160,6 +162,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     val vehicle by repo.vehicle(vehicleId).collectAsStateWithLifecycle(null)
     val refuels by repo.refuels(vehicleId).collectAsStateWithLifecycle(emptyList())
     val reminders by repo.reminders(vehicleId).collectAsStateWithLifecycle(emptyList())
+    val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
     var odoDialog by remember { mutableStateOf(false) }
     val stats = remember(refuels) { computeStats(refuels) }
     val v = vehicle
@@ -193,6 +196,9 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                 title = { Text(v?.name ?: "") },
                 navigationIcon = { BackButton(nav) },
                 actions = {
+                    IconButton(onClick = { nav.navigate("map/$vehicleId") }) {
+                        Icon(Icons.Default.Map, contentDescription = "Karte")
+                    }
                     IconButton(onClick = { importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream")) }) {
                         Icon(Icons.Default.FileUpload, contentDescription = "Spritmonitor-Import")
                     }
@@ -229,14 +235,15 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                     }
                 }
             }
-            if (v.photoVersion > 0) item { VehiclePhoto(v, Modifier.fillMaxWidth().height(200.dp)) }
+            if (v.photoVersion > 0) item { VehiclePhoto(v, Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT), large = true) }
             item {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         StatRow("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
                         StatRow("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
                         StatRow("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
-                        StatRow("Gesamtkosten", "${stats.totalCost.fmt()} $cur")
+                        StatRow("Tankkosten gesamt", "${stats.totalCost.fmt()} $cur")
+                        StatRow("Servicekosten gesamt", "${services.sumOf { it.cost }.fmt()} $cur")
                         StatRow("Getankt gesamt", "${stats.totalAmount.fmt(1)} $amt")
                         StatRow("Erfasste Strecke", stats.distance.dist(du))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -279,10 +286,26 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                             Text("Intervall ${r.intervalKm.dist(du)}", style = MaterialTheme.typography.bodySmall)
                         }
                         OutlinedButton(onClick = {
-                            scope.launch { repo.saveReminder(r.copy(lastDoneKm = currentOdo)) }
+                            scope.launch {
+                                repo.completeReminder(r, currentOdo)
+                                snackbar.showSnackbar("Erledigt – Service-Eintrag angelegt")
+                            }
                         }) { Text("Erledigt") }
                     }
                 }
+            }
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f)) { SectionTitle("Service (${services.size})") }
+                    TextButton(onClick = { nav.navigate("services/$vehicleId") }) { Text("Historie") }
+                    TextButton(onClick = { nav.navigate("serviceEdit/$vehicleId/new") }) { Text("+ Neu") }
+                }
+            }
+            if (services.isEmpty()) item {
+                Text("Noch keine Service-Einträge.", style = MaterialTheme.typography.bodySmall)
+            }
+            items(services.take(3), key = { "svc-" + it.id }) { s ->
+                ServiceCard(v, s) { nav.navigate("serviceEdit/$vehicleId/${s.id}") }
             }
             item { SectionTitle("Tankvorgänge (${refuels.size})") }
             items(refuels, key = { it.id }) { r ->
@@ -452,6 +475,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var initialOdo by remember { mutableStateOf("") }
     var photoVersion by remember { mutableLongStateOf(0L) }
     var archived by remember { mutableStateOf(false) }
+    var thumbPos by remember { mutableStateOf(PhotoPos()) }
+    var largePos by remember { mutableStateOf(PhotoPos()) }
     var distU by remember { mutableStateOf("km") }
     var volU by remember { mutableStateOf("l") }
     var fmtU by remember { mutableStateOf("per100") }
@@ -467,6 +492,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         initialOdo = if (v.initialOdometer > 0) v.initialOdometer.toString() else ""
         photoVersion = v.photoVersion
         archived = v.archived
+        thumbPos = PhotoPos.parse(v.photoThumbPos); largePos = PhotoPos.parse(v.photoLargePos)
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
     }
 
@@ -474,7 +500,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         val b = base
         if (uri != null && b != null) scope.launch {
             runCatching { PhotoStore.import(ctx, uri, b.id) }
-                .onSuccess { photoVersion = it }
+                .onSuccess { photoVersion = it; thumbPos = PhotoPos(); largePos = PhotoPos() }
                 .onFailure { error = it.message }
         }
     }
@@ -497,6 +523,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     name = name.trim(), plate = plate.trim(), defaultFuelType = fuel,
                                     tankCapacity = tank.toDoubleDe(), initialOdometer = initialOdo.toIntKm() ?: 0,
                                     photoVersion = photoVersion, archived = archived,
+                                    photoThumbPos = thumbPos.encode(), photoLargePos = largePos.encode(),
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                 )
                             )
@@ -512,7 +539,12 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            VehiclePhoto(b.copy(photoVersion = photoVersion), Modifier.fillMaxWidth().height(200.dp))
+            val photoFile = if (photoVersion > 0) PhotoStore.file(ctx, b.id, photoVersion) else null
+            if (photoFile != null && photoFile.exists()) {
+                PhotoPositionEditor(photoFile, thumbPos, largePos, { thumbPos = it }, { largePos = it })
+            } else {
+                VehiclePhoto(b, Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT), large = true)
+            }
             OutlinedButton(
                 onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                 modifier = Modifier.fillMaxWidth(),
