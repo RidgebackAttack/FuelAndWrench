@@ -6,6 +6,7 @@ import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /** Spalten, die Spritmonitor als Zahlencode exportiert und die der Nutzer beim Import zuordnet. */
 enum class CodeField(val label: String, val options: List<String>) {
@@ -22,15 +23,40 @@ data class ImportResult(
     val skipped: Int,
     val missingColumns: List<String>,
     val codes: Map<CodeField, List<CodeInfo>> = emptyMap(),
+    /** Einträge, deren Betrag in einer anderen Währung als der des Fahrzeugs vorliegt. */
+    val rowCurrency: Map<String, String> = emptyMap(),
+    val correctedPrices: Int = 0,
+    val missingPrices: Int = 0,
+    val derivedOdometers: Int = 0,
+    val fileDuplicates: Int = 0,
 ) {
-    /** Ersetzt Zahlencodes durch die gewählten Werte. */
-    fun applyCodes(mapping: Map<CodeField, Map<String, String>>): List<Refuel> = refuels.map { r ->
+    val foreignCurrencies: Map<String, Int> get() = rowCurrency.values.groupingBy { it }.eachCount()
+
+    /** Ersetzt Zahlencodes, rechnet Fremdwährungen um und setzt optional Verbraucher für alle Einträge. */
+    fun finalize(
+        mapping: Map<CodeField, Map<String, String>>,
+        rates: Map<String, Double?>,
+        extrasForAll: Set<String>,
+    ): List<Refuel> = refuels.map { r ->
         fun m(f: CodeField, raw: String) = if (raw.isNotEmpty() && raw.all { it.isDigit() }) mapping[f]?.get(raw) ?: raw else raw
+        var total = r.totalPrice
+        var note = r.note
+        val cur = rowCurrency[r.id]
+        if (cur != null) {
+            val rate = rates[cur]
+            val original = "Original: ${r.totalPrice.fmt(2)} $cur"
+            if (rate != null && rate > 0) total = r.totalPrice / rate
+            note = listOf(note, original).filter { it.isNotBlank() }.joinToString(" · ")
+        }
+        val extras = (r.extrasList() + extrasForAll).toSet()
         r.copy(
             fuelType = m(CodeField.FUEL, r.fuelType),
             tireType = m(CodeField.TIRES, r.tireType),
             drivingStyle = m(CodeField.STYLE, r.drivingStyle),
             routeType = m(CodeField.ROUTE, r.routeType),
+            totalPrice = total,
+            note = note,
+            extras = Options.extras.filter { it in extras }.joinToString("|"),
         )
     }
 }
@@ -106,25 +132,37 @@ object CsvImport {
         }
         if (missing.isNotEmpty()) return ImportResult(emptyList(), lines.size - headerIdx - 1, missing)
 
+        val cCurrency = col("währung", "currency", "waehrung")
+        val vehicleCur = normCurrency(vehicle.currency)
+
         val result = mutableListOf<Refuel>()
+        val pendingTrip = mutableMapOf<String, Double>()
+        val rowCurrency = mutableMapOf<String, String>()
         var skipped = 0
-        var runningOdo = vehicle.initialOdometer.toDouble()
+        var correctedPrices = 0
+        var missingPrices = 0
         for (line in lines.drop(headerIdx + 1)) {
             val f = splitCsv(line, sep)
             fun v(i: Int) = if (i in f.indices) f[i].trim() else ""
 
             val date = parseDate(v(cDate), v(cTime))
             val amount = parseNum(v(cAmount), false)
-            val trip = if (cTrip >= 0) parseNum(v(cTrip), false) else null
-            val odo = if (cOdo >= 0) parseNum(v(cOdo), true) else trip?.let { runningOdo + it }
-            if (date == null || amount == null || amount <= 0 || odo == null || odo <= 0) {
+            val trip = if (cTrip >= 0) parseNum(v(cTrip), false)?.takeIf { it > 0 } else null
+            val odo = if (cOdo >= 0) parseNum(v(cOdo), true)?.takeIf { it > 0 } else null
+            if (date == null || amount == null || amount <= 0 || (odo == null && trip == null)) {
                 skipped++
                 continue
             }
-            runningOdo = odo
             val ppu = if (cPpu >= 0) parseNum(v(cPpu), false) else null
             val noteNum = v(cNote).takeIf { Regex("""\d+([.,]\d{1,2})?""").matches(it) }?.let { parseNum(it, false) }
-            val total = (if (cTotal >= 0) parseNum(v(cTotal), false) else null) ?: ppu?.let { it * amount } ?: noteNum ?: 0.0
+            var total = (if (cTotal >= 0) parseNum(v(cTotal), false)?.takeIf { it > 0 } else null)
+                ?: ppu?.let { it * amount } ?: noteNum ?: 0.0
+            // Plausibilität: Literpreis versehentlich als Gesamtbetrag eingetragen (z. B. 2,17 für 65 l)
+            if (total > 0 && amount >= 5 && total / amount < 0.3 && total in 0.5..5.0) {
+                total *= amount
+                correctedPrices++
+            }
+            if (total <= 0.0) missingPrices++
 
             val typeRaw = v(cType).lowercase()
             // Spritmonitor: 1 = Volltankung, 2 = Teilbetankung, 3 = Erstbetankung, 4 = ungültig
@@ -141,10 +179,10 @@ object CsvImport {
             if (extrasText.contains("standheizung")) extras += "Standheizung"
             if (extrasText.contains("dachbox") || extrasText.contains("fahrradträger")) extras += "Dachbox/Fahrradträger"
 
-            result += Refuel(
+            val r = Refuel(
                 vehicleId = vehicle.id,
                 timestamp = date,
-                odometer = odo.toInt(),
+                odometer = odo?.roundToInt() ?: 0,
                 amount = amount,
                 totalPrice = total,
                 fullTank = !partial,
@@ -160,27 +198,78 @@ object CsvImport {
                 tireType = v(cTires).let { if (isCode(it)) it else mapTires(it) },
                 note = if (noteNum != null && total == noteNum) "" else v(cNote),
             )
+            if (odo == null && trip != null) pendingTrip[r.id] = trip
+            val cur = normCurrency(v(cCurrency))
+            if (cur.isNotEmpty() && cur != vehicleCur) rowCurrency[r.id] = cur
+            result += r
         }
-        fun codes(field: CodeField, get: (Refuel) -> String, suggest: (String) -> String): List<CodeInfo> =
-            result.map(get).filter { isCode(it) }.groupingBy { it }.eachCount()
+
+        // Fehlende Kilometerstände aus der Teilstrecke ableiten (chronologisch)
+        var prevOdo = vehicle.initialOdometer
+        val ordered = result.sortedWith(compareBy({ it.timestamp }, { if (it.odometer > 0) it.odometer else Int.MAX_VALUE }))
+            .map { r ->
+                val t = pendingTrip[r.id]
+                val nr = if (t != null) r.copy(odometer = prevOdo + t.roundToInt()) else r
+                prevOdo = maxOf(prevOdo, nr.odometer)
+                nr
+            }
+        // Doppelte Zeilen in der Datei entfernen
+        val unique = ordered.distinctBy { it.odometer to (it.amount * 100).roundToInt() }
+        val fileDuplicates = ordered.size - unique.size
+
+        fun codes(get: (Refuel) -> String, suggest: (String) -> String): List<CodeInfo> =
+            unique.map(get).filter { isCode(it) }.groupingBy { it }.eachCount()
                 .toSortedMap(compareBy { it.toIntOrNull() ?: 0 })
                 .map { (raw, n) -> CodeInfo(raw, n, suggest(raw)) }
 
+        // Bedeutungen abgeglichen mit der Spritmonitor-Detailansicht (Symbole je Eintrag)
         val codeMap = mapOf(
-            CodeField.FUEL to codes(CodeField.FUEL, { it.fuelType }) { vehicle.defaultFuelType },
-            CodeField.TIRES to codes(CodeField.TIRES, { it.tireType }) {
+            CodeField.FUEL to codes({ it.fuelType }) {
+                when (it) { "1" -> "Diesel"; "4" -> "Premium-Diesel"; else -> vehicle.defaultFuelType }
+            },
+            CodeField.TIRES to codes({ it.tireType }) {
                 when (it) { "1" -> "Sommerreifen"; "2" -> "Winterreifen"; "3" -> "Ganzjahresreifen"; else -> "" }
             },
-            CodeField.STYLE to codes(CodeField.STYLE, { it.drivingStyle }) {
+            CodeField.STYLE to codes({ it.drivingStyle }) {
                 when (it) { "1" -> "Sparsam"; "2" -> "Normal"; "3" -> "Sportlich"; else -> "" }
             },
-            CodeField.ROUTE to codes(CodeField.ROUTE, { it.routeType }) {
-                // Bitmaske: mehrere gesetzte Bits = gemischte Strecken
-                if (Integer.bitCount(it.toIntOrNull() ?: 0) > 1) "Gemischt" else ""
-            },
+            CodeField.ROUTE to codes({ it.routeType }) { routeFromBits(it.toIntOrNull() ?: 0) },
         ).filterValues { it.isNotEmpty() }
-        return ImportResult(result, skipped, emptyList(), codeMap)
+
+        return ImportResult(
+            refuels = unique,
+            skipped = skipped,
+            missingColumns = emptyList(),
+            codes = codeMap,
+            rowCurrency = rowCurrency.filterKeys { id -> unique.any { it.id == id } },
+            correctedPrices = correctedPrices,
+            missingPrices = missingPrices,
+            derivedOdometers = pendingTrip.size,
+            fileDuplicates = fileDuplicates,
+        )
     }
+
+    /** Spritmonitor-Strecken als Bitmaske: 2 = Autobahn, 4 = Stadt, 8 = Landstraße (Reihenfolge der Symbole). */
+    private fun routeFromBits(bits: Int): String {
+        val parts = buildList {
+            if (bits and 2 != 0) add("Autobahn")
+            if (bits and 4 != 0) add("Stadt")
+            if (bits and 8 != 0) add("Landstraße")
+        }
+        return when (parts.size) { 0 -> ""; 1 -> parts[0]; else -> "Gemischt" }
+    }
+
+    fun normCurrency(raw: String): String = when (raw.trim().uppercase()) {
+        "", "-" -> ""
+        "EUR", "€", "EURO" -> "€"
+        "GBP", "£" -> "£"
+        "USD", "\$" -> "\$"
+        else -> raw.trim().uppercase()
+    }
+
+    /** Vorschlag für Umrechnungskurse (1 Fahrzeugwährung = x Fremdwährung). DKK ist fest an den Euro gekoppelt. */
+    fun suggestedRate(vehicleCur: String, foreign: String): String =
+        if (normCurrency(vehicleCur) == "€" && foreign == "DKK") "7,46" else ""
 
     private fun isCode(s: String) = s.isNotEmpty() && s.all { it.isDigit() }
 

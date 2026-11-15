@@ -296,6 +296,12 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                 imp.codes.forEach { (f, list) -> list.forEach { put("${f.name}:${it.raw}", it.suggestion) } }
             }
         }
+        val rates = remember(imp) {
+            mutableStateMapOf<String, String>().apply {
+                imp.foreignCurrencies.keys.forEach { put(it, CsvImport.suggestedRate(v?.currency ?: "€", it)) }
+            }
+        }
+        var extrasForAll by remember(imp) { mutableStateOf(setOf<String>()) }
         AlertDialog(
             onDismissRequest = { pendingImport = null },
             title = { Text("Import") },
@@ -312,6 +318,15 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                             ".\n\nIn „${v?.name ?: ""}“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt."
                     }
                 )
+                val hints = buildList {
+                    if (imp.fileDuplicates > 0) add("${imp.fileDuplicates} doppelte Zeile(n) in der Datei werden nur einmal übernommen")
+                    if (imp.derivedOdometers > 0) add("${imp.derivedOdometers}× fehlender Kilometerstand aus der Teilstrecke berechnet")
+                    if (imp.correctedPrices > 0) add("${imp.correctedPrices}× Literpreis statt Gesamtbetrag erkannt und korrigiert")
+                    if (imp.missingPrices > 0) add("${imp.missingPrices} Tankvorgänge ohne Preis")
+                }
+                if (hints.isNotEmpty()) {
+                    Text(hints.joinToString("\n") { "• $it" }, style = MaterialTheme.typography.bodySmall)
+                }
                 if (imp.codes.isNotEmpty() && imp.refuels.isNotEmpty()) {
                     Text(
                         "Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:",
@@ -329,6 +344,29 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         }
                     }
                 }
+                if (imp.foreignCurrencies.isNotEmpty() && imp.refuels.isNotEmpty()) {
+                    SectionTitle("Fremdwährung")
+                    imp.foreignCurrencies.forEach { (code, n) ->
+                        NumberField(
+                            "1 ${v?.currency ?: "€"} = … $code ($n×)",
+                            rates[code] ?: "",
+                            { rates[code] = it },
+                            suffix = code,
+                        )
+                    }
+                    Text(
+                        "Der Originalbetrag wird in der Notiz vermerkt. Ohne Kurs bleibt der Betrag unverändert.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                if (imp.refuels.isNotEmpty()) {
+                    SectionTitle("Zusätzliche Verbraucher für alle Einträge")
+                    Text(
+                        "Spritmonitor exportiert Klimaanlage, Heizung und Anhänger nicht. Hier optional für alle importierten Tankvorgänge setzen:",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    MultiChips(Options.extras, extrasForAll) { extrasForAll = it }
+                }
               }
             },
             confirmButton = {
@@ -338,7 +376,8 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         val map = CodeField.entries.associateWith { f ->
                             imp.codes[f].orEmpty().associate { it.raw to (mapping["${f.name}:${it.raw}"] ?: "") }
                         }
-                        val (added, dups) = repo.importRefuels(vehicleId, imp.applyCodes(map))
+                        val rateValues = rates.mapValues { (_, txt) -> txt.toDoubleDe() }
+                        val (added, dups) = repo.importRefuels(vehicleId, imp.finalize(map, rateValues, extrasForAll))
                         snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups Duplikate übersprungen" else "")
                     }
                 }) { Text("Importieren") }
