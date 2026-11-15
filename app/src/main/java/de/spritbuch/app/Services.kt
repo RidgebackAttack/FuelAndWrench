@@ -19,6 +19,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -45,6 +46,9 @@ class App : Application() {
         repo = Repository(this, AppDatabase.create(this))
         Notifications.createChannel(this)
         SyncScheduler.schedulePeriodic(this)
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            runCatching { repo.repairImportedData() }
+        }
     }
 }
 

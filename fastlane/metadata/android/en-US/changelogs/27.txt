@@ -1,0 +1,3 @@
+Bug fixes:
+• Amounts with thousands separators
+• Older Spritmonitor imports are repaired once: numeric codes for fuel, tyres, driving style and route are translated, unit prices entered as totals are corrected

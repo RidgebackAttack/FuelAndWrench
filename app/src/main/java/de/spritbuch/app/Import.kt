@@ -250,7 +250,7 @@ object CsvImport {
     }
 
     /** Spritmonitor-Strecken als Bitmaske: 2 = Autobahn, 4 = Stadt, 8 = Landstraße (Reihenfolge der Symbole). */
-    private fun routeFromBits(bits: Int): String {
+    fun routeFromBits(bits: Int): String {
         val parts = buildList {
             if (bits and 2 != 0) add("Autobahn")
             if (bits and 4 != 0) add("Stadt")

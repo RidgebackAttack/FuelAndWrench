@@ -1,0 +1,3 @@
+Fehlerbehebungen:
+• Beträge mit Tausenderpunkt (32.127 €)
+• Ältere Spritmonitor-Importe werden einmalig repariert: Zahlencodes bei Kraftstoff, Reifen, Fahrweise und Strecke werden übersetzt, als Gesamtbetrag eingetragene Literpreise korrigiert

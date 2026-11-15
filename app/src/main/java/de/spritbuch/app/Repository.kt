@@ -83,6 +83,42 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         return added to dups
     }
 
+    /**
+     * Repariert einmalig Daten aus älteren Spritmonitor-Importen:
+     * - Zahlencodes bei Kraftstoff, Reifen, Fahrweise, Strecke → Klartext
+     * - als Gesamtbetrag eingetragene Literpreise (z. B. 2,17 € für 65 l) → Gesamtbetrag
+     */
+    suspend fun repairImportedData() {
+        val prefs = ctx.applicationContext.getSharedPreferences("spritbuch", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("repair_v1_done", false)) return
+        val t = now()
+        db.withTransaction {
+            val vehicles = db.vehicles().getAllRaw().associateBy { it.id }
+            for (r in db.refuels().getAllRaw()) {
+                if (r.deleted) continue
+                val v = vehicles[r.vehicleId] ?: continue
+                fun isCode(s: String) = s.isNotEmpty() && s.all { it.isDigit() }
+                val fuel = if (isCode(r.fuelType)) {
+                    if (r.fuelType in setOf("1", "4") && v.defaultFuelType.contains("Diesel")) "Diesel" else v.defaultFuelType
+                } else r.fuelType
+                val tires = if (isCode(r.tireType)) {
+                    when (r.tireType) { "1" -> "Sommerreifen"; "2" -> "Winterreifen"; "3" -> "Ganzjahresreifen"; else -> "" }
+                } else r.tireType
+                val style = if (isCode(r.drivingStyle)) {
+                    when (r.drivingStyle) { "1" -> "Sparsam"; "2" -> "Normal"; "3" -> "Sportlich"; else -> "" }
+                } else r.drivingStyle
+                val route = if (isCode(r.routeType)) CsvImport.routeFromBits(r.routeType.toInt()) else r.routeType
+                val total = if (r.totalPrice > 0 && r.amount >= 5 && r.totalPrice / r.amount < 0.3 && r.totalPrice in 0.5..5.0) {
+                    r.totalPrice * r.amount
+                } else r.totalPrice
+                val fixed = r.copy(fuelType = fuel, tireType = tires, drivingStyle = style, routeType = route, totalPrice = total)
+                if (fixed != r) db.refuels().upsert(fixed.copy(updatedAt = t))
+            }
+        }
+        prefs.edit().putBoolean("repair_v1_done", true).apply()
+        changed()
+    }
+
     suspend fun deleteService(id: String) {
         db.services().get(id)?.let { db.services().upsert(it.copy(deleted = true, updatedAt = now())) }
         changed()

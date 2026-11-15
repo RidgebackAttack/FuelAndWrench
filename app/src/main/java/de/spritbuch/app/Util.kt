@@ -17,7 +17,7 @@ import java.util.TimeZone
 
 private val DE = Locale.GERMANY
 
-fun Double.fmt(decimals: Int = 2): String = String.format(DE, "%.${decimals}f", this)
+fun Double.fmt(decimals: Int = 2): String = String.format(DE, "%,.${decimals}f", this)
 fun Int.km(): String = String.format(DE, "%,d km", this)
 fun Int.dist(unit: String): String = String.format(DE, "%,d %s", this, unit)
 
