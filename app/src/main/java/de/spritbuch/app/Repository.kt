@@ -15,6 +15,21 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
     fun refuels(vehicleId: String) = db.refuels().observeForVehicle(vehicleId)
     fun reminders(vehicleId: String) = db.reminders().observeForVehicle(vehicleId)
     fun services(vehicleId: String) = db.services().observeForVehicle(vehicleId)
+    fun tireSets(vehicleId: String) = db.tireSets().observeForVehicle(vehicleId)
+    suspend fun getTireSet(id: String) = db.tireSets().get(id)
+
+    suspend fun saveTireSet(t: TireSet) {
+        db.tireSets().upsert(t.copy(updatedAt = now()))
+        changed()
+    }
+
+    suspend fun deleteTireSet(id: String) {
+        db.tireSets().get(id)?.let { db.tireSets().upsert(it.copy(deleted = true, updatedAt = now())) }
+        changed()
+    }
+
+    /** Aktuell montierter Radsatz = montierter Satz des letzten Radwechsels. */
+    suspend fun mountedTireSetId(vehicleId: String): String? = db.services().lastWheelChange(vehicleId)?.tireSetId
     suspend fun getService(id: String) = db.services().get(id)
 
     /**
@@ -144,6 +159,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
             db.refuels().forVehicle(id).forEach { db.refuels().upsert(it.copy(deleted = true, updatedAt = t)) }
             db.reminders().forVehicle(id).forEach { db.reminders().upsert(it.copy(deleted = true, updatedAt = t)) }
             db.services().forVehicle(id).forEach { db.services().upsert(it.copy(deleted = true, updatedAt = t)) }
+            db.tireSets().forVehicle(id).forEach { db.tireSets().upsert(it.copy(deleted = true, updatedAt = t)) }
         }
         changed()
     }

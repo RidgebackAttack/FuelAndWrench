@@ -66,6 +66,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -221,6 +222,7 @@ fun VehicleDetailContent(
     val tabs = listOf("Übersicht", "Tanken", "Service")
     val pager = rememberPagerState { tabs.size }
     val importServices = rememberServiceImporter(vehicleId, vehicle, snackbar)
+    val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
     val v = vehicle
     val fuel = v?.defaultFuelType ?: ""
     val amt = Units.amount(v, fuel)
@@ -304,7 +306,10 @@ fun VehicleDetailContent(
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
                         )
                         1 -> refuelItems(nav, v, refuels, stats)
-                        2 -> serviceItems(nav, v, services, lineColor, dotColor)
+                        2 -> {
+                            tireSetItems(nav, v, tireSets, services)
+                            serviceItems(nav, v, services, lineColor, dotColor)
+                        }
                     }
                 }
             }
@@ -438,6 +443,34 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
             RefuelCard(v, r, stats.perRefuel[r.id]) { nav.navigate("refuelEdit/${v.id}/${r.id}") }
         }
     }
+}
+
+/** Radsätze mit Status (montiert/eingelagert) und letzter Profiltiefe. */
+private fun LazyListScope.tireSetItems(nav: NavController, v: Vehicle, sets: List<TireSet>, services: List<ServiceEntry>) {
+    val tireHistory = services.filter { it.category == "Reifen" }
+    val mountedId = tireHistory.filter { it.tireSetId.isNotBlank() }.maxByOrNull { it.timestamp }?.tireSetId
+    item(key = "tires-head") {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f)) { SectionTitle("Radsätze") }
+            if (sets.isNotEmpty()) TextButton(onClick = { nav.navigate("serviceEdit/${v.id}/new-wheel") }) { Text("Radwechsel") }
+            TextButton(onClick = { nav.navigate("tireSetEdit/${v.id}/new") }) { Text("+ Neu") }
+        }
+    }
+    if (sets.isEmpty()) {
+        item(key = "tires-empty") {
+            Text(
+                "Lege z. B. Sommer- und Winterräder als Radsatz an. Beim Radwechsel wählst du dann nur noch aus, " +
+                    "welcher Satz runter und welcher drauf kommt, und trägst die Profiltiefe bei der Einlagerung ein.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+    items(sets, key = { "set-" + it.id }) { set ->
+        TireSetCard(v, set, mounted = set.id == mountedId, tread = lastTreadOf(set, tireHistory)) {
+            nav.navigate("tireSetEdit/${v.id}/${set.id}")
+        }
+    }
+    item(key = "svc-head") { SectionTitle("Service-Historie") }
 }
 
 private fun LazyListScope.serviceItems(

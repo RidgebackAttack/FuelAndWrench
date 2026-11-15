@@ -108,8 +108,18 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     Text(s.tireSummary(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
                 if (s.treadDepth.isNotBlank()) {
-                    Text("Profil: " + TreadCodec.summary(s.treadDepth), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary)
+                    val t = TreadCodec.parse(s.treadDepth)
+                    if (s.tireSetId.isNotBlank() || s.removedTireSetId.isNotBlank()) {
+                        val stored = t.mapNotNull { (k, v) -> v.old?.let { "$k ${it.fmt(1)}" } }
+                        val mounted = t.mapNotNull { (k, v) -> v.new?.let { "$k ${it.fmt(1)}" } }
+                        if (stored.isNotEmpty()) Text("Profil eingelagert: ${stored.joinToString(" · ")} mm",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        if (mounted.isNotEmpty()) Text("Profil montiert: ${mounted.joinToString(" · ")} mm",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Text("Profil: " + TreadCodec.summary(s.treadDepth), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary)
+                    }
                 }
                 if (s.note.isNotBlank()) Text(s.note, style = MaterialTheme.typography.bodySmall)
             }
@@ -247,7 +257,8 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     val ctx = LocalContext.current
     val repo = ctx.repo
     val scope = rememberCoroutineScope()
-    val isNew = serviceId == "new"
+    val isNew = serviceId.startsWith("new")
+    val isWheelChange = serviceId == "new-wheel"
     var base by remember { mutableStateOf<ServiceEntry?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
     var timestamp by remember { mutableLongStateOf(now()) }
@@ -261,6 +272,9 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     var tireBrand by remember { mutableStateOf("") }
     var tireModel by remember { mutableStateOf("") }
     var tireSize by remember { mutableStateOf("") }
+    val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
+    var mountedSetId by remember { mutableStateOf("") }
+    var removedSetId by remember { mutableStateOf("") }
     val treadOld = remember { mutableStateMapOf<String, String>() }
     val treadNew = remember { mutableStateMapOf<String, String>() }
     var error by remember { mutableStateOf<String?>(null) }
@@ -280,10 +294,19 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         workshop = s.workshop
         note = s.note
         tireSeason = s.tireSeason; tireBrand = s.tireBrand; tireModel = s.tireModel; tireSize = s.tireSize
-        // Neuer Eintrag: Reifendaten des letzten Reifenwechsels vorschlagen
-        if (isNew) repo.db.services().lastTireChange(vehicleId)?.let { last ->
-            tireSeason = last.tireSeason; tireBrand = last.tireBrand; tireModel = last.tireModel; tireSize = last.tireSize
+        mountedSetId = s.tireSetId; removedSetId = s.removedTireSetId
+        if (isNew) {
+            val sets = repo.db.tireSets().forVehicle(vehicleId)
+            if (sets.isNotEmpty()) {
+                // Radwechsel: der bisher montierte Satz kommt runter, der andere drauf
+                val current = repo.mountedTireSetId(vehicleId)
+                removedSetId = current ?: ""
+                mountedSetId = sets.firstOrNull { it.id != current }?.id ?: ""
+            } else repo.db.services().lastTireChange(vehicleId)?.let { last ->
+                tireSeason = last.tireSeason; tireBrand = last.tireBrand; tireModel = last.tireModel; tireSize = last.tireSize
+            }
         }
+        if (isWheelChange) { category = "Reifen"; title = "Radwechsel" }
         TreadCodec.parse(s.treadDepth).forEach { (k, t) ->
             t.old?.let { treadOld[k] = it.fmt(1) }
             t.new?.let { treadNew[k] = it.fmt(1) }
@@ -302,9 +325,19 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
                         if (title.isBlank()) { error = "Bitte eine Bezeichnung eingeben"; return@IconButton }
+                        val mountedSet = tireSets.firstOrNull { it.id == mountedSetId }
+                        if (category == "Reifen" && mountedSet != null) {
+                            tireSeason = mountedSet.season
+                            tireBrand = if (mountedSet.sameAxles || mountedSet.rearTire.isBlank()) mountedSet.frontTire
+                            else "${mountedSet.frontTire} / ${mountedSet.rearTire}"
+                            tireModel = ""
+                            tireSize = mountedSet.sizes()
+                        }
                         scope.launch {
                             repo.saveService(
                                 b.copy(
+                                    tireSetId = if (category == "Reifen") mountedSetId else "",
+                                    removedTireSetId = if (category == "Reifen") removedSetId else "",
                                     timestamp = timestamp, odometer = odometer.toIntKm() ?: 0, title = title.trim(),
                                     category = category, cost = cost.toDoubleDe() ?: 0.0,
                                     workshop = workshop.trim(), note = note.trim(),
@@ -343,7 +376,41 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
             ChoiceField("Kategorie", category, Options.serviceCategories) { category = it }
             NumberField("Kilometerstand", odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
             NumberField("Kosten", cost, { cost = it }, suffix = Units.cur(veh))
-            if (category == "Reifen") {
+            if (category == "Reifen" && tireSets.isNotEmpty()) {
+                SectionTitle("Radwechsel")
+                val none = "– keiner –"
+                val labels = tireSets.associate { it.id to it.label() }
+                ChoiceField("Abmontiert / eingelagert", labels[removedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
+                    removedSetId = tireSets.firstOrNull { it.label() == sel }?.id ?: ""
+                }
+                ChoiceField("Montiert", labels[mountedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
+                    mountedSetId = tireSets.firstOrNull { it.label() == sel }?.id ?: ""
+                }
+                TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text("+ Weiteren Radsatz anlegen") }
+                SectionTitle("Profiltiefe")
+                Text(
+                    "Links: Profil des abmontierten Satzes bei der Einlagerung. Rechts: Profil des montierten Satzes. Felder dürfen leer bleiben.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Options.tirePositions(veh?.vehicleType).forEach { (key, label) ->
+                    Text(label, style = MaterialTheme.typography.labelLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NumberField("Eingelagert", treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField("Montiert", treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                    }
+                }
+            } else if (category == "Reifen") {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Tipp: Radsätze anlegen", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "Lege z. B. Sommer- und Winterräder einmal als Radsatz an (auch mit unterschiedlichen Reifen vorne und hinten). " +
+                                "Beim Radwechsel wählst du dann nur noch aus und trägst die Profiltiefe bei der Einlagerung ein.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text("Radsatz anlegen") }
+                    }
+                }
                 SectionTitle("Reifen")
                 SingleChips(Options.tireTypes, tireSeason) { tireSeason = it }
                 SuggestField("Hersteller", tireBrand, Options.tireBrands) { tireBrand = it }

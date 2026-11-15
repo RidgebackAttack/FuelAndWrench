@@ -44,7 +44,7 @@ object Options {
     )
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
     val serviceSuggestions = listOf(
-        "Ölwechsel", "Reifenwechsel", "Profiltiefe gemessen", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
+        "Ölwechsel", "Radwechsel", "Reifenwechsel", "Profiltiefe gemessen", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
         "Luftfilter", "Innenraumfilter", "Batterie", "Wischerblätter", "Kette/Ritzel",
     )
     val reminderSuggestions = listOf(
@@ -146,6 +146,9 @@ data class ServiceEntry(
     @ColumnInfo(defaultValue = "") val tireBrand: String = "",
     @ColumnInfo(defaultValue = "") val tireModel: String = "",
     @ColumnInfo(defaultValue = "") val tireSize: String = "",
+    /** Radwechsel: montierter bzw. abmontierter (eingelagerter) Radsatz. */
+    @ColumnInfo(defaultValue = "") val tireSetId: String = "",
+    @ColumnInfo(defaultValue = "") val removedTireSetId: String = "",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 ) {
@@ -154,6 +157,61 @@ data class ServiceEntry(
         listOf(tireBrand, tireModel).filter { it.isNotBlank() }.joinToString(" "),
         tireSize,
     ).filter { it.isNotBlank() }.joinToString(" · ")
+}
+
+/** Ein Radsatz (z. B. Sommer- oder Winterräder), der im Wechsel montiert und eingelagert wird. */
+@Serializable
+@Entity(tableName = "tire_sets", indices = [Index("vehicleId")])
+data class TireSet(
+    @PrimaryKey val id: String = newId(),
+    val vehicleId: String = "",
+    val season: String = "",
+    /** Angaben je Achse – Hersteller, Reifenname und Größe können vorne und hinten verschieden sein. */
+    val brandFront: String = "",
+    val modelFront: String = "",
+    val sizeFront: String = "",
+    val brandRear: String = "",
+    val modelRear: String = "",
+    val sizeRear: String = "",
+    val note: String = "",
+    val updatedAt: Long = now(),
+    val deleted: Boolean = false,
+) {
+    private fun tire(b: String, m: String) = listOf(b, m).filter { it.isNotBlank() }.joinToString(" ")
+    val frontTire: String get() = tire(brandFront, modelFront)
+    val rearTire: String get() = tire(brandRear, modelRear)
+    val sameAxles: Boolean get() = frontTire == rearTire && sizeFront == sizeRear
+
+    /** Kurzbezeichnung, z. B. „Winterreifen – Michelin Pilot Alpin 5“. */
+    fun label(): String {
+        val tires = if (rearTire.isBlank() || rearTire == frontTire) frontTire else "$frontTire / $rearTire"
+        return listOf(season, tires).filter { it.isNotBlank() }.joinToString(" – ").ifBlank { "Radsatz" }
+    }
+
+    /** Größen, z. B. „245/40 R19“ oder „v 245/40 R19 · h 275/35 R19“. */
+    fun sizes(): String = when {
+        sizeFront.isBlank() && sizeRear.isBlank() -> ""
+        sizeRear.isBlank() || sizeRear == sizeFront -> sizeFront
+        else -> "v $sizeFront · h $sizeRear"
+    }
+}
+
+@Dao
+interface TireSetDao {
+    @Query("SELECT * FROM tire_sets WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY season, brandFront")
+    fun observeForVehicle(vehicleId: String): Flow<List<TireSet>>
+
+    @Query("SELECT * FROM tire_sets WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY season, brandFront")
+    suspend fun forVehicle(vehicleId: String): List<TireSet>
+
+    @Query("SELECT * FROM tire_sets WHERE id = :id")
+    suspend fun get(id: String): TireSet?
+
+    @Query("SELECT * FROM tire_sets")
+    suspend fun getAllRaw(): List<TireSet>
+
+    @Upsert
+    suspend fun upsert(item: TireSet)
 }
 
 @Dao
@@ -172,6 +230,12 @@ interface ServiceDao {
 
     @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId AND tireSeason != '' ORDER BY timestamp DESC LIMIT 1")
     suspend fun lastTireChange(vehicleId: String): ServiceEntry?
+
+    @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId AND category = 'Reifen' ORDER BY timestamp DESC")
+    fun observeTireHistory(vehicleId: String): Flow<List<ServiceEntry>>
+
+    @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId AND tireSetId != '' ORDER BY timestamp DESC LIMIT 1")
+    suspend fun lastWheelChange(vehicleId: String): ServiceEntry?
 
     @Upsert
     suspend fun upsert(item: ServiceEntry)
@@ -246,12 +310,13 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class], version = 5, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
     abstract fun reminders(): ReminderDao
     abstract fun services(): ServiceDao
+    abstract fun tireSets(): TireSetDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -292,9 +357,23 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE services ADD COLUMN tireSetId TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE services ADD COLUMN removedTireSetId TEXT NOT NULL DEFAULT ''")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `tire_sets` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, " +
+                        "`season` TEXT NOT NULL, `brandFront` TEXT NOT NULL, `modelFront` TEXT NOT NULL, `sizeFront` TEXT NOT NULL, " +
+                        "`brandRear` TEXT NOT NULL, `modelRear` TEXT NOT NULL, `sizeRear` TEXT NOT NULL, " +
+                        "`note` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tire_sets_vehicleId` ON `tire_sets` (`vehicleId`)")
+            }
+        }
+
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
     }
 }

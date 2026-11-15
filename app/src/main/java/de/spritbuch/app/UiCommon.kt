@@ -109,6 +109,9 @@ fun AppNav() {
         composable("settings") { SettingsScreen(nav) }
         composable("map/{vehicleId}") { MapScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("services/{vehicleId}") { ServiceTimelineScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
+        composable("tireSetEdit/{vehicleId}/{id}") {
+            TireSetEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
+        }
         composable("serviceEdit/{vehicleId}/{id}") {
             ServiceEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }

@@ -92,6 +92,7 @@ data class SyncData(
     val refuels: List<Refuel> = emptyList(),
     val reminders: List<Reminder> = emptyList(),
     val services: List<ServiceEntry> = emptyList(),
+    val tireSets: List<TireSet> = emptyList(),
     val reminderTemplates: List<TemplateItem> = emptyList(),
     val templatesUpdatedAt: Long = 0,
 )
@@ -171,6 +172,7 @@ object SyncManager {
                     refuels = mergeInto(db.refuels().getAllRaw(), r.refuels, { it.id }, { it.updatedAt }) { db.refuels().upsert(it) },
                     reminders = mergeInto(db.reminders().getAllRaw(), r.reminders, { it.id }, { it.updatedAt }) { db.reminders().upsert(it) },
                     services = mergeInto(db.services().getAllRaw(), r.services, { it.id }, { it.updatedAt }) { db.services().upsert(it) },
+                    tireSets = mergeInto(db.tireSets().getAllRaw(), r.tireSets, { it.id }, { it.updatedAt }) { db.tireSets().upsert(it) },
                 )
             }
 
@@ -179,6 +181,7 @@ object SyncManager {
                 merged.refuels.toSet() != r.refuels.toSet() ||
                 merged.reminders.toSet() != r.reminders.toSet() ||
                 merged.services.toSet() != r.services.toSet() ||
+                merged.tireSets.toSet() != r.tireSets.toSet() ||
                 merged.templatesUpdatedAt != r.templatesUpdatedAt || merged.reminderTemplates != r.reminderTemplates
 
             if (remoteChanged) {
