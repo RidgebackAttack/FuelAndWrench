@@ -2,7 +2,7 @@
 Aufruf: python3 tools/icon_gen.py [Tropfen-Skalierung, Standard 0.74]"""
 import sys
 
-S = float(sys.argv[1]) if len(sys.argv) > 1 else 0.58   # Größe Tropfen/Tacho
+S = float(sys.argv[1]) if len(sys.argv) > 1 else 0.74   # Größe Tropfen/Tacho
 Z = float(sys.argv[2]) if len(sys.argv) > 2 else 1.25   # Größe Zylinder (Proportionen bleiben)
 A = float(sys.argv[3]) if len(sys.argv) > 3 else 0.55   # Deckkraft des Glasrands (Kern bleibt undurchsichtig)
 CX, CY = 54, 62                                          # Mittelpunkt Tropfen
