@@ -420,4 +420,8 @@
     <string name="cost_import_found">%1$d Kosten und %2$d Service-Einträge gefunden</string>
     <string name="cost_import_info">Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.</string>
     <string name="cd_cost_import">Kosten importieren</string>
+    <string name="archive_title">Archiv (%1$d)</string>
+    <string name="archive_expand">Groß anzeigen</string>
+    <string name="archive_compact">Klein anzeigen</string>
+    <string name="archived_last">letzte Betankung %1$s</string>
 </resources>

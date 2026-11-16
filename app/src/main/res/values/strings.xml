@@ -420,4 +420,8 @@
     <string name="cost_import_found">%1$d costs and %2$d service entries found</string>
     <string name="cost_import_info">Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.</string>
     <string name="cd_cost_import">Import costs</string>
+    <string name="archive_title">Archive (%1$d)</string>
+    <string name="archive_expand">Show large</string>
+    <string name="archive_compact">Show small</string>
+    <string name="archived_last">last refuel %1$s</string>
 </resources>

@@ -417,3 +417,7 @@ cost_import	Cost import	Kosten-Import	Import af omkostninger
 cost_import_found	%1$d costs and %2$d service entries found	%1$d Kosten und %2$d Service-Einträge gefunden	%1$d omkostninger og %2$d serviceposter fundet
 cost_import_info	Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.	Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.	Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.
 cd_cost_import	Import costs	Kosten importieren	Importér omkostninger
+archive_title	Archive (%1$d)	Archiv (%1$d)	Arkiv (%1$d)
+archive_expand	Show large	Groß anzeigen	Vis stort
+archive_compact	Show small	Klein anzeigen	Vis småt
+archived_last	last refuel %1$s	letzte Betankung %1$s	seneste tankning %1$s

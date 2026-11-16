@@ -420,4 +420,8 @@
     <string name="cost_import_found">%1$d omkostninger og %2$d serviceposter fundet</string>
     <string name="cost_import_info">Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.</string>
     <string name="cd_cost_import">Importér omkostninger</string>
+    <string name="archive_title">Arkiv (%1$d)</string>
+    <string name="archive_expand">Vis stort</string>
+    <string name="archive_compact">Vis småt</string>
+    <string name="archived_last">seneste tankning %1$s</string>
 </resources>

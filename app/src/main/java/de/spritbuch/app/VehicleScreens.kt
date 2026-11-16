@@ -1,5 +1,12 @@
 package de.spritbuch.app
 
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.alpha
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -143,14 +150,58 @@ fun VehicleListScreen(nav: NavController) {
                 if (active.isEmpty()) item { Text(str(R.string.all_archived)) }
                 items(active, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
                 if (archived.isNotEmpty()) {
-                    item {
-                        TextButton(onClick = { showArchived = !showArchived }) {
-                            Text(if (showArchived) str(R.string.archive_hide) else str(R.string.archive_show, archived.size))
+                    item(key = "archive-header") {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                            Text(
+                                str(R.string.archive_title, archived.size),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = { showArchived = !showArchived }) {
+                                Text(str(if (showArchived) R.string.archive_compact else R.string.archive_expand))
+                            }
                         }
                     }
-                    if (showArchived) items(archived, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
+                    if (showArchived) {
+                        items(archived, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
+                    } else {
+                        items(archived, key = { it.id }) { v -> ArchivedVehicleRow(nav, v, refuels) }
+                    }
                 }
             }
+        }
+    }
+}
+
+/** Archivierte Fahrzeuge zugeklappt: klein und ausgegraut, antippen öffnet das Fahrzeug. */
+@Composable
+private fun ArchivedVehicleRow(nav: NavController, v: Vehicle, refuels: List<Refuel>) {
+    val last = remember(refuels, v.id) { refuels.filter { it.vehicleId == v.id }.maxByOrNull { it.timestamp } }
+    Card(
+        onClick = { nav.navigate("vehicle/${v.id}") },
+        modifier = Modifier.fillMaxWidth().alpha(0.6f),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            VehiclePhoto(
+                v,
+                Modifier.size(36.dp)
+                    .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                    .drawWithContent {
+                        drawContent()
+                        // Foto in Graustufen
+                        drawRect(Color.Gray, blendMode = BlendMode.Saturation)
+                    },
+            )
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(v.name, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                last?.let {
+                    Text(str(R.string.archived_last, it.timestamp.date()), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                }
+            }
+            Icon(Icons.Default.Inventory2, contentDescription = null, modifier = Modifier.size(18.dp))
         }
     }
 }
