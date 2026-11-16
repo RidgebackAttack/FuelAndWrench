@@ -14,6 +14,7 @@ Wohin werden Daten übertragen?
 
 • Dein eigener WebDAV-/Nextcloud-Server: alle App-Daten und Fahrzeugfotos – bei der Synchronisation (abschaltbar: ja – Synchronisation nicht einrichten)
 • overpass-api.de (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ – Tankstellensuche (abschaltbar: ja – Einstellungen → Datenschutz)
+• nominatim.openstreetmap.org (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ / „Adresse“ – Adresssuche (abschaltbar: ja – gleicher Schalter)
 • Android-Geocoder (auf Geräten mit Google-Diensten: Google): Koordinaten – Adressermittlung (abschaltbar: ja – standardmäßig aus)
 • Netzwerk-Ortung des Systems (auf Geräten mit Google-Diensten: Google): WLAN-/Mobilfunkdaten – Ortung (abschaltbar: ja – standardmäßig aus, dann nur GPS)
 • tile.openstreetmap.org: angezeigter Kartenausschnitt, IP-Adresse – beim Öffnen der Karte (abschaltbar: nur durch Nicht-Nutzung der Karte)

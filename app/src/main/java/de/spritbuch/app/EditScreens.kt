@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.AlertDialog
@@ -109,8 +110,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     val p = Prefs(ctx)
                     val st = if (p.useOverpass) LocationHelper.nearbyStation(loc.latitude, loc.longitude) else null
                     st?.brand?.let { brand = it }
-                    val addr = st?.address ?: if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null
-                    addr?.let { address = it }
+                    val addr = st?.address
+                        ?: (if (p.useOverpass) LocationHelper.osmAddress(loc.latitude, loc.longitude) else null)
+                        ?: (if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null)
+                    address = addr ?: ""
                     info = when {
                         !p.useOverpass -> "Position übernommen (Tankstellensuche ist in den Einstellungen aus)"
                         st != null -> "Tankstelle erkannt"
@@ -271,12 +274,24 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             val la = lat
             val lo = lon
             if (la != null && lo != null) {
+                Text(String.format(Locale.GERMANY, "%.5f, %.5f", la, lo), style = MaterialTheme.typography.bodySmall)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        String.format(Locale.GERMANY, "%.5f, %.5f", la, lo),
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.weight(1f),
-                    )
+                    TextButton(onClick = {
+                        scope.launch {
+                            locating = true
+                            val p = Prefs(ctx)
+                            val a = (if (p.useOverpass) LocationHelper.osmAddress(la, lo) else null)
+                                ?: (if (p.useGeocoder) LocationHelper.address(ctx, la, lo) else null)
+                            if (a != null) { address = a; info = null }
+                            else info = if (!p.useOverpass && !p.useGeocoder) "Adresssuche ist in den Einstellungen aus"
+                            else "Keine Adresse gefunden"
+                            locating = false
+                        }
+                    }, enabled = !locating) {
+                        Icon(Icons.Default.Place, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("Adresse")
+                    }
                     TextButton(onClick = {
                         val uri = Uri.parse("geo:$la,$lo?q=$la,$lo")
                         runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
@@ -587,8 +602,8 @@ fun SettingsScreen(nav: NavController) {
                     "und – wenn unten eingeschaltet – an die genannten Dienste.",
                 style = MaterialTheme.typography.bodySmall,
             )
-            LabeledSwitch("Tankstelle über OpenStreetMap suchen", useOverpass) { useOverpass = it; prefs.useOverpass = it }
-            Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de.", style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch("Tankstelle und Adresse über OpenStreetMap suchen", useOverpass) { useOverpass = it; prefs.useOverpass = it }
+            Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de und nominatim.openstreetmap.org.", style = MaterialTheme.typography.bodySmall)
             LabeledSwitch("Adresse über Android-Geocoder ermitteln", useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
             Text("Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.", style = MaterialTheme.typography.bodySmall)
             LabeledSwitch("Netzwerk-Ortung (WLAN/Mobilfunk) erlauben", useNetworkLocation) {

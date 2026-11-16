@@ -120,7 +120,7 @@ object ReminderChecker {
     }
 }
 
-data class Station(val brand: String?, val address: String?)
+data class Station(val brand: String?, val address: String?, val lat: Double? = null, val lon: Double? = null)
 
 object LocationHelper {
     private val http = OkHttpClient.Builder()
@@ -216,8 +216,29 @@ object LocationHelper {
             val brand = rawBrand?.let { Options.matchBrand(it) }
             val street = listOfNotNull(tag("addr:street"), tag("addr:housenumber")).joinToString(" ")
             val city = listOfNotNull(tag("addr:postcode"), tag("addr:city")).joinToString(" ")
-            val address = listOf(street, city).filter { it.isNotBlank() }.joinToString(", ").ifBlank { null }
-            Station(brand, address)
+            val (sLat, sLon) = coords(best) ?: (lat to lon)
+            // Viele Tankstellen sind in OSM ohne (vollständige) Adresse eingetragen → über Nominatim ergänzen
+            val address = if (street.isNotBlank() && city.isNotBlank()) "$street, $city"
+            else osmAddress(sLat, sLon) ?: listOf(street, city).filter { it.isNotBlank() }.joinToString(", ").ifBlank { null }
+            Station(brand, address, sLat, sLon)
+        }.getOrNull()
+    }
+
+    /** Adresse zu Koordinaten über OpenStreetMap Nominatim (Rückwärtssuche). */
+    suspend fun osmAddress(lat: Double, lon: Double): String? = withContext(Dispatchers.IO) {
+        runCatching {
+            val url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1" +
+                "&accept-language=de&lat=${"%.6f".format(Locale.US, lat)}&lon=${"%.6f".format(Locale.US, lon)}"
+            val req = Request.Builder().url(url)
+                .header("User-Agent", "FuelAndWrench-Android (https://github.com/RidgebackAttack/FuelAndWrench)")
+                .build()
+            val body = http.newCall(req).execute().use { if (it.isSuccessful) it.body?.string() else null }
+                ?: return@runCatching null
+            val a = Json.parseToJsonElement(body).jsonObject["address"]?.jsonObject ?: return@runCatching null
+            fun f(vararg k: String) = k.firstNotNullOfOrNull { a[it]?.jsonPrimitive?.contentOrNull?.takeIf { s -> s.isNotBlank() } }
+            val street = listOfNotNull(f("road", "pedestrian", "footway", "path"), f("house_number")).joinToString(" ")
+            val city = listOfNotNull(f("postcode"), f("city", "town", "village", "municipality", "hamlet")).joinToString(" ")
+            listOf(street, city).filter { it.isNotBlank() }.joinToString(", ").ifBlank { null }
         }.getOrNull()
     }
 

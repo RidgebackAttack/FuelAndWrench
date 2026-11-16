@@ -1,0 +1,2 @@
+- Address is now reliably determined after "current position": if the station has no address in OpenStreetMap, it is looked up via Nominatim (OpenStreetMap)
+- New "Address" button to fill in the address for older refuels that have coordinates

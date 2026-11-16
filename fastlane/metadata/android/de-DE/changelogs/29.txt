@@ -1,0 +1,2 @@
+- Adresse wird nach „Aktuelle Position“ zuverlässig ermittelt: fehlt sie bei der Tankstelle in OpenStreetMap, wird sie über Nominatim (OpenStreetMap) ergänzt
+- Neuer Knopf „Adresse“, um die Adresse auch für ältere Tankungen mit Koordinaten nachzuholen

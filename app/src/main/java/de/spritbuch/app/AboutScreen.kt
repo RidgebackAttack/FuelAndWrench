@@ -106,7 +106,7 @@ fun AboutScreen(nav: NavController) {
             Expandable("Kartendaten") {
                 Text(
                     "Karten und Tankstellendaten: © OpenStreetMap-Mitwirkende, verfügbar unter der Open Database License (ODbL). " +
-                        "Kartenkacheln: OpenStreetMap Foundation. Tankstellensuche: Overpass API.",
+                        "Kartenkacheln: OpenStreetMap Foundation. Tankstellensuche: Overpass API. Adresssuche: Nominatim.",
                     style = MaterialTheme.typography.bodySmall,
                 )
                 TextButton(onClick = { open("https://www.openstreetmap.org/copyright") }) { Text("openstreetmap.org/copyright") }
