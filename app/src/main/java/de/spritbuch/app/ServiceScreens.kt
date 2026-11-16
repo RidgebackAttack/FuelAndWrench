@@ -91,7 +91,7 @@ private fun yearOf(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts 
 fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillMaxWidth(), onClick: () -> Unit) {
     Card(onClick = onClick, modifier = modifier) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-            Icon(serviceIcon(s.category), contentDescription = s.category, tint = MaterialTheme.colorScheme.primary)
+            Icon(serviceIcon(s.category), contentDescription = lbl(s.category), tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row {
@@ -99,7 +99,7 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     if (s.cost > 0) Text("${s.cost.fmt()} ${v.currency}", fontWeight = FontWeight.SemiBold)
                 }
                 Text(
-                    listOf(s.timestamp.date(), if (s.odometer > 0) s.odometer.dist(v.distanceUnit) else "", s.category)
+                    listOf(s.timestamp.date(), if (s.odometer > 0) s.odometer.dist(v.distanceUnit) else "", lbl(s.category))
                         .filter { it.isNotBlank() }.joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -110,14 +110,14 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                 if (s.treadDepth.isNotBlank()) {
                     val t = TreadCodec.parse(s.treadDepth)
                     if (s.tireSetId.isNotBlank() || s.removedTireSetId.isNotBlank()) {
-                        val stored = t.mapNotNull { (k, v) -> v.old?.let { "$k ${it.fmt(1)}" } }
-                        val mounted = t.mapNotNull { (k, v) -> v.new?.let { "$k ${it.fmt(1)}" } }
-                        if (stored.isNotEmpty()) Text("Profil eingelagert: ${stored.joinToString(" · ")} mm",
+                        val stored = t.mapNotNull { (k, v) -> v.old?.let { "${lbl(k)} ${it.fmt(1)}" } }
+                        val mounted = t.mapNotNull { (k, v) -> v.new?.let { "${lbl(k)} ${it.fmt(1)}" } }
+                        if (stored.isNotEmpty()) Text(str(R.string.tread_stored, stored.joinToString(" · ")),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                        if (mounted.isNotEmpty()) Text("Profil montiert: ${mounted.joinToString(" · ")} mm",
+                        if (mounted.isNotEmpty()) Text(str(R.string.tread_mounted, mounted.joinToString(" · ")),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                     } else {
-                        Text("Profil: " + TreadCodec.summary(s.treadDepth), style = MaterialTheme.typography.bodySmall,
+                        Text(str(R.string.tread_summary, TreadCodec.summary(s.treadDepth)), style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -146,7 +146,7 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
                     ServiceImport.parse(CsvImport.decode(bytes), veh)
                 }
             }
-            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar("Import fehlgeschlagen: ${it.message}") }
+            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar(str(R.string.import_failed, it.message ?: "")) }
         }
     }
     val lineColor = MaterialTheme.colorScheme.outlineVariant
@@ -154,15 +154,14 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
     pending?.let { imp ->
         AlertDialog(
             onDismissRequest = { pending = null },
-            title = { Text("Service-Import") },
+            title = { Text(str(R.string.service_import)) },
             text = {
                 Text(
                     imp.error ?: (
-                        "${imp.entries.size} Einträge gefunden" +
-                            (if (imp.skipped > 0) ", ${imp.skipped} Zeilen übersprungen" else "") +
+                        str(R.string.svc_import_found, imp.entries.size) +
+                            (if (imp.skipped > 0) str(R.string.svc_import_skipped, imp.skipped) else "") +
                             " (${imp.entries.sumOf { it.cost }.fmt()} ${vehicle?.currency ?: "€"}).\n\n" +
-                            "Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen " +
-                            "(z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt."
+                            str(R.string.svc_import_info)
                         )
                 )
             },
@@ -171,23 +170,23 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
                     pending = null
                     scope.launch {
                         val (added, dups) = repo.importServices(vehicleId, imp.entries)
-                        snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups bereits vorhanden" else "")
+                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.already_present, dups) else "")
                     }
-                }) { Text("Importieren") }
+                }) { Text(str(R.string.do_import)) }
             },
-            dismissButton = { TextButton(onClick = { pending = null }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { pending = null }) { Text(str(R.string.cancel)) } },
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Service – ${vehicle?.name ?: ""}") },
+                title = { Text(str(R.string.service_title, vehicle?.name ?: "")) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     IconButton(onClick = {
                         importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream"))
-                    }) { Icon(Icons.Default.FileUpload, contentDescription = "Service importieren") }
+                    }) { Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_service_import)) }
                 },
             )
         },
@@ -196,14 +195,14 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
             ExtendedFloatingActionButton(
                 onClick = { nav.navigate("serviceEdit/$vehicleId/new") },
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Eintrag") },
+                text = { Text(str(R.string.entry)) },
             )
         },
     ) { pad ->
         val v = vehicle ?: return@Scaffold
         if (services.isEmpty()) {
             Box(Modifier.padding(pad).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Noch keine Service-Einträge.")
+                Text(str(R.string.empty_services_title))
             }
             return@Scaffold
         }
@@ -213,7 +212,7 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
         ) {
             item {
                 Text(
-                    "${services.size} Einträge · ${services.sumOf { it.cost }.fmt()} ${v.currency} gesamt",
+                    str(R.string.services_summary, services.size, services.sumOf { it.cost }.fmt() + " " + v.currency),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )
@@ -306,7 +305,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 tireSeason = last.tireSeason; tireBrand = last.tireBrand; tireModel = last.tireModel; tireSize = last.tireSize
             }
         }
-        if (isWheelChange) { category = "Reifen"; title = "Radwechsel" }
+        if (isWheelChange) { category = "Reifen"; title = str(R.string.wheel_change) }
         TreadCodec.parse(s.treadDepth).forEach { (k, t) ->
             t.old?.let { treadOld[k] = it.fmt(1) }
             t.new?.let { treadNew[k] = it.fmt(1) }
@@ -316,15 +315,15 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNew) "Neuer Service-Eintrag" else "Service-Eintrag") },
+                title = { Text(str(if (isNew) R.string.service_new else R.string.service_entry)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = str(R.string.delete))
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
-                        if (title.isBlank()) { error = "Bitte eine Bezeichnung eingeben"; return@IconButton }
+                        if (title.isBlank()) { error = str(R.string.err_enter_title); return@IconButton }
                         val mountedSet = tireSets.firstOrNull { it.id == mountedSetId }
                         if (category == "Reifen" && mountedSet != null) {
                             tireSeason = mountedSet.season
@@ -356,7 +355,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                             )
                             nav.popBackStack()
                         }
-                    }) { Icon(Icons.Default.Check, contentDescription = "Speichern") }
+                    }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
             )
         },
@@ -372,79 +371,78 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.date())
             }
-            SuggestField("Was wurde gemacht?", title, Options.serviceSuggestions) { title = it }
-            ChoiceField("Kategorie", category, Options.serviceCategories) { category = it }
-            NumberField("Kilometerstand", odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
-            NumberField("Kosten", cost, { cost = it }, suffix = Units.cur(veh))
+            SuggestField(str(R.string.what_done), title, Options.serviceSuggestions) { title = it }
+            ChoiceField(str(R.string.category), category, Options.serviceCategories) { category = it }
+            NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
+            NumberField(str(R.string.cost), cost, { cost = it }, suffix = Units.cur(veh))
             if (category == "Reifen" && tireSets.isNotEmpty()) {
-                SectionTitle("Radwechsel")
-                val none = "– keiner –"
+                SectionTitle(str(R.string.wheel_change))
+                val none = str(R.string.none_dash)
                 val labels = tireSets.associate { it.id to it.label() }
-                ChoiceField("Abmontiert / eingelagert", labels[removedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
+                ChoiceField(str(R.string.removed_stored), labels[removedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
                     removedSetId = tireSets.firstOrNull { it.label() == sel }?.id ?: ""
                 }
-                ChoiceField("Montiert", labels[mountedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
+                ChoiceField(str(R.string.mounted), labels[mountedSetId] ?: none, listOf(none) + tireSets.map { it.label() }) { sel ->
                     mountedSetId = tireSets.firstOrNull { it.label() == sel }?.id ?: ""
                 }
-                TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text("+ Weiteren Radsatz anlegen") }
-                SectionTitle("Profiltiefe")
+                TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text(str(R.string.add_another_set)) }
+                SectionTitle(str(R.string.tread_depth))
                 Text(
-                    "Links: Profil des abmontierten Satzes bei der Einlagerung. Rechts: Profil des montierten Satzes. Felder dürfen leer bleiben.",
+                    str(R.string.tread_set_info),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Options.tirePositions(veh?.vehicleType).forEach { (key, label) ->
                     Text(label, style = MaterialTheme.typography.labelLarge)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        NumberField("Eingelagert", treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
-                        NumberField("Montiert", treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField(str(R.string.stored), treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField(str(R.string.mounted), treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
                     }
                 }
             } else if (category == "Reifen") {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Tipp: Radsätze anlegen", style = MaterialTheme.typography.titleSmall)
+                        Text(str(R.string.tip_tire_sets), style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "Lege z. B. Sommer- und Winterräder einmal als Radsatz an (auch mit unterschiedlichen Reifen vorne und hinten). " +
-                                "Beim Radwechsel wählst du dann nur noch aus und trägst die Profiltiefe bei der Einlagerung ein.",
+                            str(R.string.tip_tire_sets_text),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                        TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text("Radsatz anlegen") }
+                        TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text(str(R.string.create_tire_set)) }
                     }
                 }
-                SectionTitle("Reifen")
+                SectionTitle(str(R.string.tires))
                 SingleChips(Options.tireTypes, tireSeason) { tireSeason = it }
-                SuggestField("Hersteller", tireBrand, Options.tireBrands) { tireBrand = it }
+                SuggestField(str(R.string.manufacturer), tireBrand, Options.tireBrands) { tireBrand = it }
                 OutlinedTextField(
-                    tireModel, { tireModel = it }, label = { Text("Reifenname (z. B. Pilot Sport 5)") }, singleLine = true,
+                    tireModel, { tireModel = it }, label = { Text(str(R.string.tire_name_hint)) }, singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
-                    tireSize, { tireSize = it }, label = { Text("Größe (z. B. 245/40 R19 98Y)") }, singleLine = true,
+                    tireSize, { tireSize = it }, label = { Text(str(R.string.tire_size_hint)) }, singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                SectionTitle("Profiltiefe")
+                SectionTitle(str(R.string.tread_depth))
                 Text(
-                    "Alt = Profil der ausgebauten Reifen bzw. vor der Messung, neu = eingebaute Reifen. Felder dürfen leer bleiben.",
+                    str(R.string.tread_oldnew_info),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Options.tirePositions(veh?.vehicleType).forEach { (key, label) ->
                     Text(label, style = MaterialTheme.typography.labelLarge)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        NumberField("Alt", treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
-                        NumberField("Neu", treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField(str(R.string.old), treadOld[key] ?: "", { treadOld[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
+                        NumberField(str(R.string.new_), treadNew[key] ?: "", { treadNew[key] = it }, suffix = "mm", modifier = Modifier.weight(1f))
                     }
                 }
             }
             OutlinedTextField(
-                workshop, { workshop = it }, label = { Text("Werkstatt") }, singleLine = true,
+                workshop, { workshop = it }, label = { Text(str(R.string.workshop)) }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
-                note, { note = it }, label = { Text("Notiz (Teile, Rechnungsnummer …)") }, minLines = 3,
+                note, { note = it }, label = { Text(str(R.string.service_note_hint)) }, minLines = 3,
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
-                "Gibt es eine Erinnerung mit gleichem Namen (z. B. Ölwechsel), wird sie mit diesem Kilometerstand als erledigt markiert.",
+                str(R.string.service_reminder_info),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -458,23 +456,23 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { timestamp = combineDate(it, timestamp) }
                     showDate = false
-                }) { Text("OK") }
+                }) { Text(str(R.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { showDate = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
         ) { DatePicker(state = state) }
     }
 
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Service-Eintrag löschen?") },
+            title = { Text(str(R.string.service_delete_q)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     scope.launch { repo.deleteService(serviceId); nav.popBackStack() }
-                }) { Text("Löschen") }
+                }) { Text(str(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }

@@ -1,36 +1,36 @@
-Stand: 15. November 2026
+Last updated: 15 November 2026
 
-Fuel & Wrench ist eine App zum Erfassen von Tankvorgängen, Service-Arbeiten und Reifen. Sie kommt ohne Werbung, Tracking, Analyse-Dienste, Absturzberichte und ohne Google-Dienste aus. Der Entwickler betreibt keinen eigenen Server und erhält keine Daten.
+Fuel & Wrench is an app for logging refuels, service work and tires. It has no ads, no tracking, no analytics, no crash reporting and no Google services. The developer runs no server and receives no data.
 
-Welche Daten verarbeitet die App?
+What data does the app process?
 
-• Fahrzeug-, Tank-, Service- und Reifendaten, die du selbst eingibst (z. B. Kilometerstand, Menge, Preis, Tankstelle, Werkstatt, Notizen, Fahrzeugfotos).
-• Standort (nur wenn du „Aktuelle Position“ antippst und die Berechtigung erteilt hast), um die Tankstelle zu erkennen und beim Tankvorgang zu speichern.
-• Zugangsdaten für die Synchronisation (Server-Adresse, Benutzername, App-Passwort), sofern du die Synchronisation einrichtest.
+• Vehicle, refuel, service and tire data you enter yourself (e.g. odometer, amount, price, station, workshop, notes, vehicle photos).
+• Location (only when you tap “Current position” and have granted the permission), to recognize the station and save it with the refuel.
+• Credentials for syncing (server address, user name, app password), if you set up sync.
 
-Alle Daten werden lokal auf deinem Gerät gespeichert. Die Android-Datensicherung ist für die App deaktiviert.
+All data is stored locally on your device. Android backup is disabled for the app.
 
-Wohin werden Daten übertragen?
+Where is data sent?
 
-• Dein eigener WebDAV-/Nextcloud-Server: alle App-Daten und Fahrzeugfotos – bei der Synchronisation (abschaltbar: ja – Synchronisation nicht einrichten)
-• overpass-api.de (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ – Tankstellensuche (abschaltbar: ja – Einstellungen → Datenschutz)
-• nominatim.openstreetmap.org (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ / „Adresse“ – Adresssuche (abschaltbar: ja – gleicher Schalter)
-• Android-Geocoder (auf Geräten mit Google-Diensten: Google): Koordinaten – Adressermittlung (abschaltbar: ja – standardmäßig aus)
-• Netzwerk-Ortung des Systems (auf Geräten mit Google-Diensten: Google): WLAN-/Mobilfunkdaten – Ortung (abschaltbar: ja – standardmäßig aus, dann nur GPS)
-• tile.openstreetmap.org: angezeigter Kartenausschnitt, IP-Adresse – beim Öffnen der Karte (abschaltbar: nur durch Nicht-Nutzung der Karte)
+• Your own WebDAV/Nextcloud server: all app data and vehicle photos – when syncing (can be disabled: yes – do not set up sync)
+• overpass-api.de (OpenStreetMap): coordinates, IP address – “Current position” – station search (can be disabled: yes – Settings → Privacy)
+• nominatim.openstreetmap.org (OpenStreetMap): coordinates, IP address – “Current position” / “Address” – address search (can be disabled: yes – same switch)
+• Android geocoder (on devices with Google services: Google): coordinates – address lookup (can be disabled: yes – off by default)
+• System network location (on devices with Google services: Google): Wi-Fi/mobile data – positioning (can be disabled: yes – off by default, GPS only)
+• tile.openstreetmap.org: displayed map area, IP address – when opening the map (can be disabled: only by not using the map)
 
-Für die genannten Dienste gelten deren eigene Datenschutzbestimmungen (OpenStreetMap Foundation, FOSSGIS e. V. bzw. Google).
+The privacy policies of these services apply (OpenStreetMap Foundation, FOSSGIS e. V. or Google).
 
-Berechtigungen
+Permissions
 
-• Standort (genau): nur für „Aktuelle Position“ beim Tanken.
-• Internet / Netzwerkstatus: Synchronisation, Tankstellensuche, Karte.
-• Benachrichtigungen: Wartungserinnerungen.
+• Location (precise): only for “Current position” when refueling.
+• Internet / network state: sync, station search, map.
+• Notifications: maintenance reminders.
 
-Speicherdauer und Löschung
+Retention and deletion
 
-Daten bleiben gespeichert, bis du sie in der App löschst oder die App deinstallierst. Daten auf deinem Sync-Server verwaltest du selbst.
+Data is kept until you delete it in the app or uninstall the app. You manage the data on your sync server yourself.
 
-Kontakt
+Contact
 
-Fragen zum Datenschutz: über die Issues des Projekts auf GitHub.
+Privacy questions: via the project's issues on GitHub.

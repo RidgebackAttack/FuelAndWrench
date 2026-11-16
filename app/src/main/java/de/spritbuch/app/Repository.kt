@@ -214,8 +214,9 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         if (odo <= 0) return
         val existing = db.reminders().forVehicleRaw(vehicleId)
         var created = false
-        for ((title, km) in Prefs(ctx).reminderTemplates) {
-            val id = "$vehicleId-auto-" + title.lowercase().filter { it.isLetterOrDigit() }
+        for ((tpl, km) in Prefs(ctx).reminderTemplates) {
+            val title = templateTitle(tpl)
+            val id = "$vehicleId-auto-" + templateIdKey(tpl)
             if (existing.any { it.id == id || it.title.equals(title, ignoreCase = true) }) continue
             val interval = (km / Units.distFactorToKm(v.distanceUnit)).roundToInt()
             db.reminders().upsert(

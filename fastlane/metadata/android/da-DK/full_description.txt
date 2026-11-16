@@ -1,0 +1,21 @@
+Fuel & Wrench er logbogen til bil og motorcykel: tankninger, forbrug, servicehistorik og dæk samlet ét sted – uden reklamer, uden sporing og uden Google-tjenester.
+
+<b>Brændstof & forbrug</b>
+• Tankninger med brændstoftype, tankstation, position, kørestil, strækning, dæk og ekstra forbrugere
+• Forbrug efter fuld-til-fuld-metoden, omkostninger pr. 100 km, forbrugsgraf, sammenligning med kørecomputeren
+• Enheder pr. køretøj: km/miles, liter/gallons, l/100 km, km/l eller mpg, valgfri valuta
+• Tankstationer på kort (OpenStreetMap)
+
+<b>Service & påmindelser</b>
+• Servicehistorik som tidslinje med omkostninger og værksted
+• Vedligeholdelsespåmindelser efter kilometer, oprettes automatisk
+• Hjulsæt (sommer/vinter), hjulskift med mønsterdybde ved opbevaring, forskellige dæk pr. aksel
+
+<b>Import & synkronisering</b>
+• Import af eksporter fra Spritmonitor.de og servicehistorik (CSV)
+• Synkronisering via din egen Nextcloud / WebDAV – flere enheder på samme tid
+
+<b>Privatliv</b>
+Alle data forbliver på din enhed eller din egen server. Onlinetjenester kan slås fra enkeltvis.
+
+Open source under GPL-3.0. Fås på dansk, engelsk og tysk.

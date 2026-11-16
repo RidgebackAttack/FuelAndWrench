@@ -1,0 +1,337 @@
+opt_fuel_electricity	Electricity	Strom	El
+opt_fuel_premium_diesel	Premium diesel	Premium-Diesel	Premium diesel
+opt_extra_heater	Auxiliary heater	Standheizung	Parkeringsvarmer
+opt_extra_trailer	Trailer	Anhänger	Anhænger
+opt_extra_roofbox	Roof box/bike rack	Dachbox/Fahrradträger	Tagboks/cykelholder
+opt_extra_ac	Air conditioning	Klimaanlage	Aircondition
+opt_style_eco	Economical	Sparsam	Økonomisk
+opt_style_normal	Normal	Normal	Normal
+opt_style_brisk	Brisk	Zügig	Rask
+opt_style_sporty	Sporty	Sportlich	Sportslig
+opt_route_city	City	Stadt	By
+opt_route_country	Country road	Landstraße	Landevej
+opt_route_motorway	Motorway	Autobahn	Motorvej
+opt_route_mixed	Mixed	Gemischt	Blandet
+opt_tire_summer	Summer tires	Sommerreifen	Sommerdæk
+opt_tire_winter	Winter tires	Winterreifen	Vinterdæk
+opt_tire_allseason	All-season tires	Ganzjahresreifen	Helårsdæk
+opt_vehicle_car	Car	Auto	Bil
+opt_vehicle_motorcycle	Motorcycle	Motorrad	Motorcykel
+opt_cat_maintenance	Maintenance	Wartung	Vedligeholdelse
+opt_cat_repair	Repair	Reparatur	Reparation
+opt_cat_tires	Tires	Reifen	Dæk
+opt_cat_inspection	Roadworthiness test	HU/AU	Syn
+opt_cat_care	Care	Pflege	Pleje
+opt_cat_accessories	Accessories	Zubehör	Tilbehør
+opt_cat_other	Other	Sonstiges	Andet
+opt_brand_independent	Independent station	Freie Tankstelle	Uafhængig tankstation
+pos_front	Front	Vorne	Foran
+pos_rear	Rear	Hinten	Bagved
+pos_front_left	Front left	Vorne links	Venstre for
+pos_front_right	Front right	Vorne rechts	Højre for
+pos_rear_left	Rear left	Hinten links	Venstre bag
+pos_rear_right	Rear right	Hinten rechts	Højre bag
+cd_back	Back	Zurück	Tilbage
+cd_choose	Choose	Auswahl	Vælg
+notif_channel	Maintenance reminders	Wartungserinnerungen	Vedligeholdelsespåmindelser
+notif_overdue	Overdue by %1$s (due at %2$s)	Fällig seit %1$s (fällig bei %2$s)	Forfalden med %1$s (forfalder ved %2$s)
+notif_due_in	Due in %1$s (at %2$s)	Fällig in %1$s (bei %2$s)	Forfalder om %1$s (ved %2$s)
+unit_km	Kilometers (km)	Kilometer (km)	Kilometer (km)
+unit_mi	Miles (mi)	Meilen (mi)	Miles (mi)
+unit_l	Liters (l)	Liter (l)	Liter (l)
+unit_gal_us	US gallons	US-Gallonen	US-gallons
+unit_gal_uk	UK gallons (imperial)	UK-Gallonen (imperial)	UK-gallons (imperial)
+format_per100	Amount per 100 (e.g. l/100 km)	Menge pro 100 (z. B. l/100 km)	Mængde pr. 100 (f.eks. l/100 km)
+format_perunit	Distance per amount (e.g. km/l, mpg)	Strecke pro Menge (z. B. km/l, mpg)	Strækning pr. mængde (f.eks. km/l, mpg)
+err_image_read	Could not read the image	Bild konnte nicht gelesen werden	Billedet kunne ikke læses
+tread_old_only	%1$s mm (old)	%1$s mm (alt)	%1$s mm (gammel)
+default_oil_change	Oil change	Ölwechsel	Olieskift
+list_service_suggestions	Oil change|Wheel change|Tire change|Tread depth measured|Service|Roadworthiness test|Brakes|Timing belt|Brake fluid|Air filter|Cabin filter|Battery|Wiper blades|Chain/sprockets	Ölwechsel|Radwechsel|Reifenwechsel|Profiltiefe gemessen|Inspektion|HU/AU|Bremsen|Zahnriemen|Bremsflüssigkeit|Luftfilter|Innenraumfilter|Batterie|Wischerblätter|Kette/Ritzel	Olieskift|Hjulskift|Dækskift|Mønsterdybde målt|Service|Syn|Bremser|Tandrem|Bremsevæske|Luftfilter|Kabinefilter|Batteri|Viskerblade|Kæde/tandhjul
+list_reminder_suggestions	Oil change|Service|Timing belt|Brake fluid|Air filter|Change tires|Spark plugs	Ölwechsel|Inspektion|Zahnriemen|Bremsflüssigkeit|Luftfilter|Reifen tauschen|Zündkerzen	Olieskift|Service|Tandrem|Bremsevæske|Luftfilter|Skift dæk|Tændrør
+ok	OK	OK	OK
+cancel	Cancel	Abbrechen	Annuller
+delete	Delete	Löschen	Slet
+remove	Remove	Entfernen	Fjern
+save	Save	Speichern	Gem
+loc_no_gps	No GPS position (GPS on? Clear view of the sky?)	Keine GPS-Position (GPS eingeschaltet? Freie Sicht zum Himmel?)	Ingen GPS-position (GPS slået til? Frit udsyn til himlen?)
+loc_taken_no_search	Position saved (station search is turned off in the settings)	Position übernommen (Tankstellensuche ist in den Einstellungen aus)	Position gemt (søgning efter tankstation er slået fra i indstillingerne)
+loc_station_found	Station recognized	Tankstelle erkannt	Tankstation genkendt
+loc_no_station	No station found nearby – please check the operator	Keine Tankstelle in der Nähe gefunden – bitte Betreiber prüfen	Ingen tankstation fundet i nærheden – kontrollér venligst selskabet
+loc_need_precise	GPS needs the precise location (not “approximate”)	Für GPS wird der genaue Standort benötigt (nicht „ungefähr“)	GPS kræver den præcise placering (ikke „omtrentlig“)
+refuel_new	New refuel	Neue Betankung	Ny tankning
+refuel	Refuel	Betankung	Tankning
+err_enter_odometer	Please enter the odometer reading	Bitte Kilometerstand eingeben	Indtast venligst kilometerstand
+err_enter_amount	Please enter the amount refueled	Bitte getankte Menge eingeben	Indtast venligst den tankede mængde
+odometer	Odometer	Kilometerstand	Kilometerstand
+previously	Previously: %1$s	Bisher: %1$s	Hidtil: %1$s
+fuel_type	Fuel type	Kraftstoffart	Brændstoftype
+amount	Amount	Menge	Mængde
+price_per_unit	Price per %1$s	Preis pro %1$s	Pris pr. %1$s
+total	Total	Gesamt	I alt
+full_tank	Full tank	Vollgetankt	Fuld tank
+missed_previous	Previous refuel not recorded	Vorherige Betankung nicht erfasst	Forrige tankning ikke registreret
+obc_field	Consumption per on-board computer (optional)	Verbrauch laut Bordcomputer (optional)	Forbrug ifølge kørecomputer (valgfrit)
+station	Fuel station	Tankstelle	Tankstation
+current_position	Current position	Aktuelle Position	Aktuel position
+operator	Operator	Betreiber	Selskab
+address	Address	Adresse	Adresse
+addr_search_off	Address search is turned off in the settings	Adresssuche ist in den Einstellungen aus	Adressesøgning er slået fra i indstillingerne
+addr_not_found	No address found	Keine Adresse gefunden	Ingen adresse fundet
+map	Map	Karte	Kort
+extras	Additional loads	Zusätzliche Verbraucher	Ekstra forbrugere
+driving_style	Driving style	Fahrstil	Kørestil
+route	Route	Strecke	Strækning
+tires	Tires	Reifen	Dæk
+note	Note	Notiz	Note
+refuel_delete_q	Delete refuel?	Betankung löschen?	Slet tankning?
+reminder_new	New reminder	Neue Erinnerung	Ny påmindelse
+reminder	Reminder	Erinnerung	Påmindelse
+err_enter_title	Please enter a title	Bitte Bezeichnung eingeben	Indtast venligst en betegnelse
+err_enter_interval	Please enter an interval	Bitte Intervall eingeben	Indtast venligst et interval
+title	Title	Bezeichnung	Betegnelse
+interval	Interval	Intervall	Interval
+last_done_at	Last done at	Zuletzt erledigt bei	Sidst udført ved
+warn_before	Advance warning	Vorwarnung	Forvarsel
+unit_before	%1$s before	%1$s vorher	%1$s før
+next_due	Next due: %1$s	Nächste Fälligkeit: %1$s	Næste forfald: %1$s
+reminder_delete_q	Delete reminder?	Erinnerung löschen?	Slet påmindelse?
+settings	Settings	Einstellungen	Indstillinger
+appearance	Appearance	Darstellung	Udseende
+theme_system	System default	Wie System	Som systemet
+theme_light	Light	Hell	Lys
+theme_dark	Dark	Dunkel	Mørk
+color_scheme	Color scheme	Farbschema	Farveskema
+amoled	Pure black in dark mode (AMOLED)	Reines Schwarz im dunklen Modus (AMOLED)	Helt sort i mørk tilstand (AMOLED)
+sync	Synchronization	Synchronisation	Synkronisering
+sync_help	Enter the address of your Nextcloud, sign in and choose a folder. Other WebDAV servers: enter the full WebDAV address and fill in the credentials manually.	Adresse deiner Nextcloud eingeben, anmelden und Ordner wählen. Andere WebDAV-Server: vollständige WebDAV-Adresse eingeben und Zugangsdaten von Hand eintragen.	Indtast adressen på din Nextcloud, log ind og vælg en mappe. Andre WebDAV-servere: indtast den fulde WebDAV-adresse og udfyld loginoplysningerne manuelt.
+server_hint	Server (e.g. https://cloud.example.com)	Server (z. B. https://cloud.example.de)	Server (f.eks. https://cloud.example.dk)
+login_browser	Please sign in in the browser and allow access, then return here …	Bitte im Browser anmelden und den Zugriff erlauben, dann hierher zurückkehren …	Log ind i browseren og tillad adgang, og vend så tilbage hertil …
+logged_in_as	Signed in as %1$s. Now choose a folder.	Angemeldet als %1$s. Jetzt Ordner wählen.	Logget ind som %1$s. Vælg nu en mappe.
+login_expired	Sign-in expired – please try again.	Anmeldung abgelaufen – bitte erneut versuchen.	Login udløbet – prøv igen.
+login_failed	Sign-in not possible: %1$s	Anmeldung nicht möglich: %1$s	Login ikke muligt: %1$s
+server_unreachable	Server not reachable	Server nicht erreichbar	Serveren kan ikke nås
+login_waiting	Waiting for sign-in …	Warte auf Anmeldung …	Venter på login …
+login_nextcloud	Sign in with Nextcloud	Mit Nextcloud anmelden	Log ind med Nextcloud
+user	User	Benutzer	Bruger
+app_password	App password	App-Passwort	App-adgangskode
+folder	Folder	Ordner	Mappe
+connecting	Connecting …	Verbinde …	Forbinder …
+choose_folder	Choose folder	Ordner wählen	Vælg mappe
+save_and_sync	Save and sync now	Speichern und jetzt synchronisieren	Gem og synkronisér nu
+last_sync	Last sync: %1$s	Letzter Abgleich: %1$s	Sidste synkronisering: %1$s
+sync_auto_info	Syncing happens automatically after every change, when opening the app and every 15 minutes in the background.	Abgleich erfolgt automatisch nach jeder Änderung, beim Öffnen der App und alle 15 Minuten im Hintergrund.	Synkronisering sker automatisk efter hver ændring, når appen åbnes, og hvert 15. minut i baggrunden.
+privacy	Privacy	Datenschutz	Privatliv
+privacy_intro	The app has no ads, no tracking and no analytics. Data is only sent to your WebDAV server and – if turned on below – to the services listed.	Die App hat keine Werbung, kein Tracking und keine Analyse. Daten gehen nur an deinen WebDAV-Server und – wenn unten eingeschaltet – an die genannten Dienste.	Appen har ingen reklamer, ingen sporing og ingen analyse. Data sendes kun til din WebDAV-server og – hvis slået til nedenfor – til de nævnte tjenester.
+privacy_osm	Look up station and address via OpenStreetMap	Tankstelle und Adresse über OpenStreetMap suchen	Find tankstation og adresse via OpenStreetMap
+privacy_osm_info	Sends the coordinates to overpass-api.de and nominatim.openstreetmap.org when tapping “Current position”.	Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de und nominatim.openstreetmap.org.	Sender koordinaterne til overpass-api.de og nominatim.openstreetmap.org, når du trykker på „Aktuel position“.
+privacy_geocoder	Look up address via Android geocoder	Adresse über Android-Geocoder ermitteln	Find adresse via Android-geocoder
+privacy_geocoder_info	On phones with Google services, the coordinates are sent to Google.	Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.	På telefoner med Google-tjenester sendes koordinaterne til Google.
+privacy_network	Allow network location (Wi-Fi/mobile)	Netzwerk-Ortung (WLAN/Mobilfunk) erlauben	Tillad netværksplacering (Wi-Fi/mobil)
+privacy_network_info	Off = GPS only, without network traffic (needs a clear view of the sky). On = faster positioning even under roofs; on phones with Google services it goes through Google.	Aus = nur GPS, ohne Netzverkehr (braucht freie Sicht zum Himmel). An = schnellere Ortung auch unter Dächern; auf Handys mit Google-Diensten läuft sie über Google.	Fra = kun GPS, uden netværkstrafik (kræver frit udsyn til himlen). Til = hurtigere positionering også under tage; på telefoner med Google-tjenester går den via Google.
+privacy_tiles_info	The map loads tiles from tile.openstreetmap.org; the server sees the map area displayed.	Die Karte lädt Kartenkacheln von tile.openstreetmap.org; dabei sieht der Server den angezeigten Kartenausschnitt.	Kortet henter kortfliser fra tile.openstreetmap.org; serveren ser det viste kortudsnit.
+default_reminders	Default reminders	Standard-Erinnerungen	Standardpåmindelser
+default_reminders_info	Created automatically for every vehicle as soon as an odometer reading is known, and synced to all devices. The odometer reading at creation counts as last done; you can adjust it in the reminder.	Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist, und mit allen Geräten synchronisiert. Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.	Oprettes automatisk for hvert køretøj, så snart en kilometerstand kendes, og synkroniseres med alle enheder. Kilometerstanden ved oprettelsen gælder som sidst udført; det kan justeres i påmindelsen.
+add_template	Add template	Vorlage hinzufügen	Tilføj skabelon
+sync_now	Sync	Synchronisieren	Synkronisér
+vehicle	Vehicle	Fahrzeug	Køretøj
+welcome_title	Welcome to Fuel & Wrench	Willkommen bei Fuel & Wrench	Velkommen til Fuel & Wrench
+welcome_text	Add your first vehicle via “Vehicle”. Then you can log refuels, record services or import data from Spritmonitor.	Lege dein erstes Fahrzeug über „Fahrzeug“ an. Danach kannst du Betankungen und Service erfassen oder Daten aus Spritmonitor importieren.	Opret dit første køretøj via „Køretøj“. Derefter kan du registrere tankninger og service eller importere data fra Spritmonitor.
+all_archived	All vehicles are archived.	Alle Fahrzeuge sind archiviert.	Alle køretøjer er arkiveret.
+archive_hide	Hide archive	Archiv ausblenden	Skjul arkiv
+archive_show	Show archive (%1$d)	Archiv anzeigen (%1$d)	Vis arkiv (%1$d)
+archived_lower	archived	archiviert	arkiveret
+no_consumption_yet	No consumption calculable yet	Noch kein Verbrauch berechenbar	Endnu intet forbrug at beregne
+import_failed	Import failed: %1$s	Import fehlgeschlagen: %1$s	Import mislykkedes: %1$s
+import_title	Import	Import	Import
+import_missing_cols	The file could not be read. Missing columns: %1$s	Die Datei konnte nicht gelesen werden. Fehlende Spalten: %1$s	Filen kunne ikke læses. Manglende kolonner: %1$s
+import_found	%1$d refuels found (%2$s to %3$s)	%1$d Betankungen gefunden (%2$s bis %3$s)	%1$d tankninger fundet (%2$s til %3$s)
+import_skipped	, %1$d rows without refuel data skipped (e.g. costs, maintenance)	, %1$d Zeilen ohne Tankdaten übersprungen (z. B. Kosten, Wartung)	, %1$d rækker uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)
+import_confirm	Import into “%1$s”? Existing entries are not created twice.	In „%1$s“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt.	Importér til „%1$s“? Eksisterende poster oprettes ikke to gange.
+import_hint_dups	%1$d duplicate row(s) in the file are only imported once	%1$d doppelte Zeile(n) in der Datei werden nur einmal übernommen	%1$d dobbelte række(r) i filen importeres kun én gang
+import_hint_derived	%1$d× missing odometer reading calculated from the trip distance	%1$d× fehlender Kilometerstand aus der Teilstrecke berechnet	%1$d× manglende kilometerstand beregnet ud fra turdistancen
+import_hint_corrected	%1$d× unit price instead of total detected and corrected	%1$d× Literpreis statt Gesamtbetrag erkannt und korrigiert	%1$d× literpris i stedet for samlet beløb fundet og rettet
+import_hint_noprice	%1$d refuels without price	%1$d Betankungen ohne Preis	%1$d tankninger uden pris
+import_codes_info	Spritmonitor stores some details as numbers. Please check what each number means:	Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:	Spritmonitor gemmer nogle oplysninger som tal. Kontrollér venligst, hvad hvert tal betyder:
+not_specified	not specified	keine Angabe	ikke angivet
+import_code	Code %1$s (%2$d×)	Code %1$s (%2$d×)	Kode %1$s (%2$d×)
+foreign_currency	Foreign currency	Fremdwährung	Fremmed valuta
+foreign_currency_info	The original amount is noted in the note. Without a rate the amount stays unchanged.	Der Originalbetrag wird in der Notiz vermerkt. Ohne Kurs bleibt der Betrag unverändert.	Det oprindelige beløb noteres i noten. Uden kurs forbliver beløbet uændret.
+import_extras_all	Additional loads for all entries	Zusätzliche Verbraucher für alle Einträge	Ekstra forbrugere for alle poster
+import_extras_info	Spritmonitor does not export air conditioning, heating and trailer. Optionally set them here for all imported refuels:	Spritmonitor exportiert Klimaanlage, Heizung und Anhänger nicht. Hier optional für alle importierten Betankungen setzen:	Spritmonitor eksporterer ikke aircondition, varme og anhænger. Angiv dem eventuelt her for alle importerede tankninger:
+imported_n	%1$d imported	%1$d importiert	%1$d importeret
+dups_skipped	, %1$d duplicates skipped	, %1$d Duplikate übersprungen	, %1$d dubletter sprunget over
+do_import	Import	Importieren	Importér
+current_reading	Current reading	Aktueller Stand	Aktuel stand
+obc_value	On-board computer: %1$s	Bordcomputer: %1$s	Kørecomputer: %1$s
+partial_refuel	Partial refuel	Teilbetankung	Delvis tankning
+previous_missing	Previous refuel missing	Vorherige Betankung fehlt	Forrige tankning mangler
+vehicle_new	New vehicle	Neues Fahrzeug	Nyt køretøj
+vehicle_edit	Edit vehicle	Fahrzeug bearbeiten	Redigér køretøj
+err_enter_name	Please enter a name	Bitte einen Namen eingeben	Indtast venligst et navn
+photo_change	Change photo	Foto ändern	Skift foto
+photo_choose	Choose photo	Foto auswählen	Vælg foto
+vehicle_name_hint	Name (e.g. Golf)	Name (z. B. Golf)	Navn (f.eks. Golf)
+plate	License plate	Kennzeichen	Nummerplade
+vehicle_type	Vehicle type	Fahrzeugart	Køretøjstype
+default_fuel	Default fuel	Standard-Kraftstoff	Standardbrændstof
+tank_capacity	Tank capacity	Tankinhalt	Tankstørrelse
+initial_odometer	Odometer at start of logging	Kilometerstand bei Erfassungsbeginn	Kilometerstand ved registreringsstart
+units	Units	Einheiten	Enheder
+distance	Distance	Entfernung	Afstand
+volume	Volume (liquid fuels)	Volumen (flüssige Kraftstoffe)	Volumen (flydende brændstoffer)
+consumption_display	Consumption display	Verbrauchsanzeige	Forbrugsvisning
+currency	Currency	Währung	Valuta
+units_convert_info	When saving, all refuels, odometer readings and reminders of this vehicle are converted to the new units.	Beim Speichern werden alle Betankungen, Kilometerstände und Erinnerungen dieses Fahrzeugs in die neuen Einheiten umgerechnet.	Ved gemning omregnes alle tankninger, kilometerstande og påmindelser for dette køretøj til de nye enheder.
+currency_info	Note: amounts are not converted, only the currency label changes.	Hinweis: Beträge werden nicht umgerechnet, nur die Währungsangabe ändert sich.	Bemærk: beløb omregnes ikke, kun valutabetegnelsen ændres.
+archived_switch	Archived (e.g. sold)	Archiviert (z. B. verkauft)	Arkiveret (f.eks. solgt)
+archived_info	Archived vehicles keep all their data but appear in the archive at the bottom and trigger no reminders.	Archivierte Fahrzeuge bleiben mit allen Daten erhalten, erscheinen aber unten im Archiv und lösen keine Erinnerungen aus.	Arkiverede køretøjer beholder alle data, men vises i arkivet nederst og udløser ingen påmindelser.
+vehicle_delete_q	Delete vehicle?	Fahrzeug löschen?	Slet køretøj?
+vehicle_delete_info	All refuels and reminders of this vehicle will be deleted on all devices. To keep them, turn on “Archived” instead.	Alle Betankungen und Erinnerungen dieses Fahrzeugs werden auf allen Geräten gelöscht. Zum Aufbewahren stattdessen „Archiviert“ einschalten.	Alle tankninger og påmindelser for dette køretøj slettes på alle enheder. Slå „Arkiveret“ til i stedet for at beholde dem.
+service_import	Service import	Service-Import	Serviceimport
+svc_import_found	%1$d entries found	%1$d Einträge gefunden	%1$d poster fundet
+svc_import_skipped	, %1$d rows skipped	, %1$d Zeilen übersprungen	, %1$d rækker sprunget over
+svc_import_info	Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.	Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.	Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.
+already_present	, %1$d already present	, %1$d bereits vorhanden	, %1$d findes allerede
+chart_title	Consumption history (last %1$d full refuels)	Verbrauchsverlauf (letzte %1$d Volltankungen)	Forbrugshistorik (seneste %1$d fulde tankninger)
+chart_min	min %1$s	min %1$s	min %1$s
+chart_max	max %1$s	max %1$s	maks %1$s
+tab_overview	Overview	Übersicht	Oversigt
+tab_refuels	Refuels	Betankungen	Tankninger
+tab_service	Service	Service	Service
+cd_spritmonitor_import	Spritmonitor import	Spritmonitor-Import	Spritmonitor-import
+cd_service_import	Import services	Service importieren	Importér service
+done_service_created	Done – service entry created	Erledigt – Service-Eintrag angelegt	Udført – servicepost oprettet
+vehicle_archived_banner	Vehicle is archived. Reminders are paused.	Fahrzeug ist archiviert. Erinnerungen sind pausiert.	Køretøjet er arkiveret. Påmindelser er sat på pause.
+n_refuels	%1$d refuels	%1$d Betankungen	%1$d tankninger
+n_services	%1$d services	%1$d Services	%1$d serviceposter
+stat_avg	Ø consumption	Ø Verbrauch	Ø forbrug
+stat_last	Last consumption	Letzter Verbrauch	Seneste forbrug
+stat_obc	On-board computer (%1$d×)	Bordcomputer (%1$d×)	Kørecomputer (%1$d×)
+stat_cost_per100	Cost per 100 %1$s	Kosten pro 100 %1$s	Omkostninger pr. 100 %1$s
+stat_fuel_cost	Total fuel cost	Tankkosten gesamt	Brændstofudgifter i alt
+stat_service_cost	Total service cost	Servicekosten gesamt	Serviceudgifter i alt
+stat_total_amount	Total refueled	Getankt gesamt	Tanket i alt
+stat_distance	Distance logged	Erfasste Strecke	Registreret strækning
+reminders	Reminders	Erinnerungen	Påmindelser
+no_reminders	No reminders set up.	Keine Erinnerungen angelegt.	Ingen påmindelser oprettet.
+rem_overdue	Overdue by %1$s (at %2$s)	Fällig seit %1$s (bei %2$s)	Forfalden med %1$s (ved %2$s)
+rem_remaining	%1$s left (due at %2$s)	Noch %1$s (fällig bei %2$s)	%1$s tilbage (forfalder ved %2$s)
+done	Done	Erledigt	Udført
+last_refuel	Last refuel	Letzte Betankung	Seneste tankning
+last_service	Last service	Letzter Service	Seneste service
+empty_refuels_title	No refuels yet	Noch keine Betankungen	Ingen tankninger endnu
+empty_refuels_text	Log one via “Refuel” or import from Spritmonitor at the top.	Über „Betankung“ erfassen oder oben per Spritmonitor-Import übernehmen.	Registrér via „Tankning“ eller importér fra Spritmonitor øverst.
+tire_sets	Wheel sets	Radsätze	Hjulsæt
+tire_sets_empty	Create e.g. summer and winter wheels as wheel sets. When changing wheels you then just pick which set comes off and which goes on, and enter the tread depth when storing.	Lege z. B. Sommer- und Winterräder als Radsatz an. Beim Radwechsel wählst du dann nur noch aus, welcher Satz runter und welcher drauf kommt, und trägst die Profiltiefe bei der Einlagerung ein.	Opret f.eks. sommer- og vinterhjul som hjulsæt. Ved hjulskift vælger du så bare, hvilket sæt der tages af og hvilket der sættes på, og angiver mønsterdybden ved opbevaring.
+service_history	Service history	Service-Historie	Servicehistorik
+empty_services_title	No service entries yet	Noch keine Service-Einträge	Ingen serviceposter endnu
+empty_services_text	Add one via “Service” or import a CSV at the top.	Über „Service“ anlegen oder oben eine CSV importieren.	Opret via „Service“ eller importér en CSV øverst.
+services_summary	%1$d entries · %2$s total	%1$d Einträge · %2$s gesamt	%1$d poster · %2$s i alt
+tire_set	Wheel set	Radsatz	Hjulsæt
+sizes_front_rear	f %1$s · r %2$s	v %1$s · h %2$s	f %1$s · b %2$s
+chip_due	%1$s due	%1$s fällig	%1$s forfalden
+chip_due_in	%1$s in %2$s	%1$s in %2$s	%1$s om %2$s
+kpi_odometer_tap	Odometer (tap)	Kilometerstand (antippen)	Kilometerstand (tryk)
+kpi_total_cost	Total cost	Gesamtkosten	Samlede omkostninger
+all_figures	All figures	Alle Kennzahlen	Alle nøgletal
+tread_stored	Tread stored: %1$s mm	Profil eingelagert: %1$s mm	Mønster opbevaret: %1$s mm
+tread_mounted	Tread mounted: %1$s mm	Profil montiert: %1$s mm	Mønster monteret: %1$s mm
+tread_summary	Tread: %1$s	Profil: %1$s	Mønster: %1$s
+service_title	Service – %1$s	Service – %1$s	Service – %1$s
+entry	Entry	Eintrag	Post
+wheel_change	Wheel change	Radwechsel	Hjulskift
+service_new	New service entry	Neuer Service-Eintrag	Ny servicepost
+service_entry	Service entry	Service-Eintrag	Servicepost
+what_done	What was done?	Was wurde gemacht?	Hvad blev udført?
+category	Category	Kategorie	Kategori
+cost	Cost	Kosten	Omkostninger
+none_dash	– none –	– keiner –	– ingen –
+removed_stored	Removed / stored	Abmontiert / eingelagert	Afmonteret / opbevaret
+mounted	Mounted	Montiert	Monteret
+stored	Stored	Eingelagert	Opbevaret
+tread_set_info	Left: tread of the removed set when stored. Right: tread of the mounted set. Fields may be left empty.	Links: Profil des abmontierten Satzes bei der Einlagerung. Rechts: Profil des montierten Satzes. Felder dürfen leer bleiben.	Venstre: mønster på det afmonterede sæt ved opbevaring. Højre: mønster på det monterede sæt. Felterne må være tomme.
+tip_tire_sets	Tip: create wheel sets	Tipp: Radsätze anlegen	Tip: opret hjulsæt
+tip_tire_sets_text	Create e.g. summer and winter wheels once as wheel sets (even with different tires front and rear). When changing wheels you then just pick and enter the tread depth when storing.	Lege z. B. Sommer- und Winterräder einmal als Radsatz an (auch mit unterschiedlichen Reifen vorne und hinten). Beim Radwechsel wählst du dann nur noch aus und trägst die Profiltiefe bei der Einlagerung ein.	Opret f.eks. sommer- og vinterhjul én gang som hjulsæt (også med forskellige dæk for og bag). Ved hjulskift vælger du så bare og angiver mønsterdybden ved opbevaring.
+manufacturer	Manufacturer	Hersteller	Producent
+tire_name_hint	Tire name (e.g. Pilot Sport 5)	Reifenname (z. B. Pilot Sport 5)	Dæknavn (f.eks. Pilot Sport 5)
+tire_size_hint	Size (e.g. 245/40 R19 98Y)	Größe (z. B. 245/40 R19 98Y)	Størrelse (f.eks. 245/40 R19 98Y)
+tread_oldnew_info	Old = tread of the removed tires or before measuring, new = installed tires. Fields may be left empty.	Alt = Profil der ausgebauten Reifen bzw. vor der Messung, neu = eingebaute Reifen. Felder dürfen leer bleiben.	Gammel = mønster på de afmonterede dæk eller før måling, ny = monterede dæk. Felterne må være tomme.
+old	Old	Alt	Gammel
+new_	New	Neu	Ny
+workshop	Workshop	Werkstatt	Værksted
+service_note_hint	Note (parts, invoice number …)	Notiz (Teile, Rechnungsnummer …)	Note (dele, fakturanummer …)
+service_reminder_info	If there is a reminder with the same name (e.g. oil change), it is marked as done at this odometer reading.	Gibt es eine Erinnerung mit gleichem Namen (z. B. Ölwechsel), wird sie mit diesem Kilometerstand als erledigt markiert.	Hvis der findes en påmindelse med samme navn (f.eks. olieskift), markeres den som udført ved denne kilometerstand.
+service_delete_q	Delete service entry?	Service-Eintrag löschen?	Slet servicepost?
+tread_depth	Tread depth	Profiltiefe	Mønsterdybde
+mounted_lower	mounted	montiert	monteret
+stored_lower	stored	eingelagert	opbevaret
+front_prefix	Front: 	Vorne: 	For: 
+rear_prefix	Rear: 	Hinten: 	Bag: 
+tread_card	Tread %1$s mm (%2$s %3$s)	Profil %1$s mm (%2$s %3$s)	Mønster %1$s mm (%2$s %3$s)
+no_tread_yet	No tread depth recorded yet	Noch keine Profiltiefe erfasst	Ingen mønsterdybde registreret endnu
+pos_s_fl	FL	VL	VF
+pos_s_fr	FR	VR	HF
+pos_s_rl	RL	HL	VB
+pos_s_rr	RR	HR	HB
+pos_s_f	f	v	f
+pos_s_r	r	h	b
+tire_set_new	New wheel set	Neuer Radsatz	Nyt hjulsæt
+tire_kind	Tire type	Reifenart	Dæktype
+different_axles	Different tires per axle	Unterschiedliche Reifen je Achse	Forskellige dæk pr. aksel
+same_tires_info	All wheels have the same tires.	Alle Räder haben dieselben Reifen.	Alle hjul har de samme dæk.
+axle_tires_info	Enter manufacturer, tire name and size per axle (e.g. staggered setup).	Hersteller, Reifenname und Größe je Achse eintragen (z. B. Mischbereifung).	Angiv producent, dæknavn og størrelse pr. aksel (f.eks. blandet dækopsætning).
+front_wheel	Front wheel	Vorderrad	Forhjul
+front_axle	Front axle	Vorderachse	Foraksel
+rear_wheel	Rear wheel	Hinterrad	Baghjul
+rear_axle	Rear axle	Hinterachse	Bagaksel
+tire_name	Tire name	Reifenname	Dæknavn
+tire_size_hint_rear	Size (e.g. 275/35 R19 100Y)	Größe (z. B. 275/35 R19 100Y)	Størrelse (f.eks. 275/35 R19 100Y)
+tire_note_hint	Note (rims, DOT, storage location …)	Notiz (Felgen, DOT, Lagerort …)	Note (fælge, DOT, opbevaringssted …)
+tire_set_delete_q	Delete wheel set?	Radsatz löschen?	Slet hjulsæt?
+tire_set_delete_info	Previous wheel change entries are kept.	Bisherige Radwechsel-Einträge bleiben erhalten.	Tidligere hjulskiftposter bevares.
+map_title	Map – %1$s	Karte – %1$s	Kort – %1$s
+map_empty	No refuels with a position yet.	Keine Betankungen mit Position vorhanden.	Ingen tankninger med position endnu.
+photo_crop_info	Set the crop: drag with one finger, zoom with two fingers.	Ausschnitt festlegen: mit einem Finger verschieben, mit zwei Fingern zoomen.	Vælg udsnit: træk med én finger, zoom med to fingre.
+photo_large	Large view	Große Ansicht	Stor visning
+photo_thumb	Thumbnail	Miniatur	Miniature
+reset	Reset	Zurücksetzen	Nulstil
+about_title	About Fuel & Wrench	Über Fuel & Wrench	Om Fuel & Wrench
+version	Version %1$s	Version %1$s	Version %1$s
+about_text	Refuels, service and tires at a glance – no ads, no tracking, no Google services. Sync via your own Nextcloud/WebDAV server.	Betankungen, Service und Reifen im Blick – ohne Werbung, ohne Tracking, ohne Google-Dienste. Synchronisation über deinen eigenen Nextcloud-/WebDAV-Server.	Tankninger, service og dæk i ét overblik – uden reklamer, uden sporing, uden Google-tjenester. Synkronisering via din egen Nextcloud-/WebDAV-server.
+about_license	License: GNU General Public License v3.0 or later. This app was developed with AI assistance (Claude).	Lizenz: GNU General Public License v3.0 oder neuer. Diese App wurde mit KI-Unterstützung (Claude) entwickelt.	Licens: GNU General Public License v3.0 eller nyere. Denne app er udviklet med AI-hjælp (Claude).
+source_code	Source code on GitHub	Quellcode auf GitHub	Kildekode på GitHub
+privacy_policy	Privacy policy	Datenschutzerklärung	Privatlivspolitik
+map_data	Map data	Kartendaten	Kortdata
+map_data_text	Maps and station data: © OpenStreetMap contributors, available under the Open Database License (ODbL). Map tiles: OpenStreetMap Foundation. Station search: Overpass API. Address search: Nominatim.	Karten und Tankstellendaten: © OpenStreetMap-Mitwirkende, verfügbar unter der Open Database License (ODbL). Kartenkacheln: OpenStreetMap Foundation. Tankstellensuche: Overpass API. Adresssuche: Nominatim.	Kort og tankstationsdata: © OpenStreetMap-bidragydere, tilgængelig under Open Database License (ODbL). Kortfliser: OpenStreetMap Foundation. Søgning efter tankstationer: Overpass API. Adressesøgning: Nominatim.
+oss_licenses	Open source licenses	Open-Source-Lizenzen	Open source-licenser
+oss_intro	This app uses the following libraries, each under the Apache License, Version 2.0:	Diese App verwendet folgende Bibliotheken, jeweils unter der Apache License, Version 2.0:	Denne app bruger følgende biblioteker, alle under Apache License, Version 2.0:
+pal_carbon	Carbon blue	Carbonblau	Carbonblå
+pal_racing	Racing red	Rennrot	Racerrød
+pal_brg	British Racing Green	British Racing Green	British Racing Green
+pal_orange	Signal orange	Signalorange	Signalorange
+pal_petrol	Petrol	Petrol	Petrol
+pal_graphite	Graphite	Graphit	Grafit
+pal_system	System colors	Systemfarben	Systemfarver
+http_401	Sign-in failed (401) – check user/app password	Anmeldung fehlgeschlagen (401) – Benutzer/App-Passwort prüfen	Login mislykkedes (401) – kontrollér bruger/app-adgangskode
+http_403	Access denied (403)	Zugriff verweigert (403)	Adgang nægtet (403)
+http_404	Path not found (404) – check URL	Pfad nicht gefunden (404) – URL prüfen	Sti ikke fundet (404) – kontrollér URL
+http_409	Parent folder missing (409) – check URL	Übergeordneter Ordner fehlt (409) – URL prüfen	Overordnet mappe mangler (409) – kontrollér URL
+http_507	Storage full (507)	Speicherplatz voll (507)	Lagerplads fuld (507)
+http_other	HTTP error %1$d	HTTP-Fehler %1$d	HTTP-fejl %1$d
+sync_not_configured	Sync not set up	Synchronisation nicht eingerichtet	Synkronisering ikke konfigureret
+error_prefix	Error: %1$s	Fehler: %1$s	Fejl: %1$s
+sync_ok	Synced (%1$d vehicles, %2$d refuels)	Synchronisiert (%1$d Fahrzeuge, %2$d Betankungen)	Synkroniseret (%1$d køretøjer, %2$d tankninger)
+sync_conflict	Too many simultaneous changes – please try again	Zu viele gleichzeitige Änderungen – bitte erneut versuchen	For mange samtidige ændringer – prøv igen
+folder_read_error	Folder could not be read	Ordner konnte nicht gelesen werden	Mappen kunne ikke læses
+parent_folder	Parent folder	Übergeordneter Ordner	Overordnet mappe
+no_subfolders	No subfolders	Keine Unterordner	Ingen undermapper
+new_folder	New folder	Neuer Ordner	Ny mappe
+create_folder	Create folder	Ordner anlegen	Opret mappe
+use_this_folder	Use this folder	Diesen Ordner verwenden	Brug denne mappe
+original_amount	Original: %1$s	Original: %1$s	Oprindeligt: %1$s
+col_date	Date	Datum	Dato
+about_licenses	About & licenses	Über & Lizenzen	Om & licenser
+plus_new	+ New	+ Neu	+ Ny
+add_another_set	+ Add another wheel set	+ Weiteren Radsatz anlegen	+ Opret endnu et hjulsæt
+create_tire_set	Create wheel set	Radsatz anlegen	Opret hjulsæt
+language_button	Language: %1$s	Sprache: %1$s	Sprog: %1$s

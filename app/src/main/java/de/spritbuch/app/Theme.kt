@@ -76,7 +76,7 @@ object ThemeSettings {
 /** Farbpalette: Hauptfarbe je für hell und dunkel. */
 data class Palette(
     val key: String,
-    val name: String,
+    val nameRes: Int,
     val swatch: Color,
     val lPrimary: Color, val lOnPrimary: Color, val lContainer: Color, val lOnContainer: Color,
     val dPrimary: Color, val dOnPrimary: Color, val dContainer: Color, val dOnContainer: Color,
@@ -85,37 +85,37 @@ data class Palette(
 
 val palettes = listOf(
     Palette(
-        "carbon", "Carbonblau", Color(0xFF1C4E8A),
+        "carbon", R.string.pal_carbon, Color(0xFF1C4E8A),
         Color(0xFF1C4E8A), Color.White, Color(0xFFD6E3FF), Color(0xFF001B3E),
         Color(0xFFA9C7FF), Color(0xFF003063), Color(0xFF0F3C72), Color(0xFFD6E3FF),
         Color(0xFFB8741A), Color(0xFFF2B544),
     ),
     Palette(
-        "racing", "Rennrot", Color(0xFFB3261E),
+        "racing", R.string.pal_racing, Color(0xFFB3261E),
         Color(0xFFB3261E), Color.White, Color(0xFFFFDAD6), Color(0xFF410002),
         Color(0xFFFFB4AB), Color(0xFF690005), Color(0xFF93000A), Color(0xFFFFDAD6),
         Color(0xFF5B6470), Color(0xFFBCC7D3),
     ),
     Palette(
-        "brg", "British Racing Green", Color(0xFF1B5E35),
+        "brg", R.string.pal_brg, Color(0xFF1B5E35),
         Color(0xFF1B5E35), Color.White, Color(0xFFA6F5B5), Color(0xFF00210C),
         Color(0xFF8BD89B), Color(0xFF003919), Color(0xFF005228), Color(0xFFA6F5B5),
         Color(0xFF8A6A1F), Color(0xFFE5C26B),
     ),
     Palette(
-        "orange", "Signalorange", Color(0xFFE06A00),
+        "orange", R.string.pal_orange, Color(0xFFE06A00),
         Color(0xFF9A4600), Color.White, Color(0xFFFFDBC8), Color(0xFF321300),
         Color(0xFFFFB68A), Color(0xFF532200), Color(0xFF763300), Color(0xFFFFDBC8),
         Color(0xFF3F5F7A), Color(0xFFA7C8E6),
     ),
     Palette(
-        "petrol", "Petrol", Color(0xFF006A6A),
+        "petrol", R.string.pal_petrol, Color(0xFF006A6A),
         Color(0xFF006A6A), Color.White, Color(0xFF6FF7F6), Color(0xFF002020),
         Color(0xFF4CDADA), Color(0xFF003737), Color(0xFF004F4F), Color(0xFF6FF7F6),
         Color(0xFF7A5900), Color(0xFFF5BF48),
     ),
     Palette(
-        "graphite", "Graphit", Color(0xFF46505C),
+        "graphite", R.string.pal_graphite, Color(0xFF46505C),
         Color(0xFF46505C), Color.White, Color(0xFFDDE3EC), Color(0xFF121C26),
         Color(0xFFBCC7D3), Color(0xFF26313C), Color(0xFF3C4753), Color(0xFFDDE3EC),
         Color(0xFFB3261E), Color(0xFFFFB4AB),
@@ -194,9 +194,9 @@ fun PalettePicker(selected: String, onSelect: (String) -> Unit) {
         if (Build.VERSION.SDK_INT >= 31) {
             val ctx = LocalContext.current
             val dyn = dynamicLightColorScheme(ctx).primary
-            Swatch("Systemfarben", dyn, selected == "dynamic", dynamic = true) { onSelect("dynamic") }
+            Swatch(str(R.string.pal_system), dyn, selected == "dynamic", dynamic = true) { onSelect("dynamic") }
         }
-        palettes.forEach { p -> Swatch(p.name, p.swatch, selected == p.key) { onSelect(p.key) } }
+        palettes.forEach { p -> Swatch(str(p.nameRes), p.swatch, selected == p.key) { onSelect(p.key) } }
     }
 }
 

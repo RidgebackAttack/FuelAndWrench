@@ -1,7 +1,7 @@
-Fuel & Wrench ist das Logbuch für Auto und Motorrad: Tankvorgänge, Verbrauch, Service-Historie und Reifen an einem Ort – ohne Werbung, ohne Tracking und ohne Google-Dienste.
+Fuel & Wrench ist das Logbuch für Auto und Motorrad: Betankungen, Verbrauch, Service-Historie und Reifen an einem Ort – ohne Werbung, ohne Tracking und ohne Google-Dienste.
 
 <b>Tanken & Verbrauch</b>
-• Tankvorgänge mit Kraftstoffart, Tankstelle, Position, Fahrstil, Strecke, Reifen und Zusatzverbrauchern (Standheizung, Anhänger …)
+• Betankungen mit Kraftstoffart, Tankstelle, Position, Fahrstil, Strecke, Reifen und Zusatzverbrauchern (Standheizung, Anhänger …)
 • Verbrauch nach der Voll-zu-Voll-Methode, Kosten pro 100 km, Verbrauchsverlauf
 • Einheiten pro Fahrzeug: km/Meilen, Liter/Gallonen, l/100 km, km/l oder mpg, beliebige Währung
 • Tankstellen auf der Karte (OpenStreetMap)

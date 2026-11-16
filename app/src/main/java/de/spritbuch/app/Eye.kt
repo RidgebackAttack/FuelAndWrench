@@ -135,7 +135,7 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
                     v.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
                     color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
-                val sub = listOf(v.plate, if (v.archived) "archiviert" else "").filter { it.isNotBlank() }.joinToString(" · ")
+                val sub = listOf(v.plate, if (v.archived) str(R.string.archived_lower) else "").filter { it.isNotBlank() }.joinToString(" · ")
                 if (sub.isNotBlank()) Text(sub, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
             }
         }
@@ -150,7 +150,7 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
                 val rem = next.dueKm - odo
                 StatChip(
                     if (rem <= next.warnBeforeKm) Icons.Default.WarningAmber else Icons.Default.Build,
-                    if (rem <= 0) "${next.title} fällig" else "${next.title} in ${rem.dist(v.distanceUnit)}",
+                    if (rem <= 0) str(R.string.chip_due, next.title) else str(R.string.chip_due_in, next.title, rem.dist(v.distanceUnit)),
                     warn = rem <= next.warnBeforeKm,
                 )
             }
@@ -197,21 +197,21 @@ fun KpiSection(
     var expanded by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            KpiTile(Icons.Default.LocalGasStation, "Ø Verbrauch",
+            KpiTile(Icons.Default.LocalGasStation, str(R.string.stat_avg),
                 if (stats.avg != null) Units.consumption(v, fuel, avg) else "–", Modifier.weight(1f))
-            KpiTile(Icons.Default.Payments, "Kosten pro 100 ${v.distanceUnit}",
+            KpiTile(Icons.Default.Payments, str(R.string.stat_cost_per100, v.distanceUnit),
                 if (stats.costPer100 != null) "${per100.fmt()} $cur" else "–", Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            KpiTile(Icons.Default.Speed, "Kilometerstand (antippen)", odo.toInt().dist(v.distanceUnit), Modifier.weight(1f), onEditOdometer)
-            KpiTile(Icons.Default.Payments, "Gesamtkosten", "${total.fmt(0)} $cur", Modifier.weight(1f))
+            KpiTile(Icons.Default.Speed, str(R.string.kpi_odometer_tap), odo.toInt().dist(v.distanceUnit), Modifier.weight(1f), onEditOdometer)
+            KpiTile(Icons.Default.Payments, str(R.string.kpi_total_cost), "${total.fmt(0)} $cur", Modifier.weight(1f))
         }
         Card(Modifier.fillMaxWidth()) {
             Row(
                 Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Alle Kennzahlen", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(str(R.string.all_figures), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = null)
             }
             AnimatedVisibility(expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {

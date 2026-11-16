@@ -9,11 +9,13 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 /** Spalten, die Spritmonitor als Zahlencode exportiert und die der Nutzer beim Import zuordnet. */
-enum class CodeField(val label: String, val options: List<String>) {
-    FUEL("Kraftstoff", Options.fuelTypes),
-    TIRES("Reifen", listOf("") + Options.tireTypes),
-    STYLE("Fahrweise", listOf("") + Options.drivingStyles),
-    ROUTE("Strecken", listOf("") + Options.routeTypes),
+enum class CodeField(private val labelRes: Int, val options: List<String>) {
+    FUEL(R.string.fuel_type, Options.fuelTypes),
+    TIRES(R.string.tires, listOf("") + Options.tireTypes),
+    STYLE(R.string.driving_style, listOf("") + Options.drivingStyles),
+    ROUTE(R.string.route, listOf("") + Options.routeTypes);
+
+    val label: String get() = str(labelRes)
 }
 
 data class CodeInfo(val raw: String, val count: Int, val suggestion: String)
@@ -44,7 +46,7 @@ data class ImportResult(
         val cur = rowCurrency[r.id]
         if (cur != null) {
             val rate = rates[cur]
-            val original = "Original: ${r.totalPrice.fmt(2)} $cur"
+            val original = str(R.string.original_amount, r.totalPrice.fmt(2) + " " + cur)
             if (rate != null && rate > 0) total = r.totalPrice / rate
             note = listOf(note, original).filter { it.isNotBlank() }.joinToString(" · ")
         }
@@ -127,9 +129,9 @@ object CsvImport {
         val cExtras = col("extras", "verbraucher", "zusatz", "attributes")
 
         val missing = buildList {
-            if (cDate < 0) add("Datum")
-            if (cOdo < 0 && cTrip < 0) add("Kilometerstand")
-            if (cAmount < 0) add("Menge")
+            if (cDate < 0) add(str(R.string.col_date))
+            if (cOdo < 0 && cTrip < 0) add(str(R.string.odometer))
+            if (cAmount < 0) add(str(R.string.amount))
         }
         if (missing.isNotEmpty()) return ImportResult(emptyList(), lines.size - headerIdx - 1, missing)
 

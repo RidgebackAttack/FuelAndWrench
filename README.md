@@ -1,10 +1,10 @@
 # Fuel & Wrench
 
-Android-App zum Erfassen von Tankvorgängen und Kraftstoffverbrauch, mit Synchronisation über WebDAV/Nextcloud.
+Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronisation über WebDAV/Nextcloud.
 
 ## Funktionen
 - Mehrere Fahrzeuge mit Foto, Kennzeichen, Standard-Kraftstoff, Tankinhalt
-- Tankvorgänge: Datum, Kilometerstand, Menge, Preis (€/l und gesamt, rechnet gegenseitig), voll/teil, Kraftstoffart
+- Betankungen: Datum, Kilometerstand, Menge, Preis (€/l und gesamt, rechnet gegenseitig), voll/teil, Kraftstoffart
 - Tankstelle: Betreiber (Aral, Shell, …), Adresse, GPS-Position; „Aktuelle Position“ erkennt die nächste Tankstelle über OpenStreetMap
 - Bedingungen: Standheizung, Anhänger, Dachbox, Klimaanlage; Fahrstil; Strecke; Reifentyp
 - Verbrauch nach Voll-zu-Voll-Methode, Kosten pro 100 km, Gesamtkosten

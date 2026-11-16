@@ -88,9 +88,9 @@ fun VehicleListScreen(nav: NavController) {
                     IconButton(
                         onClick = { scope.launch { snackbar.showSnackbar(SyncManager.sync(ctx).message) } },
                         enabled = !syncing,
-                    ) { Icon(Icons.Default.Sync, contentDescription = "Synchronisieren") }
+                    ) { Icon(Icons.Default.Sync, contentDescription = str(R.string.sync_now)) }
                     IconButton(onClick = { nav.navigate("settings") }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Einstellungen")
+                        Icon(Icons.Default.Settings, contentDescription = str(R.string.settings))
                     }
                 },
             )
@@ -99,7 +99,7 @@ fun VehicleListScreen(nav: NavController) {
             ExtendedFloatingActionButton(
                 onClick = { nav.navigate("vehicleEdit/new") },
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Fahrzeug") },
+                text = { Text(str(R.string.vehicle)) },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -107,8 +107,8 @@ fun VehicleListScreen(nav: NavController) {
         if (vehicles.isEmpty()) {
             Box(Modifier.padding(pad).fillMaxSize(), contentAlignment = Alignment.Center) {
                 EmptyState(
-                    Icons.Default.DirectionsCar, "Willkommen bei Fuel & Wrench",
-                    "Lege dein erstes Fahrzeug über „Fahrzeug“ an. Danach kannst du tanken, Service erfassen oder Daten aus Spritmonitor importieren.",
+                    Icons.Default.DirectionsCar, str(R.string.welcome_title),
+                    str(R.string.welcome_text),
                 )
             }
         } else {
@@ -119,12 +119,12 @@ fun VehicleListScreen(nav: NavController) {
             ) {
                 val active = vehicles.filter { !it.archived }
                 val archived = vehicles.filter { it.archived }
-                if (active.isEmpty()) item { Text("Alle Fahrzeuge sind archiviert.") }
+                if (active.isEmpty()) item { Text(str(R.string.all_archived)) }
                 items(active, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
                 if (archived.isNotEmpty()) {
                     item {
                         TextButton(onClick = { showArchived = !showArchived }) {
-                            Text(if (showArchived) "Archiv ausblenden" else "Archiv anzeigen (${archived.size})")
+                            Text(if (showArchived) str(R.string.archive_hide) else str(R.string.archive_show, archived.size))
                         }
                     }
                     if (showArchived) items(archived, key = { it.id }) { v -> VehicleHeroCard(nav, v, refuels, allReminders) }
@@ -147,10 +147,10 @@ private fun VehicleCard(nav: NavController, v: Vehicle, refuels: List<Refuel>) {
             VehiclePhoto(v, Modifier.size(72.dp))
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(v.name + if (v.archived) " (archiviert)" else "", style = MaterialTheme.typography.titleMedium)
+                Text(v.name + if (v.archived) " (" + str(R.string.archived_lower) + ")" else "", style = MaterialTheme.typography.titleMedium)
                 if (v.plate.isNotBlank()) Text(v.plate, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: "Noch kein Verbrauch berechenbar",
+                    stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: str(R.string.no_consumption_yet),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -190,7 +190,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                 }
             }
             res.onSuccess { pendingImport = it }
-                .onFailure { snackbar.showSnackbar("Import fehlgeschlagen: ${it.message}") }
+                .onFailure { snackbar.showSnackbar(str(R.string.import_failed, it.message ?: "")) }
         }
     }
 
@@ -224,48 +224,49 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
         var extrasForAll by remember(imp) { mutableStateOf(setOf<String>()) }
         AlertDialog(
             onDismissRequest = { pendingImport = null },
-            title = { Text("Import") },
+            title = { Text(str(R.string.import_title)) },
             text = {
               Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     if (imp.missingColumns.isNotEmpty()) {
-                        "Die Datei konnte nicht gelesen werden. Fehlende Spalten: ${imp.missingColumns.joinToString()}"
+                        str(R.string.import_missing_cols, imp.missingColumns.joinToString())
                     } else {
                         val first = imp.refuels.minByOrNull { it.timestamp }?.timestamp?.date() ?: "–"
                         val last = imp.refuels.maxByOrNull { it.timestamp }?.timestamp?.date() ?: "–"
-                        "${imp.refuels.size} Tankvorgänge gefunden ($first bis $last)" +
-                            (if (imp.skipped > 0) ", ${imp.skipped} Zeilen ohne Tankdaten übersprungen (z. B. Kosten, Wartung)" else "") +
-                            ".\n\nIn „${v?.name ?: ""}“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt."
+                        str(R.string.import_found, imp.refuels.size, first, last) +
+                            (if (imp.skipped > 0) str(R.string.import_skipped, imp.skipped) else "") +
+                            ".\n\n" + str(R.string.import_confirm, v?.name ?: "")
                     }
                 )
                 val hints = buildList {
-                    if (imp.fileDuplicates > 0) add("${imp.fileDuplicates} doppelte Zeile(n) in der Datei werden nur einmal übernommen")
-                    if (imp.derivedOdometers > 0) add("${imp.derivedOdometers}× fehlender Kilometerstand aus der Teilstrecke berechnet")
-                    if (imp.correctedPrices > 0) add("${imp.correctedPrices}× Literpreis statt Gesamtbetrag erkannt und korrigiert")
-                    if (imp.missingPrices > 0) add("${imp.missingPrices} Tankvorgänge ohne Preis")
+                    if (imp.fileDuplicates > 0) add(str(R.string.import_hint_dups, imp.fileDuplicates))
+                    if (imp.derivedOdometers > 0) add(str(R.string.import_hint_derived, imp.derivedOdometers))
+                    if (imp.correctedPrices > 0) add(str(R.string.import_hint_corrected, imp.correctedPrices))
+                    if (imp.missingPrices > 0) add(str(R.string.import_hint_noprice, imp.missingPrices))
                 }
                 if (hints.isNotEmpty()) {
                     Text(hints.joinToString("\n") { "• $it" }, style = MaterialTheme.typography.bodySmall)
                 }
                 if (imp.codes.isNotEmpty() && imp.refuels.isNotEmpty()) {
                     Text(
-                        "Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:",
+                        str(R.string.import_codes_info),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     imp.codes.forEach { (field, list) ->
                         SectionTitle(field.label)
                         list.forEach { c ->
                             val key = "${field.name}:${c.raw}"
+                            val none = str(R.string.not_specified)
                             ChoiceField(
-                                "Code ${c.raw} (${c.count}×)",
-                                (mapping[key] ?: "").ifEmpty { "keine Angabe" },
-                                field.options.map { it.ifEmpty { "keine Angabe" } },
-                            ) { sel -> mapping[key] = if (sel == "keine Angabe") "" else sel }
+                                str(R.string.import_code, c.raw, c.count),
+                                (mapping[key] ?: "").ifEmpty { none },
+                                field.options.map { it.ifEmpty { none } },
+                            ) { sel -> mapping[key] = if (sel == none) "" else sel }
                         }
                     }
                 }
                 if (imp.foreignCurrencies.isNotEmpty() && imp.refuels.isNotEmpty()) {
-                    SectionTitle("Fremdwährung")
+                    SectionTitle(str(R.string.foreign_currency))
                     imp.foreignCurrencies.forEach { (code, n) ->
                         NumberField(
                             "1 ${v?.currency ?: "€"} = … $code ($n×)",
@@ -275,14 +276,14 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         )
                     }
                     Text(
-                        "Der Originalbetrag wird in der Notiz vermerkt. Ohne Kurs bleibt der Betrag unverändert.",
+                        str(R.string.foreign_currency_info),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
                 if (imp.refuels.isNotEmpty()) {
-                    SectionTitle("Zusätzliche Verbraucher für alle Einträge")
+                    SectionTitle(str(R.string.import_extras_all))
                     Text(
-                        "Spritmonitor exportiert Klimaanlage, Heizung und Anhänger nicht. Hier optional für alle importierten Tankvorgänge setzen:",
+                        str(R.string.import_extras_info),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     MultiChips(Options.extras, extrasForAll) { extrasForAll = it }
@@ -298,11 +299,11 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         }
                         val rateValues = rates.mapValues { (_, txt) -> txt.toDoubleDe() }
                         val (added, dups) = repo.importRefuels(vehicleId, imp.finalize(map, rateValues, extrasForAll))
-                        snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups Duplikate übersprungen" else "")
+                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.dups_skipped, dups) else "")
                     }
-                }) { Text("Importieren") }
+                }) { Text(str(R.string.do_import)) }
             },
-            dismissButton = { TextButton(onClick = { pendingImport = null }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { pendingImport = null }) { Text(str(R.string.cancel)) } },
         )
     }
 
@@ -310,15 +311,15 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
         var text by remember { mutableStateOf(currentOdo.toString()) }
         AlertDialog(
             onDismissRequest = { odoDialog = false },
-            title = { Text("Kilometerstand") },
-            text = { NumberField("Aktueller Stand", text, { text = it }, suffix = du, decimal = false) },
+            title = { Text(str(R.string.odometer)) },
+            text = { NumberField(str(R.string.current_reading), text, { text = it }, suffix = du, decimal = false) },
             confirmButton = {
                 TextButton(onClick = {
                     text.toIntKm()?.let { km -> scope.launch { repo.setManualOdometer(vehicleId, km) } }
                     odoDialog = false
-                }) { Text("Speichern") }
+                }) { Text(str(R.string.save)) }
             },
-            dismissButton = { TextButton(onClick = { odoDialog = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { odoDialog = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }
@@ -347,15 +348,15 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                     val d = (o / c - 1.0) * 100
                     " (" + (if (d >= 0) "+" else "−") + kotlin.math.abs(d).fmt(1) + " %)"
                 } ?: ""
-                Text("Bordcomputer: ${Units.consumption(v, r.fuelType, o)}$diff", style = MaterialTheme.typography.bodySmall)
+                Text(str(R.string.obc_value, Units.consumption(v, r.fuelType, o) + diff), style = MaterialTheme.typography.bodySmall)
             }
-            val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ")
+            val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ") { lbl(it) }
             if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
             if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
             val cond = (listOf(r.tireType, r.drivingStyle, r.routeType) + r.extrasList()).filter { it.isNotBlank() }
-            if (cond.isNotEmpty()) Text(cond.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
-            if (!r.fullTank) Text("Teilbetankung", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
-            if (r.missedPrevious) Text("Vorherige Tankung fehlt", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+            if (cond.isNotEmpty()) Text(cond.joinToString(" · ") { lbl(it) }, style = MaterialTheme.typography.bodySmall)
+            if (!r.fullTank) Text(str(R.string.partial_refuel), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+            if (r.missedPrevious) Text(str(R.string.previous_missing), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
         }
     }
 }
@@ -410,15 +411,15 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNew) "Neues Fahrzeug" else "Fahrzeug bearbeiten") },
+                title = { Text(str(if (isNew) R.string.vehicle_new else R.string.vehicle_edit)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = str(R.string.delete))
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
-                        if (name.isBlank()) { error = "Bitte einen Namen eingeben"; return@IconButton }
+                        if (name.isBlank()) { error = str(R.string.err_enter_name); return@IconButton }
                         scope.launch {
                             repo.saveVehicle(
                                 b.copy(
@@ -432,7 +433,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                             )
                             if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
                         }
-                    }) { Icon(Icons.Default.Check, contentDescription = "Speichern") }
+                    }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
             )
         },
@@ -451,40 +452,40 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             OutlinedButton(
                 onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text(if (photoVersion > 0) "Foto ändern" else "Foto auswählen") }
-            OutlinedTextField(name, { name = it }, label = { Text("Name (z. B. Golf)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(plate, { plate = it }, label = { Text("Kennzeichen") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            ChoiceField("Fahrzeugart", vType, Options.vehicleTypes) { vType = it }
-            ChoiceField("Standard-Kraftstoff", fuel, Options.fuelTypes) { fuel = it }
+            ) { Text(str(if (photoVersion > 0) R.string.photo_change else R.string.photo_choose)) }
+            OutlinedTextField(name, { name = it }, label = { Text(str(R.string.vehicle_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(plate, { plate = it }, label = { Text(str(R.string.plate)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            ChoiceField(str(R.string.vehicle_type), vType, Options.vehicleTypes) { vType = it }
+            ChoiceField(str(R.string.default_fuel), fuel, Options.fuelTypes) { fuel = it }
             val previewVehicle = b.copy(volumeUnit = volU, distanceUnit = distU)
-            NumberField("Tankinhalt", tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
-            NumberField("Kilometerstand bei Erfassungsbeginn", initialOdo, { initialOdo = it }, suffix = distU, decimal = false)
+            NumberField(str(R.string.tank_capacity), tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
+            NumberField(str(R.string.initial_odometer), initialOdo, { initialOdo = it }, suffix = distU, decimal = false)
 
-            SectionTitle("Einheiten")
-            ChoiceField("Entfernung", Units.distanceUnits[distU] ?: distU, Units.distanceUnits.values.toList()) { lbl ->
+            SectionTitle(str(R.string.units))
+            ChoiceField(str(R.string.distance), Units.distanceUnits[distU] ?: distU, Units.distanceUnits.values.toList()) { lbl ->
                 distU = Units.distanceUnits.entries.first { it.value == lbl }.key
             }
-            ChoiceField("Volumen (flüssige Kraftstoffe)", Units.volumeUnits[volU] ?: volU, Units.volumeUnits.values.toList()) { lbl ->
+            ChoiceField(str(R.string.volume), Units.volumeUnits[volU] ?: volU, Units.volumeUnits.values.toList()) { lbl ->
                 volU = Units.volumeUnits.entries.first { it.value == lbl }.key
             }
-            ChoiceField("Verbrauchsanzeige", Units.formats[fmtU] ?: fmtU, Units.formats.values.toList()) { lbl ->
+            ChoiceField(str(R.string.consumption_display), Units.formats[fmtU] ?: fmtU, Units.formats.values.toList()) { lbl ->
                 fmtU = Units.formats.entries.first { it.value == lbl }.key
             }
-            ChoiceField("Währung", cur, Units.currencies) { cur = it }
+            ChoiceField(str(R.string.currency), cur, Units.currencies) { cur = it }
             if (!isNew && (distU != b.distanceUnit || volU != b.volumeUnit)) {
                 Text(
-                    "Beim Speichern werden alle Tankvorgänge, Kilometerstände und Erinnerungen dieses Fahrzeugs in die neuen Einheiten umgerechnet.",
+                    str(R.string.units_convert_info),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             if (!isNew && cur != b.currency) {
-                Text("Hinweis: Beträge werden nicht umgerechnet, nur die Währungsangabe ändert sich.", style = MaterialTheme.typography.bodySmall)
+                Text(str(R.string.currency_info), style = MaterialTheme.typography.bodySmall)
             }
             if (!isNew) {
-                LabeledSwitch("Archiviert (z. B. verkauft)", archived) { archived = it }
+                LabeledSwitch(str(R.string.archived_switch), archived) { archived = it }
                 Text(
-                    "Archivierte Fahrzeuge bleiben mit allen Daten erhalten, erscheinen aber unten im Archiv und lösen keine Erinnerungen aus.",
+                    str(R.string.archived_info),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -495,8 +496,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Fahrzeug löschen?") },
-            text = { Text("Alle Tankvorgänge und Erinnerungen dieses Fahrzeugs werden auf allen Geräten gelöscht. Zum Aufbewahren stattdessen „Archiviert“ einschalten.") },
+            title = { Text(str(R.string.vehicle_delete_q)) },
+            text = { Text(str(R.string.vehicle_delete_info)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
@@ -504,9 +505,9 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                         repo.deleteVehicle(vehicleId)
                         nav.popBackStack("vehicles", false)
                     }
-                }) { Text("Löschen") }
+                }) { Text(str(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }

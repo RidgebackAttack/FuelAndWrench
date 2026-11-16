@@ -55,21 +55,14 @@ object Options {
     val tireTypes = listOf("Sommerreifen", "Winterreifen", "Ganzjahresreifen")
     val vehicleTypes = listOf("Auto", "Motorrad")
     fun tirePositions(vehicleType: String?) =
-        if (vehicleType == "Motorrad") listOf("V" to "Vorne", "H" to "Hinten")
-        else listOf("VL" to "Vorne links", "VR" to "Vorne rechts", "HL" to "Hinten links", "HR" to "Hinten rechts")
+        (if (vehicleType == "Motorrad") listOf("V", "H") else listOf("VL", "VR", "HL", "HR")).map { it to lbl(it) }
     val tireBrands = listOf(
         "Michelin", "Continental", "Bridgestone", "Pirelli", "Goodyear", "Dunlop", "Metzeler",
         "Hankook", "Nokian", "Vredestein", "Falken", "Kumho", "Toyo", "Yokohama", "Uniroyal", "Firestone",
     )
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
-    val serviceSuggestions = listOf(
-        "Ölwechsel", "Radwechsel", "Reifenwechsel", "Profiltiefe gemessen", "Inspektion", "HU/AU", "Reifenwechsel", "Bremsen", "Zahnriemen", "Bremsflüssigkeit",
-        "Luftfilter", "Innenraumfilter", "Batterie", "Wischerblätter", "Kette/Ritzel",
-    )
-    val reminderSuggestions = listOf(
-        "Ölwechsel", "Inspektion", "Zahnriemen", "Bremsflüssigkeit", "Luftfilter",
-        "Reifen tauschen", "Zündkerzen"
-    )
+    val serviceSuggestions get() = strList(R.string.list_service_suggestions)
+    val reminderSuggestions get() = strList(R.string.list_reminder_suggestions)
 
     fun unit(fuelType: String): String = when (fuelType) {
         "Strom" -> "kWh"
@@ -174,7 +167,7 @@ data class ServiceEntry(
     val deleted: Boolean = false,
 ) {
     fun tireSummary(): String = listOf(
-        tireSeason,
+        lbl(tireSeason),
         listOf(tireBrand, tireModel).filter { it.isNotBlank() }.joinToString(" "),
         tireSize,
     ).filter { it.isNotBlank() }.joinToString(" · ")
@@ -206,14 +199,14 @@ data class TireSet(
     /** Kurzbezeichnung, z. B. „Winterreifen – Michelin Pilot Alpin 5“. */
     fun label(): String {
         val tires = if (rearTire.isBlank() || rearTire == frontTire) frontTire else "$frontTire / $rearTire"
-        return listOf(season, tires).filter { it.isNotBlank() }.joinToString(" – ").ifBlank { "Radsatz" }
+        return listOf(lbl(season), tires).filter { it.isNotBlank() }.joinToString(" – ").ifBlank { str(R.string.tire_set) }
     }
 
     /** Größen, z. B. „245/40 R19“ oder „v 245/40 R19 · h 275/35 R19“. */
     fun sizes(): String = when {
         sizeFront.isBlank() && sizeRear.isBlank() -> ""
         sizeRear.isBlank() || sizeRear == sizeFront -> sizeFront
-        else -> "v $sizeFront · h $sizeRear"
+        else -> str(R.string.sizes_front_rear, sizeFront, sizeRear)
     }
 }
 

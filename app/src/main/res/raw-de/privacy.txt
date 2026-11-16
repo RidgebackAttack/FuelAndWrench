@@ -1,0 +1,36 @@
+Stand: 15. November 2026
+
+Fuel & Wrench ist eine App zum Erfassen von Betankungen, Service-Arbeiten und Reifen. Sie kommt ohne Werbung, Tracking, Analyse-Dienste, Absturzberichte und ohne Google-Dienste aus. Der Entwickler betreibt keinen eigenen Server und erhält keine Daten.
+
+Welche Daten verarbeitet die App?
+
+• Fahrzeug-, Tank-, Service- und Reifendaten, die du selbst eingibst (z. B. Kilometerstand, Menge, Preis, Tankstelle, Werkstatt, Notizen, Fahrzeugfotos).
+• Standort (nur wenn du „Aktuelle Position“ antippst und die Berechtigung erteilt hast), um die Tankstelle zu erkennen und bei der Betankung zu speichern.
+• Zugangsdaten für die Synchronisation (Server-Adresse, Benutzername, App-Passwort), sofern du die Synchronisation einrichtest.
+
+Alle Daten werden lokal auf deinem Gerät gespeichert. Die Android-Datensicherung ist für die App deaktiviert.
+
+Wohin werden Daten übertragen?
+
+• Dein eigener WebDAV-/Nextcloud-Server: alle App-Daten und Fahrzeugfotos – bei der Synchronisation (abschaltbar: ja – Synchronisation nicht einrichten)
+• overpass-api.de (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ – Tankstellensuche (abschaltbar: ja – Einstellungen → Datenschutz)
+• nominatim.openstreetmap.org (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ / „Adresse“ – Adresssuche (abschaltbar: ja – gleicher Schalter)
+• Android-Geocoder (auf Geräten mit Google-Diensten: Google): Koordinaten – Adressermittlung (abschaltbar: ja – standardmäßig aus)
+• Netzwerk-Ortung des Systems (auf Geräten mit Google-Diensten: Google): WLAN-/Mobilfunkdaten – Ortung (abschaltbar: ja – standardmäßig aus, dann nur GPS)
+• tile.openstreetmap.org: angezeigter Kartenausschnitt, IP-Adresse – beim Öffnen der Karte (abschaltbar: nur durch Nicht-Nutzung der Karte)
+
+Für die genannten Dienste gelten deren eigene Datenschutzbestimmungen (OpenStreetMap Foundation, FOSSGIS e. V. bzw. Google).
+
+Berechtigungen
+
+• Standort (genau): nur für „Aktuelle Position“ beim Tanken.
+• Internet / Netzwerkstatus: Synchronisation, Tankstellensuche, Karte.
+• Benachrichtigungen: Wartungserinnerungen.
+
+Speicherdauer und Löschung
+
+Daten bleiben gespeichert, bis du sie in der App löschst oder die App deinstallierst. Daten auf deinem Sync-Server verwaltest du selbst.
+
+Kontakt
+
+Fragen zum Datenschutz: über die Issues des Projekts auf GitHub.

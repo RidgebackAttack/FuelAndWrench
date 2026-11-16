@@ -127,7 +127,7 @@ fun AppNav() {
 @Composable
 fun BackButton(nav: NavController) {
     IconButton(onClick = { nav.popBackStack() }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = str(R.string.cd_back))
     }
 }
 
@@ -146,7 +146,7 @@ fun ChoiceField(label: String, value: String, options: List<String>, onSelect: (
     var expanded by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = value,
+            value = lbl(value),
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
@@ -154,12 +154,9 @@ fun ChoiceField(label: String, value: String, options: List<String>, onSelect: (
             modifier = Modifier.fillMaxWidth(),
         )
         Box(Modifier.matchParentSize().clickable { expanded = true })
-        // Beim Tippen nur passende Einträge zeigen; bei leerem Feld oder exaktem Treffer alle
-        val shown = options.filter { value.isBlank() || it.contains(value.trim(), ignoreCase = true) }
-            .takeIf { it.isNotEmpty() && options.none { o -> o.equals(value.trim(), ignoreCase = true) } } ?: options
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 360.dp)) {
-            shown.forEach { o ->
-                DropdownMenuItem(text = { Text(o) }, onClick = { onSelect(o); expanded = false })
+            options.forEach { o ->
+                DropdownMenuItem(text = { Text(lbl(o)) }, onClick = { onSelect(o); expanded = false })
             }
         }
     }
@@ -177,14 +174,15 @@ fun SuggestField(label: String, value: String, options: List<String>, onChange: 
             singleLine = true,
             trailingIcon = {
                 IconButton(onClick = { expanded = true }) {
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Auswahl")
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = str(R.string.cd_choose))
                 }
             },
             modifier = Modifier.fillMaxWidth(),
         )
         // Beim Tippen nur passende Einträge zeigen; bei leerem Feld oder exaktem Treffer alle
-        val shown = options.filter { value.isBlank() || it.contains(value.trim(), ignoreCase = true) }
-            .takeIf { it.isNotEmpty() && options.none { o -> o.equals(value.trim(), ignoreCase = true) } } ?: options
+        val labels = options.map { lbl(it) }
+        val shown = labels.filter { value.isBlank() || it.contains(value.trim(), ignoreCase = true) }
+            .takeIf { it.isNotEmpty() && labels.none { o -> o.equals(value.trim(), ignoreCase = true) } } ?: labels
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 360.dp)) {
             shown.forEach { o ->
                 DropdownMenuItem(text = { Text(o) }, onClick = { onChange(o); expanded = false })
@@ -222,7 +220,7 @@ fun SingleChips(options: List<String>, selected: String, onSelect: (String) -> U
             FilterChip(
                 selected = o == selected,
                 onClick = { onSelect(if (o == selected) "" else o) },
-                label = { Text(o) },
+                label = { Text(lbl(o)) },
             )
         }
     }
@@ -236,7 +234,7 @@ fun MultiChips(options: List<String>, selected: Set<String>, onChange: (Set<Stri
             FilterChip(
                 selected = o in selected,
                 onClick = { onChange(if (o in selected) selected - o else selected + o) },
-                label = { Text(o) },
+                label = { Text(lbl(o)) },
             )
         }
     }

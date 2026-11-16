@@ -82,39 +82,37 @@ fun AboutScreen(nav: NavController) {
     }
     fun open(url: String) = runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Über Fuel & Wrench") }, navigationIcon = { BackButton(nav) }) }) { pad ->
+    Scaffold(topBar = { TopAppBar(title = { Text(str(R.string.about_title)) }, navigationIcon = { BackButton(nav) }) }) { pad ->
         Column(
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("Fuel & Wrench", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text("Version $version", style = MaterialTheme.typography.bodyMedium)
+            Text(str(R.string.version, version), style = MaterialTheme.typography.bodyMedium)
             Text(
-                "Tanken, Service und Reifen im Blick – ohne Werbung, ohne Tracking, ohne Google-Dienste. " +
-                    "Synchronisation über deinen eigenen Nextcloud-/WebDAV-Server.",
+                str(R.string.about_text),
                 style = MaterialTheme.typography.bodyMedium,
             )
             Text(
-                "Lizenz: GNU General Public License v3.0 oder neuer. Diese App wurde mit KI-Unterstützung (Claude) entwickelt.",
+                str(R.string.about_license),
                 style = MaterialTheme.typography.bodySmall,
             )
-            TextButton(onClick = { open(SOURCE_URL) }) { Text("Quellcode auf GitHub") }
+            TextButton(onClick = { open(SOURCE_URL) }) { Text(str(R.string.source_code)) }
 
-            Expandable("Datenschutzerklärung") {
+            Expandable(str(R.string.privacy_policy)) {
                 Text(privacyText, style = MaterialTheme.typography.bodySmall)
             }
-            Expandable("Kartendaten") {
+            Expandable(str(R.string.map_data)) {
                 Text(
-                    "Karten und Tankstellendaten: © OpenStreetMap-Mitwirkende, verfügbar unter der Open Database License (ODbL). " +
-                        "Kartenkacheln: OpenStreetMap Foundation. Tankstellensuche: Overpass API. Adresssuche: Nominatim.",
+                    str(R.string.map_data_text),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 TextButton(onClick = { open("https://www.openstreetmap.org/copyright") }) { Text("openstreetmap.org/copyright") }
             }
-            Expandable("Open-Source-Lizenzen") {
+            Expandable(str(R.string.oss_licenses)) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Diese App verwendet folgende Bibliotheken, jeweils unter der Apache License, Version 2.0:",
+                        str(R.string.oss_intro),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     libraries.forEach { (name, holder) ->

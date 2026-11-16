@@ -48,7 +48,7 @@ fun MapScreen(nav: NavController, vehicleId: String) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Karte – ${vehicle?.name ?: ""}") }, navigationIcon = { BackButton(nav) }) },
+        topBar = { TopAppBar(title = { Text(str(R.string.map_title, vehicle?.name ?: "")) }, navigationIcon = { BackButton(nav) }) },
     ) { pad ->
         val list = refuels
         if (list == null) {
@@ -58,7 +58,7 @@ fun MapScreen(nav: NavController, vehicleId: String) {
         val points = list.filter { it.latitude != null && it.longitude != null }
         if (points.isEmpty()) {
             Box(Modifier.padding(pad).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Keine Tankvorgänge mit Position vorhanden.")
+                Text(str(R.string.map_empty))
             }
             return@Scaffold
         }
@@ -102,7 +102,7 @@ fun MapScreen(nav: NavController, vehicleId: String) {
                     Marker(mv).apply {
                         position = geo[i]
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        title = listOf(r.stationBrand.ifBlank { "Tankstelle" }, r.timestamp.date()).joinToString(" · ")
+                        title = listOf(lbl(r.stationBrand).ifBlank { str(R.string.station) }, r.timestamp.date()).joinToString(" · ")
                         snippet = "${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)"
                         subDescription = listOf(r.stationAddress, r.odometer.dist(Units.dist(v)))
                             .filter { it.isNotBlank() }.joinToString("<br>")

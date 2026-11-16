@@ -103,7 +103,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             try {
                 val loc = LocationHelper.current(ctx)
                 if (loc == null) {
-                    info = "Keine GPS-Position (GPS eingeschaltet? Freie Sicht zum Himmel?)"
+                    info = str(R.string.loc_no_gps)
                 } else {
                     lat = loc.latitude
                     lon = loc.longitude
@@ -115,9 +115,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                         ?: (if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null)
                     address = addr ?: ""
                     info = when {
-                        !p.useOverpass -> "Position übernommen (Tankstellensuche ist in den Einstellungen aus)"
-                        st != null -> "Tankstelle erkannt"
-                        else -> "Keine Tankstelle in der Nähe gefunden – bitte Betreiber prüfen"
+                        !p.useOverpass -> str(R.string.loc_taken_no_search)
+                        st != null -> str(R.string.loc_station_found)
+                        else -> str(R.string.loc_no_station)
                     }
                 }
             } finally {
@@ -128,7 +128,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
 
     val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
         if (res[Manifest.permission.ACCESS_FINE_LOCATION] == true) locate()
-        else info = "Für GPS wird der genaue Standort benötigt (nicht „ungefähr“)"
+        else info = str(R.string.loc_need_precise)
     }
 
     fun requestLocate() {
@@ -192,18 +192,18 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNew) "Tanken" else "Tankvorgang") },
+                title = { Text(str(if (isNew) R.string.refuel_new else R.string.refuel)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = str(R.string.delete))
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
                         val odo = odometer.toIntKm()
                         val a = amount.toDoubleDe()
-                        if (odo == null || odo <= 0) { error = "Bitte Kilometerstand eingeben"; return@IconButton }
-                        if (a == null || a <= 0) { error = "Bitte getankte Menge eingeben"; return@IconButton }
+                        if (odo == null || odo <= 0) { error = str(R.string.err_enter_odometer); return@IconButton }
+                        if (a == null || a <= 0) { error = str(R.string.err_enter_amount); return@IconButton }
                         val t = total.toDoubleDe() ?: ((ppu.toDoubleDe() ?: 0.0) * a)
                         val obcVal = obc.toDoubleDe()?.takeIf { it > 0 }?.let {
                             if (veh?.consumptionFormat == "perUnit") 100.0 / it else it
@@ -222,7 +222,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                             )
                             nav.popBackStack()
                         }
-                    }) { Icon(Icons.Default.Check, contentDescription = "Speichern") }
+                    }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
             )
         },
@@ -239,38 +239,38 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.dateTime())
             }
-            NumberField("Kilometerstand", odometer, { odometer = it }, suffix = du, decimal = false)
-            lastOdo?.let { if (it > 0) Text("Bisher: ${it.dist(du)}", style = MaterialTheme.typography.bodySmall) }
-            ChoiceField("Kraftstoffart", fuelType, Options.fuelTypes) { fuelType = it }
-            NumberField("Menge", amount, { amount = it; recalcTotal() }, suffix = unit)
+            NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = du, decimal = false)
+            lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
+            ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes) { fuelType = it }
+            NumberField(str(R.string.amount), amount, { amount = it; recalcTotal() }, suffix = unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NumberField("Preis pro $unit", ppu, { ppu = it; recalcTotal() }, suffix = cur, modifier = Modifier.weight(1f))
-                NumberField("Gesamt", total, {
+                NumberField(str(R.string.price_per_unit, unit), ppu, { ppu = it; recalcTotal() }, suffix = cur, modifier = Modifier.weight(1f))
+                NumberField(str(R.string.total), total, {
                     total = it
                     val a = amount.toDoubleDe()
                     val t = it.toDoubleDe()
                     if (a != null && t != null && a > 0) ppu = (t / a).fmt(3)
                 }, suffix = cur, modifier = Modifier.weight(1f))
             }
-            LabeledSwitch("Vollgetankt", fullTank) { fullTank = it }
-            LabeledSwitch("Vorherige Tankung nicht erfasst", missed) { missed = it }
+            LabeledSwitch(str(R.string.full_tank), fullTank) { fullTank = it }
+            LabeledSwitch(str(R.string.missed_previous), missed) { missed = it }
             val obcUnit = if (veh?.consumptionFormat == "perUnit") "$du/$unit" else "$unit/100 $du"
-            NumberField("Verbrauch laut Bordcomputer (optional)", obc, { obc = it }, suffix = obcUnit)
+            NumberField(str(R.string.obc_field), obc, { obc = it }, suffix = obcUnit)
 
             HorizontalDivider()
-            SectionTitle("Tankstelle")
+            SectionTitle(str(R.string.station))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = { requestLocate() }, enabled = !locating) {
                     Icon(Icons.Default.MyLocation, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Aktuelle Position")
+                    Text(str(R.string.current_position))
                 }
                 Spacer(Modifier.width(12.dp))
                 if (locating) CircularProgressIndicator(Modifier.size(24.dp))
             }
             info?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            SuggestField("Betreiber", brand, brandOptions) { brand = it }
-            OutlinedTextField(address, { address = it }, label = { Text("Adresse") }, modifier = Modifier.fillMaxWidth())
+            SuggestField(str(R.string.operator), brand, brandOptions) { brand = it }
+            OutlinedTextField(address, { address = it }, label = { Text(str(R.string.address)) }, modifier = Modifier.fillMaxWidth())
             val la = lat
             val lo = lon
             if (la != null && lo != null) {
@@ -283,14 +283,14 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                             val a = (if (p.useOverpass) LocationHelper.osmAddress(la, lo) else null)
                                 ?: (if (p.useGeocoder) LocationHelper.address(ctx, la, lo) else null)
                             if (a != null) { address = a; info = null }
-                            else info = if (!p.useOverpass && !p.useGeocoder) "Adresssuche ist in den Einstellungen aus"
-                            else "Keine Adresse gefunden"
+                            else info = if (!p.useOverpass && !p.useGeocoder) str(R.string.addr_search_off)
+                            else str(R.string.addr_not_found)
                             locating = false
                         }
                     }, enabled = !locating) {
                         Icon(Icons.Default.Place, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Adresse")
+                        Text(str(R.string.address))
                     }
                     TextButton(onClick = {
                         val uri = Uri.parse("geo:$la,$lo?q=$la,$lo")
@@ -298,23 +298,23 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     }) {
                         Icon(Icons.Default.Map, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Karte")
+                        Text(str(R.string.map))
                     }
-                    TextButton(onClick = { lat = null; lon = null }) { Text("Entfernen") }
+                    TextButton(onClick = { lat = null; lon = null }) { Text(str(R.string.remove)) }
                 }
             }
 
             HorizontalDivider()
-            SectionTitle("Zusätzliche Verbraucher")
+            SectionTitle(str(R.string.extras))
             MultiChips(Options.extras, extras) { extras = it }
-            SectionTitle("Fahrstil")
+            SectionTitle(str(R.string.driving_style))
             SingleChips(Options.drivingStyles, style) { style = it }
-            SectionTitle("Strecke")
+            SectionTitle(str(R.string.route))
             SingleChips(Options.routeTypes, route) { route = it }
-            SectionTitle("Reifen")
+            SectionTitle(str(R.string.tires))
             SingleChips(Options.tireTypes, tires) { tires = it }
 
-            OutlinedTextField(note, { note = it }, label = { Text("Notiz") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(note, { note = it }, label = { Text(str(R.string.note)) }, modifier = Modifier.fillMaxWidth())
         }
     }
 
@@ -326,23 +326,23 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 TextButton(onClick = {
                     state.selectedDateMillis?.let { timestamp = combineDate(it, timestamp) }
                     showDate = false
-                }) { Text("OK") }
+                }) { Text(str(R.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { showDate = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
         ) { DatePicker(state = state) }
     }
 
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Tankvorgang löschen?") },
+            title = { Text(str(R.string.refuel_delete_q)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     scope.launch { repo.deleteRefuel(refuelId); nav.popBackStack() }
-                }) { Text("Löschen") }
+                }) { Text(str(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }
@@ -377,17 +377,17 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNew) "Neue Erinnerung" else "Erinnerung") },
+                title = { Text(str(if (isNew) R.string.reminder_new else R.string.reminder)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = str(R.string.delete))
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
                         val i = interval.toIntKm()
-                        if (title.isBlank()) { error = "Bitte Bezeichnung eingeben"; return@IconButton }
-                        if (i == null || i <= 0) { error = "Bitte Intervall eingeben"; return@IconButton }
+                        if (title.isBlank()) { error = str(R.string.err_enter_title); return@IconButton }
+                        if (i == null || i <= 0) { error = str(R.string.err_enter_interval); return@IconButton }
                         scope.launch {
                             repo.saveReminder(
                                 b.copy(
@@ -397,7 +397,7 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
                             )
                             nav.popBackStack()
                         }
-                    }) { Icon(Icons.Default.Check, contentDescription = "Speichern") }
+                    }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
             )
         },
@@ -408,26 +408,26 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            SuggestField("Bezeichnung", title, Options.reminderSuggestions) { title = it }
-            NumberField("Intervall", interval, { interval = it }, suffix = du, decimal = false)
-            NumberField("Zuletzt erledigt bei", lastDone, { lastDone = it }, suffix = du, decimal = false)
-            NumberField("Vorwarnung", warn, { warn = it }, suffix = "$du vorher", decimal = false)
+            SuggestField(str(R.string.title), title, Options.reminderSuggestions) { title = it }
+            NumberField(str(R.string.interval), interval, { interval = it }, suffix = du, decimal = false)
+            NumberField(str(R.string.last_done_at), lastDone, { lastDone = it }, suffix = du, decimal = false)
+            NumberField(str(R.string.warn_before), warn, { warn = it }, suffix = str(R.string.unit_before, du), decimal = false)
             val due = (lastDone.toIntKm() ?: 0) + (interval.toIntKm() ?: 0)
-            Text("Nächste Fälligkeit: ${due.dist(du)}", style = MaterialTheme.typography.bodyMedium)
+            Text(str(R.string.next_due, due.dist(du)), style = MaterialTheme.typography.bodyMedium)
         }
     }
 
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Erinnerung löschen?") },
+            title = { Text(str(R.string.reminder_delete_q)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     scope.launch { repo.deleteReminder(reminderId); nav.popBackStack() }
-                }) { Text("Löschen") }
+                }) { Text(str(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }
@@ -478,10 +478,10 @@ fun SettingsScreen(nav: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Einstellungen") },
+                title = { Text(str(R.string.settings)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
-                    TextButton(onClick = { nav.navigate("about") }) { Text("Über & Lizenzen") }
+                    TextButton(onClick = { nav.navigate("about") }) { Text(str(R.string.about_licenses)) }
                 },
             )
         },
@@ -490,28 +490,41 @@ fun SettingsScreen(nav: NavController) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionTitle("Darstellung")
+            SectionTitle(str(R.string.appearance))
             val themeCfg by ThemeSettings.state.collectAsStateWithLifecycle()
-            val modeLabels = linkedMapOf("system" to "Wie System", "light" to "Hell", "dark" to "Dunkel")
-            SingleChips(modeLabels.values.toList(), modeLabels[themeCfg.mode] ?: "Wie System") { sel ->
+            val modeLabels = linkedMapOf("system" to str(R.string.theme_system), "light" to str(R.string.theme_light), "dark" to str(R.string.theme_dark))
+            SingleChips(modeLabels.values.toList(), modeLabels[themeCfg.mode] ?: str(R.string.theme_system)) { sel ->
                 val key = modeLabels.entries.firstOrNull { it.value == sel }?.key ?: "system"
                 ThemeSettings.update(ctx, themeCfg.copy(mode = key))
             }
-            Text("Farbschema", style = MaterialTheme.typography.labelLarge)
+            Text(str(R.string.color_scheme), style = MaterialTheme.typography.labelLarge)
             PalettePicker(themeCfg.palette) { ThemeSettings.update(ctx, themeCfg.copy(palette = it)) }
-            LabeledSwitch("Reines Schwarz im dunklen Modus (AMOLED)", themeCfg.amoled) {
+            LabeledSwitch(str(R.string.amoled), themeCfg.amoled) {
                 ThemeSettings.update(ctx, themeCfg.copy(amoled = it))
+            }
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                // Sprache pro App (Android 13+); sonst gilt die Systemsprache
+                OutlinedButton(
+                    onClick = {
+                        runCatching {
+                            ctx.startActivity(
+                                Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS)
+                                    .setData(Uri.fromParts("package", ctx.packageName, null))
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text(str(R.string.language_button, appLocale().getDisplayLanguage(appLocale()))) }
             }
 
             HorizontalDivider()
-            SectionTitle("Synchronisation")
+            SectionTitle(str(R.string.sync))
             Text(
-                "Adresse deiner Nextcloud eingeben, anmelden und Ordner wählen. " +
-                    "Andere WebDAV-Server: vollständige WebDAV-Adresse eingeben und Zugangsdaten von Hand eintragen.",
+                str(R.string.sync_help),
                 style = MaterialTheme.typography.bodySmall,
             )
             OutlinedTextField(
-                server, { server = it }, label = { Text("Server (z. B. https://cloud.example.de)") }, singleLine = true,
+                server, { server = it }, label = { Text(str(R.string.server_hint)) }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -526,50 +539,50 @@ fun SettingsScreen(nav: NavController) {
                         try {
                             val start = Nextcloud.startLogin(srv)
                             ctx.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(start.loginUrl)))
-                            cloudInfo = "Bitte im Browser anmelden und den Zugriff erlauben, dann hierher zurückkehren …"
+                            cloudInfo = str(R.string.login_browser)
                             repeat(600) {
                                 kotlinx.coroutines.delay(2000)
                                 val res = Nextcloud.poll(start)
                                 if (res != null) {
                                     user = res.loginName
                                     password = res.appPassword
-                                    cloudInfo = "Angemeldet als ${res.loginName}. Jetzt Ordner wählen."
+                                    cloudInfo = str(R.string.logged_in_as, res.loginName)
                                     return@launch
                                 }
                             }
-                            cloudInfo = "Anmeldung abgelaufen – bitte erneut versuchen."
+                            cloudInfo = str(R.string.login_expired)
                         } catch (e: Exception) {
-                            cloudInfo = "Anmeldung nicht möglich: ${e.message ?: "Server nicht erreichbar"}"
+                            cloudInfo = str(R.string.login_failed, e.message ?: str(R.string.server_unreachable))
                         } finally {
                             loggingIn = false
                         }
                     }
                 },
-            ) { Text(if (loggingIn) "Warte auf Anmeldung …" else "Mit Nextcloud anmelden") }
+            ) { Text(str(if (loggingIn) R.string.login_waiting else R.string.login_nextcloud)) }
             cloudInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            OutlinedTextField(user, { user = it }, label = { Text("Benutzer") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(user, { user = it }, label = { Text(str(R.string.user)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(
-                password, { password = it }, label = { Text("App-Passwort") }, singleLine = true,
+                password, { password = it }, label = { Text(str(R.string.app_password)) }, singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Ordner", style = MaterialTheme.typography.labelMedium)
+                    Text(str(R.string.folder), style = MaterialTheme.typography.labelMedium)
                     Text("/" + folder, style = MaterialTheme.typography.bodyLarge)
                 }
                 OutlinedButton(
                     enabled = server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                     onClick = {
                         scope.launch {
-                            cloudInfo = "Verbinde …"
+                            cloudInfo = str(R.string.connecting)
                             val root = resolveRoot()
                             cloudInfo = null
                             pickerDav = WebDavClient(root, user, password)
                         }
                     },
-                ) { Text("Ordner wählen") }
+                ) { Text(str(R.string.choose_folder)) }
             }
             Button(
                 onClick = {
@@ -587,57 +600,54 @@ fun SettingsScreen(nav: NavController) {
                 },
                 enabled = !running && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Speichern und jetzt synchronisieren") }
+            ) { Text(str(R.string.save_and_sync)) }
             if (running) LinearProgressIndicator(Modifier.fillMaxWidth())
-            if (status.isNotBlank()) Text("Letzter Abgleich: $status", style = MaterialTheme.typography.bodyMedium)
+            if (status.isNotBlank()) Text(str(R.string.last_sync, status), style = MaterialTheme.typography.bodyMedium)
             Text(
-                "Abgleich erfolgt automatisch nach jeder Änderung, beim Öffnen der App und alle 15 Minuten im Hintergrund.",
+                str(R.string.sync_auto_info),
                 style = MaterialTheme.typography.bodySmall,
             )
 
             HorizontalDivider()
-            SectionTitle("Datenschutz")
+            SectionTitle(str(R.string.privacy))
             Text(
-                "Die App hat keine Werbung, kein Tracking und keine Analyse. Daten gehen nur an deinen WebDAV-Server " +
-                    "und – wenn unten eingeschaltet – an die genannten Dienste.",
+                str(R.string.privacy_intro),
                 style = MaterialTheme.typography.bodySmall,
             )
-            LabeledSwitch("Tankstelle und Adresse über OpenStreetMap suchen", useOverpass) { useOverpass = it; prefs.useOverpass = it }
-            Text("Sendet beim Tippen auf „Aktuelle Position“ die Koordinaten an overpass-api.de und nominatim.openstreetmap.org.", style = MaterialTheme.typography.bodySmall)
-            LabeledSwitch("Adresse über Android-Geocoder ermitteln", useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
-            Text("Auf Handys mit Google-Diensten gehen die Koordinaten dabei an Google.", style = MaterialTheme.typography.bodySmall)
-            LabeledSwitch("Netzwerk-Ortung (WLAN/Mobilfunk) erlauben", useNetworkLocation) {
+            LabeledSwitch(str(R.string.privacy_osm), useOverpass) { useOverpass = it; prefs.useOverpass = it }
+            Text(str(R.string.privacy_osm_info), style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch(str(R.string.privacy_geocoder), useGeocoder) { useGeocoder = it; prefs.useGeocoder = it }
+            Text(str(R.string.privacy_geocoder_info), style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch(str(R.string.privacy_network), useNetworkLocation) {
                 useNetworkLocation = it; prefs.useNetworkLocation = it
             }
             Text(
-                "Aus = nur GPS, ohne Netzverkehr (braucht freie Sicht zum Himmel). " +
-                    "An = schnellere Ortung auch unter Dächern; auf Handys mit Google-Diensten läuft sie über Google.",
+                str(R.string.privacy_network_info),
                 style = MaterialTheme.typography.bodySmall,
             )
             Text(
-                "Die Karte lädt Kartenkacheln von tile.openstreetmap.org; dabei sieht der Server den angezeigten Kartenausschnitt.",
+                str(R.string.privacy_tiles_info),
                 style = MaterialTheme.typography.bodySmall,
             )
 
             HorizontalDivider()
-            SectionTitle("Standard-Erinnerungen")
+            SectionTitle(str(R.string.default_reminders))
             Text(
-                "Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist, und mit allen Geräten synchronisiert. " +
-                    "Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.",
+                str(R.string.default_reminders_info),
                 style = MaterialTheme.typography.bodySmall,
             )
             templates.forEachIndexed { i, (title, km) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, modifier = Modifier.weight(1f))
+                    Text(templateTitle(title), modifier = Modifier.weight(1f))
                     Text(km.km())
                     IconButton(onClick = {
                         templates = templates.toMutableList().also { it.removeAt(i) }
                         prefs.reminderTemplates = templates
-                    }) { Icon(Icons.Default.Delete, contentDescription = "Entfernen") }
+                    }) { Icon(Icons.Default.Delete, contentDescription = str(R.string.remove)) }
                 }
             }
-            SuggestField("Bezeichnung", newTitle, Options.reminderSuggestions) { newTitle = it }
-            NumberField("Intervall", newKm, { newKm = it }, suffix = "km", decimal = false)
+            SuggestField(str(R.string.title), newTitle, Options.reminderSuggestions) { newTitle = it }
+            NumberField(str(R.string.interval), newKm, { newKm = it }, suffix = "km", decimal = false)
             OutlinedButton(
                 onClick = {
                     val km = newKm.toIntKm()
@@ -648,7 +658,7 @@ fun SettingsScreen(nav: NavController) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Vorlage hinzufügen") }
+            ) { Text(str(R.string.add_template)) }
         }
     }
 

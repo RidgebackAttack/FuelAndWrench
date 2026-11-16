@@ -176,14 +176,14 @@ fun FolderPickerDialog(
             .onSuccess { folders = it }
             .onFailure {
                 folders = emptyList()
-                error = it.message ?: "Ordner konnte nicht gelesen werden"
+                error = it.message ?: str(R.string.folder_read_error)
             }
         loading = false
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Ordner wählen") },
+        title = { Text(str(R.string.choose_folder)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -194,14 +194,14 @@ fun FolderPickerDialog(
                 HorizontalDivider()
                 Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
                     if (path.isNotEmpty()) {
-                        FolderRow(Icons.AutoMirrored.Filled.ArrowBack, "Übergeordneter Ordner") {
+                        FolderRow(Icons.AutoMirrored.Filled.ArrowBack, str(R.string.parent_folder)) {
                             path = path.substringBeforeLast('/', "")
                         }
                     }
                     when {
                         loading -> CircularProgressIndicator(Modifier.padding(16.dp).size(28.dp))
                         error != null -> Text(error!!, color = MaterialTheme.colorScheme.error)
-                        folders.isEmpty() -> Text("Keine Unterordner", style = MaterialTheme.typography.bodySmall,
+                        folders.isEmpty() -> Text(str(R.string.no_subfolders), style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(vertical = 8.dp))
                         else -> folders.forEach { f ->
                             FolderRow(Icons.Default.Folder, f) { path = if (path.isEmpty()) f else "$path/$f" }
@@ -212,7 +212,7 @@ fun FolderPickerDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         newName, { newName = it.replace("/", "") },
-                        label = { Text("Neuer Ordner") }, singleLine = true,
+                        label = { Text(str(R.string.new_folder)) }, singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(
@@ -225,12 +225,12 @@ fun FolderPickerDialog(
                                     .onFailure { error = it.message }
                             }
                         },
-                    ) { Icon(Icons.Default.CreateNewFolder, contentDescription = "Ordner anlegen") }
+                    ) { Icon(Icons.Default.CreateNewFolder, contentDescription = str(R.string.create_folder)) }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onPick(path) }) { Text("Diesen Ordner verwenden") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Abbrechen") } },
+        confirmButton = { TextButton(onClick = { onPick(path) }) { Text(str(R.string.use_this_folder)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(str(R.string.cancel)) } },
     )
 }
 

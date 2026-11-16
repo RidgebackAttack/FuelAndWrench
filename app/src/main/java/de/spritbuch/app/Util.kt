@@ -15,19 +15,17 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-private val DE = Locale.GERMANY
-
-fun Double.fmt(decimals: Int = 2): String = String.format(DE, "%,.${decimals}f", this)
-fun Int.km(): String = String.format(DE, "%,d km", this)
-fun Int.dist(unit: String): String = String.format(DE, "%,d %s", this, unit)
+fun Double.fmt(decimals: Int = 2): String = String.format(appLocale(), "%,.${decimals}f", this)
+fun Int.km(): String = String.format(appLocale(), "%,d km", this)
+fun Int.dist(unit: String): String = String.format(appLocale(), "%,d %s", this, unit)
 
 /** Einheiten pro Fahrzeug. Werte werden in den Einheiten des Fahrzeugs gespeichert. */
 object Units {
-    val distanceUnits = linkedMapOf("km" to "Kilometer (km)", "mi" to "Meilen (mi)")
-    val volumeUnits = linkedMapOf("l" to "Liter (l)", "gal_us" to "US-Gallonen", "gal_uk" to "UK-Gallonen (imperial)")
-    val formats = linkedMapOf(
-        "per100" to "Menge pro 100 (z. B. l/100 km)",
-        "perUnit" to "Strecke pro Menge (z. B. km/l, mpg)",
+    val distanceUnits get() = linkedMapOf("km" to str(R.string.unit_km), "mi" to str(R.string.unit_mi))
+    val volumeUnits get() = linkedMapOf("l" to str(R.string.unit_l), "gal_us" to str(R.string.unit_gal_us), "gal_uk" to str(R.string.unit_gal_uk))
+    val formats get() = linkedMapOf(
+        "per100" to str(R.string.format_per100),
+        "perUnit" to str(R.string.format_perunit),
     )
     val currencies = listOf("€", "DKK", "£", "\$", "CHF", "SEK", "NOK", "PLN", "CZK")
 
@@ -57,11 +55,23 @@ object Units {
         }
     }
 }
-fun Long.dateTime(): String = SimpleDateFormat("dd.MM.yyyy HH:mm", DE).format(Date(this))
-fun Long.date(): String = SimpleDateFormat("dd.MM.yyyy", DE).format(Date(this))
+private fun pattern(skeleton: String) = android.text.format.DateFormat.getBestDateTimePattern(appLocale(), skeleton)
+fun Long.dateTime(): String = SimpleDateFormat(pattern("ddMMyyyyHHmm"), appLocale()).format(Date(this))
+fun Long.date(): String = SimpleDateFormat(pattern("ddMMyyyy"), appLocale()).format(Date(this))
+
+/** Liest Zahlen mit Komma oder Punkt als Dezimaltrenner (auch mit Tausendertrennern). */
 fun String.toDoubleDe(): Double? {
-    val s = trim()
-    return if (s.contains(',')) s.replace(".", "").replace(',', '.').toDoubleOrNull() else s.toDoubleOrNull()
+    val s = trim().replace(" ", "").replace("\u00A0", "").replace("\u202F", "")
+    val lc = s.lastIndexOf(',')
+    val ld = s.lastIndexOf('.')
+    val norm = when {
+        lc >= 0 && ld >= 0 -> if (lc > ld) s.replace(".", "").replace(',', '.') else s.replace(",", "")
+        lc >= 0 -> if (Regex("""\d{1,3}(,\d{3})+""").matches(s) &&
+            java.text.DecimalFormatSymbols.getInstance(appLocale()).decimalSeparator == '.') s.replace(",", "")
+        else s.replace(',', '.')
+        else -> s
+    }
+    return norm.toDoubleOrNull()
 }
 fun String.toIntKm(): Int? = filter { it.isDigit() }.toIntOrNull()
 
@@ -164,7 +174,7 @@ object PhotoStore {
         while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= 1280) sample *= 2
         val bmp = resolver.openInputStream(uri)?.use {
             BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
-        } ?: error("Bild konnte nicht gelesen werden")
+        } ?: error(str(R.string.err_image_read))
         val rotation = runCatching {
             resolver.openInputStream(uri)?.use { ExifInterface(it).rotationDegrees } ?: 0
         }.getOrDefault(0)
@@ -177,6 +187,12 @@ object PhotoStore {
         version
     }
 }
+
+/** Platzhalter für die Standardvorlage „Ölwechsel“, damit sie in jeder Sprache dieselbe Erinnerung bleibt. */
+const val OIL_TEMPLATE = "@oil"
+fun templateTitle(t: String): String = if (t == OIL_TEMPLATE) str(R.string.default_oil_change) else t
+/** Schlüssel für die feste Erinnerungs-ID (Ölwechsel behält die bisherige ID). */
+fun templateIdKey(t: String): String = (if (t == OIL_TEMPLATE) "ölwechsel" else t).lowercase().filter { it.isLetterOrDigit() }
 
 class Prefs(ctx: Context) {
     private val sp = ctx.applicationContext.getSharedPreferences("spritbuch", Context.MODE_PRIVATE)
@@ -210,7 +226,7 @@ class Prefs(ctx: Context) {
 
     /** Vorlagen für automatisch angelegte Erinnerungen (Intervall in km). */
     var reminderTemplates: List<Pair<String, Int>>
-        get() = (sp.getString("reminderTemplates", null) ?: "Ölwechsel|10000")
+        get() = (sp.getString("reminderTemplates", null) ?: "$OIL_TEMPLATE|10000")
             .split("\n").mapNotNull { line ->
                 val p = line.split("|")
                 val km = p.getOrNull(1)?.toIntOrNull()
@@ -266,10 +282,10 @@ object TreadCodec {
     fun summary(s: String): String = parse(s).entries.joinToString(" · ") { (k, t) ->
         val o = t.old?.fmt(1)
         val n = t.new?.fmt(1)
-        k + " " + when {
+        lbl(k) + " " + when {
             o != null && n != null -> "$o → $n mm"
             n != null -> "$n mm"
-            else -> "$o mm (alt)"
+            else -> str(R.string.tread_old_only, o ?: "")
         }
     }
 }

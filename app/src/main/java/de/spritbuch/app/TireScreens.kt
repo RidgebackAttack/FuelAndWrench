@@ -65,9 +65,9 @@ fun TireSetCard(v: Vehicle, set: TireSet, mounted: Boolean, tread: SetTread?, on
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(set.season.ifBlank { "Radsatz" }, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(lbl(set.season).ifBlank { str(R.string.tire_set) }, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 Text(
-                    if (mounted) "montiert" else "eingelagert",
+                    str(if (mounted) R.string.mounted_lower else R.string.stored_lower),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -77,26 +77,29 @@ fun TireSetCard(v: Vehicle, set: TireSet, mounted: Boolean, tread: SetTread?, on
                     Text(listOf(set.frontTire, set.sizeFront).filter { it.isNotBlank() }.joinToString(" · "))
                 }
             } else {
-                Text("Vorne: " + listOf(set.frontTire, set.sizeFront).filter { it.isNotBlank() }.joinToString(" · "))
-                Text("Hinten: " + listOf(set.rearTire, set.sizeRear).filter { it.isNotBlank() }.joinToString(" · "))
+                Text(str(R.string.front_prefix) + listOf(set.frontTire, set.sizeFront).filter { it.isNotBlank() }.joinToString(" · "))
+                Text(str(R.string.rear_prefix) + listOf(set.rearTire, set.sizeRear).filter { it.isNotBlank() }.joinToString(" · "))
             }
             if (tread != null) {
-                val labels = Options.tirePositions(v.vehicleType).toMap()
                 Text(
-                    "Profil " + tread.values.entries.joinToString(" · ") { (k, mm) -> "${labels[k]?.let { short(it) } ?: k} ${mm.fmt(1)}" } +
-                        " mm (${if (tread.stored) "eingelagert" else "montiert"} ${tread.entry.timestamp.date()})",
+                    str(
+                        R.string.tread_card,
+                        tread.values.entries.joinToString(" · ") { (k, mm) -> "${posShort(k)} ${mm.fmt(1)}" },
+                        str(if (tread.stored) R.string.stored_lower else R.string.mounted_lower),
+                        tread.entry.timestamp.date(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                 )
             } else {
-                Text("Noch keine Profiltiefe erfasst", style = MaterialTheme.typography.bodySmall)
+                Text(str(R.string.no_tread_yet), style = MaterialTheme.typography.bodySmall)
             }
         }
     }
 }
 
-private fun short(label: String) = when (label) {
-    "Vorne links" -> "VL"; "Vorne rechts" -> "VR"; "Hinten links" -> "HL"; "Hinten rechts" -> "HR"
-    "Vorne" -> "v"; "Hinten" -> "h"; else -> label
+private fun posShort(code: String) = when (code) {
+    "VL" -> str(R.string.pos_s_fl); "VR" -> str(R.string.pos_s_fr); "HL" -> str(R.string.pos_s_rl); "HR" -> str(R.string.pos_s_rr)
+    "V" -> str(R.string.pos_s_f); "H" -> str(R.string.pos_s_r); else -> code
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,11 +137,11 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNew) "Neuer Radsatz" else "Radsatz") },
+                title = { Text(str(if (isNew) R.string.tire_set_new else R.string.tire_set)) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Löschen")
+                        Icon(Icons.Default.Delete, contentDescription = str(R.string.delete))
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
@@ -155,7 +158,7 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
                             )
                             nav.popBackStack()
                         }
-                    }) { Icon(Icons.Default.Check, contentDescription = "Speichern") }
+                    }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
             )
         },
@@ -166,25 +169,25 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionTitle("Reifenart")
+            SectionTitle(str(R.string.tire_kind))
             SingleChips(Options.tireTypes, season) { season = it }
-            LabeledSwitch("Unterschiedliche Reifen je Achse", !same) { same = !it }
+            LabeledSwitch(str(R.string.different_axles), !same) { same = !it }
             Text(
-                if (same) "Alle Räder haben dieselben Reifen." else "Hersteller, Reifenname und Größe je Achse eintragen (z. B. Mischbereifung).",
+                str(if (same) R.string.same_tires_info else R.string.axle_tires_info),
                 style = MaterialTheme.typography.bodySmall,
             )
-            SectionTitle(if (same) "Reifen" else if (moto) "Vorderrad" else "Vorderachse")
-            SuggestField("Hersteller", brandF, Options.tireBrands) { brandF = it }
-            OutlinedTextField(modelF, { modelF = it }, label = { Text("Reifenname (z. B. Pilot Sport 5)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(sizeF, { sizeF = it }, label = { Text("Größe (z. B. 245/40 R19 98Y)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            SectionTitle(str(if (same) R.string.tires else if (moto) R.string.front_wheel else R.string.front_axle))
+            SuggestField(str(R.string.manufacturer), brandF, Options.tireBrands) { brandF = it }
+            OutlinedTextField(modelF, { modelF = it }, label = { Text(str(R.string.tire_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(sizeF, { sizeF = it }, label = { Text(str(R.string.tire_size_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             if (!same) {
-                SectionTitle(if (moto) "Hinterrad" else "Hinterachse")
-                SuggestField("Hersteller", brandR, Options.tireBrands) { brandR = it }
-                OutlinedTextField(modelR, { modelR = it }, label = { Text("Reifenname") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(sizeR, { sizeR = it }, label = { Text("Größe (z. B. 275/35 R19 100Y)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                SectionTitle(str(if (moto) R.string.rear_wheel else R.string.rear_axle))
+                SuggestField(str(R.string.manufacturer), brandR, Options.tireBrands) { brandR = it }
+                OutlinedTextField(modelR, { modelR = it }, label = { Text(str(R.string.tire_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(sizeR, { sizeR = it }, label = { Text(str(R.string.tire_size_hint_rear)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             }
             OutlinedTextField(
-                note, { note = it }, label = { Text("Notiz (Felgen, DOT, Lagerort …)") }, minLines = 2,
+                note, { note = it }, label = { Text(str(R.string.tire_note_hint)) }, minLines = 2,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -193,15 +196,15 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Radsatz löschen?") },
-            text = { Text("Bisherige Radwechsel-Einträge bleiben erhalten.") },
+            title = { Text(str(R.string.tire_set_delete_q)) },
+            text = { Text(str(R.string.tire_set_delete_info)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     scope.launch { repo.deleteTireSet(setId); nav.popBackStack() }
-                }) { Text("Löschen") }
+                }) { Text(str(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
 }

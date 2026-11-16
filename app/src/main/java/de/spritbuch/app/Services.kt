@@ -41,8 +41,14 @@ class App : Application() {
     lateinit var repo: Repository
         private set
 
+    companion object {
+        lateinit var instance: App
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
         repo = Repository(this, AppDatabase.create(this))
         Notifications.createChannel(this)
         SyncScheduler.schedulePeriodic(this)
@@ -56,7 +62,7 @@ object Notifications {
     private const val CHANNEL = "reminders"
 
     fun createChannel(ctx: Context) {
-        val ch = NotificationChannel(CHANNEL, "Wartungserinnerungen", NotificationManager.IMPORTANCE_DEFAULT)
+        val ch = NotificationChannel(CHANNEL, ctx.getString(R.string.notif_channel), NotificationManager.IMPORTANCE_DEFAULT)
         ctx.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
     }
 
@@ -110,9 +116,9 @@ object ReminderChecker {
             changed = true
             val u = v.distanceUnit
             val text = if (level == "due") {
-                "Fällig seit ${(-remaining).dist(u)} (fällig bei ${r.dueKm.dist(u)})"
+                ctx.getString(R.string.notif_overdue, (-remaining).dist(u), r.dueKm.dist(u))
             } else {
-                "Fällig in ${remaining.dist(u)} (bei ${r.dueKm.dist(u)})"
+                ctx.getString(R.string.notif_due_in, remaining.dist(u), r.dueKm.dist(u))
             }
             Notifications.show(ctx, (r.id + level).hashCode(), "${v.name}: ${r.title}", text)
         }
@@ -185,7 +191,7 @@ object LocationHelper {
     suspend fun address(ctx: Context, lat: Double, lon: Double): String? = withContext(Dispatchers.IO) {
         runCatching {
             if (!Geocoder.isPresent()) return@runCatching null
-            val a = Geocoder(ctx, Locale.GERMANY).getFromLocation(lat, lon, 1)?.firstOrNull() ?: return@runCatching null
+            val a = Geocoder(ctx, appLocale()).getFromLocation(lat, lon, 1)?.firstOrNull() ?: return@runCatching null
             val street = listOfNotNull(a.thoroughfare, a.subThoroughfare).joinToString(" ")
             val city = listOfNotNull(a.postalCode, a.locality).joinToString(" ")
             listOf(street, city).filter { it.isNotBlank() }.joinToString(", ").ifBlank { a.getAddressLine(0) }
@@ -228,7 +234,7 @@ object LocationHelper {
     suspend fun osmAddress(lat: Double, lon: Double): String? = withContext(Dispatchers.IO) {
         runCatching {
             val url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1" +
-                "&accept-language=de&lat=${"%.6f".format(Locale.US, lat)}&lon=${"%.6f".format(Locale.US, lon)}"
+                "&accept-language=${appLocale().language}&lat=${"%.6f".format(Locale.US, lat)}&lon=${"%.6f".format(Locale.US, lon)}"
             val req = Request.Builder().url(url)
                 .header("User-Agent", "FuelAndWrench-Android (https://github.com/RidgebackAttack/FuelAndWrench)")
                 .build()

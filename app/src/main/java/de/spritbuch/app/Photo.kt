@@ -142,10 +142,10 @@ fun PhotoPositionEditor(
 ) {
     Column {
         Text(
-            "Ausschnitt festlegen: mit einem Finger verschieben, mit zwei Fingern zoomen.",
+            str(R.string.photo_crop_info),
             style = MaterialTheme.typography.bodySmall,
         )
-        Text("Große Ansicht", style = MaterialTheme.typography.labelLarge)
+        Text(str(R.string.photo_large), style = MaterialTheme.typography.labelLarge)
         PositionedPhoto(
             file, large,
             Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT).clip(RoundedCornerShape(12.dp)),
@@ -153,14 +153,14 @@ fun PhotoPositionEditor(
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.width(140.dp)) {
-                Text("Miniatur", style = MaterialTheme.typography.labelLarge)
+                Text(str(R.string.photo_thumb), style = MaterialTheme.typography.labelLarge)
                 PositionedPhoto(
                     file, thumb,
                     Modifier.size(120.dp).clip(RoundedCornerShape(12.dp)),
                     onChange = onThumb,
                 )
             }
-            TextButton(onClick = { onThumb(PhotoPos()); onLarge(PhotoPos()) }) { Text("Zurücksetzen") }
+            TextButton(onClick = { onThumb(PhotoPos()); onLarge(PhotoPos()) }) { Text(str(R.string.reset)) }
         }
     }
 }

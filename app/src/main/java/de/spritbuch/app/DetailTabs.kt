@@ -91,21 +91,20 @@ fun rememberServiceImporter(vehicleId: String, vehicle: Vehicle?, snackbar: Snac
                     ServiceImport.parse(CsvImport.decode(bytes), veh)
                 }
             }
-            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar("Import fehlgeschlagen: ${it.message}") }
+            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar(str(R.string.import_failed, it.message ?: "")) }
         }
     }
     pending?.let { imp ->
         AlertDialog(
             onDismissRequest = { pending = null },
-            title = { Text("Service-Import") },
+            title = { Text(str(R.string.service_import)) },
             text = {
                 Text(
                     imp.error ?: (
-                        "${imp.entries.size} Einträge gefunden" +
-                            (if (imp.skipped > 0) ", ${imp.skipped} Zeilen übersprungen" else "") +
+                        str(R.string.svc_import_found, imp.entries.size) +
+                            (if (imp.skipped > 0) str(R.string.svc_import_skipped, imp.skipped) else "") +
                             " (${imp.entries.sumOf { it.cost }.fmt()} ${vehicle?.currency ?: "€"}).\n\n" +
-                            "Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen " +
-                            "(z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt."
+                            str(R.string.svc_import_info)
                         )
                 )
             },
@@ -114,11 +113,11 @@ fun rememberServiceImporter(vehicleId: String, vehicle: Vehicle?, snackbar: Snac
                     pending = null
                     scope.launch {
                         val (added, dups) = repo.importServices(vehicleId, imp.entries)
-                        snackbar.showSnackbar("$added importiert" + if (dups > 0) ", $dups bereits vorhanden" else "")
+                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.already_present, dups) else "")
                     }
-                }) { Text("Importieren") }
+                }) { Text(str(R.string.do_import)) }
             },
-            dismissButton = { TextButton(onClick = { pending = null }) { Text("Abbrechen") } },
+            dismissButton = { TextButton(onClick = { pending = null }) { Text(str(R.string.cancel)) } },
         )
     }
     return { launcher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream")) }
@@ -152,7 +151,7 @@ fun ConsumptionChart(values: List<Double>, format: (Double) -> String) {
     }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Verbrauchsverlauf (letzte ${values.size} Volltankungen)", style = MaterialTheme.typography.titleSmall)
+            Text(str(R.string.chart_title, values.size), style = MaterialTheme.typography.titleSmall)
             Canvas(Modifier.fillMaxWidth().height(140.dp)) {
                 val min = values.min()
                 val max = values.max()
@@ -195,9 +194,9 @@ fun ConsumptionChart(values: List<Double>, format: (Double) -> String) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("min ${format(values.min())}", style = MaterialTheme.typography.bodySmall, color = good)
+                Text(str(R.string.chart_min, format(values.min())), style = MaterialTheme.typography.bodySmall, color = good)
                 Text("Ø ${format(avg)}", style = MaterialTheme.typography.bodySmall)
-                Text("max ${format(values.max())}", style = MaterialTheme.typography.bodySmall, color = bad)
+                Text(str(R.string.chart_max, format(values.max())), style = MaterialTheme.typography.bodySmall, color = bad)
             }
         }
     }
@@ -220,7 +219,7 @@ fun VehicleDetailContent(
 ) {
     val repo = LocalContext.current.repo
     val scope = rememberCoroutineScope()
-    val tabs = listOf("Übersicht", "Tanken", "Service")
+    val tabs = listOf(str(R.string.tab_overview), str(R.string.tab_refuels), str(R.string.tab_service))
     val pager = rememberPagerState { tabs.size }
     val importServices = rememberServiceImporter(vehicleId, vehicle, snackbar)
     val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
@@ -242,18 +241,18 @@ fun VehicleDetailContent(
                     when (pager.currentPage) {
                         1 -> {
                             IconButton(onClick = { nav.navigate("map/$vehicleId") }) {
-                                Icon(Icons.Default.Map, contentDescription = "Karte")
+                                Icon(Icons.Default.Map, contentDescription = str(R.string.map))
                             }
                             IconButton(onClick = onImportRefuels) {
-                                Icon(Icons.Default.FileUpload, contentDescription = "Spritmonitor-Import")
+                                Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_spritmonitor_import))
                             }
                         }
                         2 -> IconButton(onClick = importServices) {
-                            Icon(Icons.Default.FileUpload, contentDescription = "Service importieren")
+                            Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_service_import))
                         }
                     }
                     IconButton(onClick = { nav.navigate("vehicleEdit/$vehicleId") }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Fahrzeug bearbeiten")
+                        Icon(Icons.Default.Edit, contentDescription = str(R.string.vehicle_edit))
                     }
                 },
             )
@@ -263,13 +262,13 @@ fun VehicleDetailContent(
                 ExtendedFloatingActionButton(
                     onClick = { nav.navigate("serviceEdit/$vehicleId/new") },
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("Service") },
+                    text = { Text(str(R.string.tab_service)) },
                 )
             } else {
                 ExtendedFloatingActionButton(
                     onClick = { nav.navigate("refuelEdit/$vehicleId/new") },
                     icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
-                    text = { Text("Tanken") },
+                    text = { Text(str(R.string.refuel)) },
                 )
             }
         },
@@ -301,7 +300,7 @@ fun VehicleDetailContent(
                             onDone = { r ->
                                 scope.launch {
                                     repo.completeReminder(r, currentOdo)
-                                    snackbar.showSnackbar("Erledigt – Service-Eintrag angelegt")
+                                    snackbar.showSnackbar(str(R.string.done_service_created))
                                 }
                             },
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
@@ -339,7 +338,7 @@ private fun LazyListScope.overviewItems(
             Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         ) {
-            Text("Fahrzeug ist archiviert. Erinnerungen sind pausiert.", modifier = Modifier.padding(12.dp))
+            Text(str(R.string.vehicle_archived_banner), modifier = Modifier.padding(12.dp))
         }
     }
     item(key = "hero") {
@@ -347,7 +346,7 @@ private fun LazyListScope.overviewItems(
             Column {
                 if (v.plate.isNotBlank()) Text(v.plate, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold)
                 Text(
-                    listOf(v.defaultFuelType, if (refuels.isNotEmpty()) "${refuels.size} Tankungen" else "", if (services.isNotEmpty()) "${services.size} Services" else "")
+                    listOf(lbl(v.defaultFuelType), if (refuels.isNotEmpty()) str(R.string.n_refuels, refuels.size) else "", if (services.isNotEmpty()) str(R.string.n_services, services.size) else "")
                         .filter { it.isNotBlank() }.joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f),
                 )
@@ -357,20 +356,20 @@ private fun LazyListScope.overviewItems(
     item(key = "kpi") {
         KpiSection(v, stats, services.sumOf { it.cost }, currentOdo, onEditOdometer) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                StatLine("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
-                StatLine("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
+                StatLine(str(R.string.stat_avg), Units.consumption(v, fuel, stats.avg))
+                StatLine(str(R.string.stat_last), Units.consumption(v, fuel, stats.last))
                 stats.obcDeviation?.let { d ->
                     StatLine(
-                        "Bordcomputer (${stats.obcCount}×)",
+                        str(R.string.stat_obc, stats.obcCount),
                         (if (d >= 0) "+" else "−") + (kotlin.math.abs(d) * 100).fmt(1) + " %",
                     )
                 }
-                StatLine("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
-                StatLine("Tankkosten gesamt", "${stats.totalCost.fmt()} $cur")
-                StatLine("Servicekosten gesamt", "${services.sumOf { it.cost }.fmt()} $cur")
-                StatLine("Getankt gesamt", "${stats.totalAmount.fmt(1)} $amt")
-                StatLine("Erfasste Strecke", stats.distance.dist(du))
-                StatLine("Kilometerstand", currentOdo.dist(du))
+                StatLine(str(R.string.stat_cost_per100, du), stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
+                StatLine(str(R.string.stat_fuel_cost), "${stats.totalCost.fmt()} $cur")
+                StatLine(str(R.string.stat_service_cost), "${services.sumOf { it.cost }.fmt()} $cur")
+                StatLine(str(R.string.stat_total_amount), "${stats.totalAmount.fmt(1)} $amt")
+                StatLine(str(R.string.stat_distance), stats.distance.dist(du))
+                StatLine(str(R.string.odometer), currentOdo.dist(du))
             }
         }
     }
@@ -382,12 +381,12 @@ private fun LazyListScope.overviewItems(
     }
     item {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) { SectionTitle("Erinnerungen") }
-            TextButton(onClick = { nav.navigate("reminderEdit/${v.id}/new") }) { Text("+ Neu") }
+            Box(Modifier.weight(1f)) { SectionTitle(str(R.string.reminders)) }
+            TextButton(onClick = { nav.navigate("reminderEdit/${v.id}/new") }) { Text(str(R.string.plus_new)) }
         }
     }
     if (reminders.isEmpty()) item {
-        Text("Keine Erinnerungen angelegt.", style = MaterialTheme.typography.bodySmall)
+        Text(str(R.string.no_reminders), style = MaterialTheme.typography.bodySmall)
     }
     items(reminders.sortedBy { it.dueKm - currentOdo }, key = { "rem-" + it.id }) { r ->
         val remaining = r.dueKm - currentOdo
@@ -405,12 +404,12 @@ private fun LazyListScope.overviewItems(
                     Column(Modifier.weight(1f)) {
                         Text(r.title, style = MaterialTheme.typography.titleSmall)
                         Text(
-                            if (due) "Fällig seit ${(-remaining).dist(du)} (bei ${r.dueKm.dist(du)})"
-                            else "Noch ${remaining.dist(du)} (fällig bei ${r.dueKm.dist(du)})",
+                            if (due) str(R.string.rem_overdue, (-remaining).dist(du), r.dueKm.dist(du))
+                            else str(R.string.rem_remaining, remaining.dist(du), r.dueKm.dist(du)),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                    OutlinedButton(onClick = { onDone(r) }) { Text("Erledigt") }
+                    OutlinedButton(onClick = { onDone(r) }) { Text(str(R.string.done)) }
                 }
                 LinearProgressIndicator(
                     progress = { progress },
@@ -421,11 +420,11 @@ private fun LazyListScope.overviewItems(
         }
     }
     refuels.firstOrNull()?.let { last ->
-        item { SectionTitle("Letzte Tankung") }
+        item { SectionTitle(str(R.string.last_refuel)) }
         item(key = "last-refuel") { RefuelCard(v, last, stats.perRefuel[last.id], stats.avg) { openTab(1) } }
     }
     services.firstOrNull()?.let { last ->
-        item { SectionTitle("Letzter Service") }
+        item { SectionTitle(str(R.string.last_service)) }
         item(key = "last-service") { ServiceCard(v, last) { openTab(2) } }
     }
 }
@@ -434,8 +433,8 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
     if (refuels.isEmpty()) {
         item {
             EmptyState(
-                Icons.Default.LocalGasStation, "Noch keine Tankvorgänge",
-                "Über „Tanken“ erfassen oder oben per Spritmonitor-Import übernehmen.",
+                Icons.Default.LocalGasStation, str(R.string.empty_refuels_title),
+                str(R.string.empty_refuels_text),
             )
         }
         return
@@ -448,7 +447,7 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
             Column(Modifier.padding(top = 8.dp)) {
                 Text(year.toString(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                 Text(
-                    "${list.size} Tankungen · ${list.sumOf { it.amount }.fmt(1)} $unit · " +
+                    str(R.string.n_refuels, list.size) + " · ${list.sumOf { it.amount }.fmt(1)} $unit · " +
                         "${list.sumOf { it.totalPrice }.fmt()} ${v.currency} · Ø $avg",
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -466,16 +465,15 @@ private fun LazyListScope.tireSetItems(nav: NavController, v: Vehicle, sets: Lis
     val mountedId = tireHistory.filter { it.tireSetId.isNotBlank() }.maxByOrNull { it.timestamp }?.tireSetId
     item(key = "tires-head") {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) { SectionTitle("Radsätze") }
-            if (sets.isNotEmpty()) TextButton(onClick = { nav.navigate("serviceEdit/${v.id}/new-wheel") }) { Text("Radwechsel") }
-            TextButton(onClick = { nav.navigate("tireSetEdit/${v.id}/new") }) { Text("+ Neu") }
+            Box(Modifier.weight(1f)) { SectionTitle(str(R.string.tire_sets)) }
+            if (sets.isNotEmpty()) TextButton(onClick = { nav.navigate("serviceEdit/${v.id}/new-wheel") }) { Text(str(R.string.wheel_change)) }
+            TextButton(onClick = { nav.navigate("tireSetEdit/${v.id}/new") }) { Text(str(R.string.plus_new)) }
         }
     }
     if (sets.isEmpty()) {
         item(key = "tires-empty") {
             Text(
-                "Lege z. B. Sommer- und Winterräder als Radsatz an. Beim Radwechsel wählst du dann nur noch aus, " +
-                    "welcher Satz runter und welcher drauf kommt, und trägst die Profiltiefe bei der Einlagerung ein.",
+                str(R.string.tire_sets_empty),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -485,7 +483,7 @@ private fun LazyListScope.tireSetItems(nav: NavController, v: Vehicle, sets: Lis
             nav.navigate("tireSetEdit/${v.id}/${set.id}")
         }
     }
-    item(key = "svc-head") { SectionTitle("Service-Historie") }
+    item(key = "svc-head") { SectionTitle(str(R.string.service_history)) }
 }
 
 private fun LazyListScope.serviceItems(
@@ -498,15 +496,15 @@ private fun LazyListScope.serviceItems(
     if (services.isEmpty()) {
         item {
             EmptyState(
-                Icons.Default.Build, "Noch keine Service-Einträge",
-                "Über „Service“ anlegen oder oben eine CSV importieren.",
+                Icons.Default.Build, str(R.string.empty_services_title),
+                str(R.string.empty_services_text),
             )
         }
         return
     }
     item {
         Text(
-            "${services.size} Einträge · ${services.sumOf { it.cost }.fmt()} ${v.currency} gesamt",
+            str(R.string.services_summary, services.size, services.sumOf { it.cost }.fmt() + " " + v.currency),
             style = MaterialTheme.typography.bodyMedium,
         )
     }

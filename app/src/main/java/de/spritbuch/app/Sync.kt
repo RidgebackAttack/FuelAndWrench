@@ -29,12 +29,12 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 fun httpMessage(code: Int): String = when (code) {
-    401 -> "Anmeldung fehlgeschlagen (401) – Benutzer/App-Passwort prüfen"
-    403 -> "Zugriff verweigert (403)"
-    404 -> "Pfad nicht gefunden (404) – URL prüfen"
-    409 -> "Übergeordneter Ordner fehlt (409) – URL prüfen"
-    507 -> "Speicherplatz voll (507)"
-    else -> "HTTP-Fehler $code"
+    401 -> str(R.string.http_401)
+    403 -> str(R.string.http_403)
+    404 -> str(R.string.http_404)
+    409 -> str(R.string.http_409)
+    507 -> str(R.string.http_507)
+    else -> str(R.string.http_other, code)
 }
 
 class WebDavClient(baseUrl: String, user: String, password: String) {
@@ -121,7 +121,7 @@ object SyncManager {
         val app = ctx.applicationContext
         val prefs = Prefs(app)
         if (!prefs.configured) {
-            return@withLock SyncResult(true, "Synchronisation nicht eingerichtet")
+            return@withLock SyncResult(true, str(R.string.sync_not_configured))
         }
         running.value = true
         val result = try {
@@ -129,7 +129,7 @@ object SyncManager {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            SyncResult(false, "Fehler: ${e.message ?: e.javaClass.simpleName}")
+            SyncResult(false, str(R.string.error_prefix, e.message ?: e.javaClass.simpleName))
         } finally {
             running.value = false
         }
@@ -206,9 +206,9 @@ object SyncManager {
             ReminderChecker.checkAll(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }
-            return "Synchronisiert ($v Fahrzeuge, $t Tankvorgänge)"
+            return str(R.string.sync_ok, v, t)
         }
-        throw IOException("Zu viele gleichzeitige Änderungen – bitte erneut versuchen")
+        throw IOException(str(R.string.sync_conflict))
     }
 
     private suspend fun <T> mergeInto(

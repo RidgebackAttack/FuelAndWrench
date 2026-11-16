@@ -1,0 +1,36 @@
+Senest opdateret: 15. november 2026
+
+Fuel & Wrench er en app til registrering af tankninger, servicearbejde og dæk. Den har ingen reklamer, ingen sporing, ingen analysetjenester, ingen nedbrudsrapporter og ingen Google-tjenester. Udvikleren driver ingen server og modtager ingen data.
+
+Hvilke data behandler appen?
+
+• Køretøjs-, tanknings-, service- og dækdata, som du selv indtaster (f.eks. kilometerstand, mængde, pris, tankstation, værksted, noter, fotos af køretøjet).
+• Placering (kun når du trykker på „Aktuel position“ og har givet tilladelse) for at genkende tankstationen og gemme den med tankningen.
+• Loginoplysninger til synkronisering (serveradresse, brugernavn, app-adgangskode), hvis du opsætter synkronisering.
+
+Alle data gemmes lokalt på din enhed. Android-sikkerhedskopiering er slået fra for appen.
+
+Hvor sendes data hen?
+
+• Din egen WebDAV-/Nextcloud-server: alle appdata og fotos af køretøjer – ved synkronisering (kan slås fra: ja – opsæt ikke synkronisering)
+• overpass-api.de (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ – søgning efter tankstation (kan slås fra: ja – Indstillinger → Privatliv)
+• nominatim.openstreetmap.org (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ / „Adresse“ – adressesøgning (kan slås fra: ja – samme kontakt)
+• Android-geocoder (på enheder med Google-tjenester: Google): koordinater – adressesøgning (kan slås fra: ja – slået fra som standard)
+• Systemets netværksplacering (på enheder med Google-tjenester: Google): Wi-Fi-/mobildata – positionering (kan slås fra: ja – slået fra som standard, så kun GPS)
+• tile.openstreetmap.org: vist kortudsnit, IP-adresse – når kortet åbnes (kan slås fra: kun ved ikke at bruge kortet)
+
+For disse tjenester gælder deres egne privatlivspolitikker (OpenStreetMap Foundation, FOSSGIS e. V. eller Google).
+
+Tilladelser
+
+• Placering (præcis): kun til „Aktuel position“ ved tankning.
+• Internet / netværksstatus: synkronisering, søgning efter tankstation, kort.
+• Notifikationer: vedligeholdelsespåmindelser.
+
+Opbevaring og sletning
+
+Data gemmes, indtil du sletter dem i appen eller afinstallerer appen. Data på din synkroniseringsserver administrerer du selv.
+
+Kontakt
+
+Spørgsmål om privatliv: via projektets issues på GitHub.
