@@ -90,6 +90,9 @@ data class Stats(
     val costPer100: Double?,
     val distance: Int,
     val perRefuel: Map<String, Double>,
+    /** Mittlere Abweichung Bordcomputer gegenüber berechnetem Verbrauch (0,05 = BC zeigt 5 % mehr). */
+    val obcDeviation: Double? = null,
+    val obcCount: Int = 0,
 )
 
 /**
@@ -127,6 +130,11 @@ fun computeStats(refuels: List<Refuel>): Stats {
         }
     }
     val lastValue = sorted.asReversed().firstNotNullOfOrNull { per[it.id] }
+    val dev = sorted.mapNotNull { r ->
+        val real = per[r.id]
+        val obc = r.obcConsumption
+        if (real != null && real > 0 && obc != null && obc > 0) obc / real - 1.0 else null
+    }
     val distance = if (sorted.size >= 2) sorted.last().odometer - sorted.first().odometer else 0
     return Stats(
         avg = if (spanDist > 0) spanAmount / spanDist * 100.0 else null,
@@ -136,6 +144,8 @@ fun computeStats(refuels: List<Refuel>): Stats {
         costPer100 = if (spanDist > 0) spanCost / spanDist * 100.0 else null,
         distance = distance,
         perRefuel = per,
+        obcDeviation = dev.takeIf { it.isNotEmpty() }?.average(),
+        obcCount = dev.size,
     )
 }
 

@@ -159,6 +159,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
                         r.copy(
                             odometer = d(r.odometer),
                             amount = if (Units.isLiquid(r.fuelType)) r.amount * vf else r.amount,
+                            obcConsumption = r.obcConsumption?.let { if (Units.isLiquid(r.fuelType)) it * vf / df else it / df },
                             updatedAt = t,
                         )
                     )
@@ -239,12 +240,21 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
     suspend fun importRefuels(vehicleId: String, items: List<Refuel>): Pair<Int, Int> {
         var added = 0
         var duplicates = 0
+        var filled = 0
         db.withTransaction {
             val existing = db.refuels().forVehicle(vehicleId)
             val t = now()
             for (r in items) {
-                val dup = existing.any { it.odometer == r.odometer && kotlin.math.abs(it.amount - r.amount) < 0.01 }
-                if (dup) { duplicates++; continue }
+                val dup = existing.firstOrNull { it.odometer == r.odometer && kotlin.math.abs(it.amount - r.amount) < 0.01 }
+                if (dup != null) {
+                    duplicates++
+                    // Erneuter Import ergänzt fehlende Bordcomputer-Werte
+                    if (dup.obcConsumption == null && r.obcConsumption != null) {
+                        db.refuels().upsert(dup.copy(obcConsumption = r.obcConsumption, updatedAt = t))
+                        filled++
+                    }
+                    continue
+                }
                 db.refuels().upsert(r.copy(vehicleId = vehicleId, updatedAt = t))
                 added++
             }
@@ -252,8 +262,8 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         if (added > 0) {
             ensureDefaultReminders(vehicleId)
             ReminderChecker.check(ctx, vehicleId)
-            changed()
         }
+        if (added > 0 || filled > 0) changed()
         return added to duplicates
     }
 

@@ -342,6 +342,13 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                 if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
             }
             Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
+            r.obcConsumption?.let { o ->
+                val diff = consumption?.takeIf { it > 0 }?.let { c ->
+                    val d = (o / c - 1.0) * 100
+                    " (" + (if (d >= 0) "+" else "−") + kotlin.math.abs(d).fmt(1) + " %)"
+                } ?: ""
+                Text("Bordcomputer: ${Units.consumption(v, r.fuelType, o)}$diff", style = MaterialTheme.typography.bodySmall)
+            }
             val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ")
             if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
             if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)

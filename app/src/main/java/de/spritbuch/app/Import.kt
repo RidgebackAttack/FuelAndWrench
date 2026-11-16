@@ -123,6 +123,7 @@ object CsvImport {
             "Standheizung" to col("standheizung", "heater", "aux heater"),
             "Dachbox/Fahrradträger" to col("dachbox", "fahrradträger", "roof box"),
         ).filterValues { it >= 0 }
+        val cObc = col("bc-verbrauch", "bordcomputer-verbrauch", "bordcomputer verbrauch", "obc consumption", "bc consumption")
         val cExtras = col("extras", "verbraucher", "zusatz", "attributes")
 
         val missing = buildList {
@@ -197,6 +198,9 @@ object CsvImport {
                 routeType = v(cRoute).let { if (isCode(it)) it else mapRoute(it) },
                 tireType = v(cTires).let { if (isCode(it)) it else mapTires(it) },
                 note = if (noteNum != null && total == noteNum) "" else v(cNote),
+                obcConsumption = if (cObc >= 0) parseNum(v(cObc), false)?.takeIf { it > 0 }?.let {
+                    if (vehicle.consumptionFormat == "perUnit") 100.0 / it else it
+                } else null,
             )
             if (odo == null && trip != null) pendingTrip[r.id] = trip
             val cur = normCurrency(v(cCurrency))
@@ -332,9 +336,7 @@ object CsvImport {
     }
 
     fun mapBrand(raw: String): String {
-        val b = raw.trim()
-        if (b.isEmpty()) return ""
-        return Options.brands.firstOrNull { o -> o.split("/").any { b.contains(it, ignoreCase = true) } } ?: b
+        return Options.matchBrand(raw)
     }
 
     private fun mapFuel(raw: String): String? {

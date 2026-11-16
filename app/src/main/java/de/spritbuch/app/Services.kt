@@ -213,9 +213,7 @@ object LocationHelper {
             val tags = best["tags"]?.jsonObject
             fun tag(k: String) = tags?.get(k)?.jsonPrimitive?.contentOrNull
             val rawBrand = tag("brand") ?: tag("operator") ?: tag("name")
-            val brand = rawBrand?.let { b ->
-                Options.brands.firstOrNull { o -> o.split("/").any { b.contains(it, ignoreCase = true) } } ?: b
-            }
+            val brand = rawBrand?.let { Options.matchBrand(it) }
             val street = listOfNotNull(tag("addr:street"), tag("addr:housenumber")).joinToString(" ")
             val city = listOfNotNull(tag("addr:postcode"), tag("addr:city")).joinToString(" ")
             val address = listOf(street, city).filter { it.isNotBlank() }.joinToString(", ").ifBlank { null }

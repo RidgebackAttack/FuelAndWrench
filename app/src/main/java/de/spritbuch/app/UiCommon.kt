@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -153,8 +154,11 @@ fun ChoiceField(label: String, value: String, options: List<String>, onSelect: (
             modifier = Modifier.fillMaxWidth(),
         )
         Box(Modifier.matchParentSize().clickable { expanded = true })
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { o ->
+        // Beim Tippen nur passende Einträge zeigen; bei leerem Feld oder exaktem Treffer alle
+        val shown = options.filter { value.isBlank() || it.contains(value.trim(), ignoreCase = true) }
+            .takeIf { it.isNotEmpty() && options.none { o -> o.equals(value.trim(), ignoreCase = true) } } ?: options
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 360.dp)) {
+            shown.forEach { o ->
                 DropdownMenuItem(text = { Text(o) }, onClick = { onSelect(o); expanded = false })
             }
         }
@@ -178,8 +182,11 @@ fun SuggestField(label: String, value: String, options: List<String>, onChange: 
             },
             modifier = Modifier.fillMaxWidth(),
         )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { o ->
+        // Beim Tippen nur passende Einträge zeigen; bei leerem Feld oder exaktem Treffer alle
+        val shown = options.filter { value.isBlank() || it.contains(value.trim(), ignoreCase = true) }
+            .takeIf { it.isNotEmpty() && options.none { o -> o.equals(value.trim(), ignoreCase = true) } } ?: options
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 360.dp)) {
+            shown.forEach { o ->
                 DropdownMenuItem(text = { Text(o) }, onClick = { onChange(o); expanded = false })
             }
         }

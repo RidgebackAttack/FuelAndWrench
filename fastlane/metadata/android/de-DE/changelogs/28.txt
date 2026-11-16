@@ -1,0 +1,5 @@
+- Neues Feld: Verbrauch laut Bordcomputer, mit Abweichung zum errechneten Verbrauch je Tankung und im Schnitt
+- Spritmonitor-Import übernimmt BC-Verbrauch; erneuter Import ergänzt ihn bei bereits importierten Tankungen
+- Viele weitere Tankstellenmarken (u. a. Team, Orlen, OIL!, Classic, Nordoel, Score, Tamoil, Circle K, Q8)
+- Betreiberliste zeigt zuerst die eigenen, häufig genutzten Tankstellen und filtert beim Tippen
+- Genauere Markenerkennung bei GPS und Import

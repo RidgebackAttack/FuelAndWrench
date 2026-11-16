@@ -1,0 +1,5 @@
+- New field: consumption shown by the on-board computer, with deviation from the calculated value per refuel and on average
+- Spritmonitor import reads the on-board consumption; re-importing fills it in for already imported refuels
+- Many more station brands (e.g. Team, Orlen, OIL!, Classic, Nordoel, Score, Tamoil, Circle K, Q8)
+- Station list shows your own frequently used stations first and filters while typing
+- More accurate brand detection for GPS and import

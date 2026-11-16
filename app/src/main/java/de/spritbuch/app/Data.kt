@@ -27,9 +27,28 @@ object Options {
         "HVO100", "LPG", "CNG", "Strom"
     )
     val brands = listOf(
-        "Aral", "Shell", "Esso", "TotalEnergies", "JET", "Avia", "Agip/Eni", "OMV",
-        "Star", "bft", "HEM", "Westfalen", "Raiffeisen", "Hoyer", "Q1", "Freie Tankstelle"
+        "Agip/Eni", "Aral", "Avia", "bft", "BP", "Calpam", "Circle K", "Classic", "ED", "Elan", "Esso",
+        "F24", "famila", "Globus", "HEM", "Hoyer", "Ingo", "JET", "Kaufland", "Marktkauf", "Mundorf",
+        "Nordoel", "OIL!", "OK", "OMV", "Orlen", "Pinoil", "Q1", "Q8", "Raiffeisen", "Score", "Shell",
+        "Sprint", "Star", "Tamoil", "Team", "TotalEnergies", "Uno-X", "Westfalen", "Freie Tankstelle",
     )
+    private val brandAliases = mapOf(
+        "TotalEnergies" to listOf("total"),
+        "OIL!" to listOf("oil"),
+        "Star" to listOf("orlen star"),
+        "Freie Tankstelle" to listOf("freie"),
+    )
+
+    /** Ordnet einen frei geschriebenen Betreibernamen (OSM, CSV) einer bekannten Marke zu – nur ganze Wörter. */
+    fun matchBrand(raw: String): String {
+        val b = raw.trim().trim('"')
+        if (b.isEmpty()) return ""
+        val low = b.lowercase()
+        fun hit(alias: String) = Regex("(^|[^\\p{L}\\p{N}])" + Regex.escape(alias.lowercase()) + "($|[^\\p{L}\\p{N}])").containsMatchIn(low)
+        // Exakte Treffer zuerst, damit z. B. "Orlen" nicht als "Star" erkannt wird
+        brands.firstOrNull { it.equals(b, ignoreCase = true) }?.let { return it }
+        return brands.firstOrNull { o -> (o.split("/") + brandAliases[o].orEmpty()).any { hit(it) } } ?: b
+    }
     val extras = listOf("Standheizung", "Anhänger", "Dachbox/Fahrradträger", "Klimaanlage")
     val drivingStyles = listOf("Sparsam", "Normal", "Zügig", "Sportlich")
     val routeTypes = listOf("Stadt", "Landstraße", "Autobahn", "Gemischt")
@@ -105,6 +124,8 @@ data class Refuel(
     val routeType: String = "",
     val tireType: String = "",
     val note: String = "",
+    /** Vom Bordcomputer angezeigter Verbrauch, normiert wie computeStats: Menge je 100 Strecke (Fahrzeugeinheiten). */
+    val obcConsumption: Double? = null,
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
 ) {
@@ -313,7 +334,7 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class], version = 6, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class], version = 7, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -360,6 +381,11 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE refuels ADD COLUMN obcConsumption REAL")
+            }
+        }
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE services ADD COLUMN tireSetId TEXT NOT NULL DEFAULT ''")
@@ -376,7 +402,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
     }
 }

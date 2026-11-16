@@ -85,6 +85,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var route by remember { mutableStateOf("") }
     var tires by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var obc by remember { mutableStateOf("") }
+    var brandOptions by remember { mutableStateOf(Options.brands) }
     var lastOdo by remember { mutableStateOf<Int?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
     var locating by remember { mutableStateOf(false) }
@@ -166,6 +168,11 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         route = r.routeType
         tires = r.tireType
         note = r.note
+        obc = r.obcConsumption?.let { (if (v?.consumptionFormat == "perUnit") 100.0 / it else it).fmt(1) } ?: ""
+        // Eigene, häufig genutzte Betreiber zuerst, danach die Standardliste
+        val used = repo.db.refuels().getAllRaw().filter { !it.deleted && it.stationBrand.isNotBlank() }
+            .groupingBy { it.stationBrand }.eachCount().entries.sortedByDescending { it.value }.map { it.key }
+        brandOptions = (used + Options.brands).distinctBy { it.lowercase() }
         if (isNew && LocationHelper.hasPermission(ctx)) locate()
     }
 
@@ -195,6 +202,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                         if (odo == null || odo <= 0) { error = "Bitte Kilometerstand eingeben"; return@IconButton }
                         if (a == null || a <= 0) { error = "Bitte getankte Menge eingeben"; return@IconButton }
                         val t = total.toDoubleDe() ?: ((ppu.toDoubleDe() ?: 0.0) * a)
+                        val obcVal = obc.toDoubleDe()?.takeIf { it > 0 }?.let {
+                            if (veh?.consumptionFormat == "perUnit") 100.0 / it else it
+                        }
                         scope.launch {
                             repo.saveRefuel(
                                 b.copy(
@@ -204,6 +214,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                                     latitude = lat, longitude = lon,
                                     extras = Options.extras.filter { it in extras }.joinToString("|"),
                                     drivingStyle = style, routeType = route, tireType = tires, note = note.trim(),
+                                    obcConsumption = obcVal,
                                 )
                             )
                             nav.popBackStack()
@@ -240,6 +251,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             }
             LabeledSwitch("Vollgetankt", fullTank) { fullTank = it }
             LabeledSwitch("Vorherige Tankung nicht erfasst", missed) { missed = it }
+            val obcUnit = if (veh?.consumptionFormat == "perUnit") "$du/$unit" else "$unit/100 $du"
+            NumberField("Verbrauch laut Bordcomputer (optional)", obc, { obc = it }, suffix = obcUnit)
 
             HorizontalDivider()
             SectionTitle("Tankstelle")
@@ -253,7 +266,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 if (locating) CircularProgressIndicator(Modifier.size(24.dp))
             }
             info?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            SuggestField("Betreiber", brand, Options.brands) { brand = it }
+            SuggestField("Betreiber", brand, brandOptions) { brand = it }
             OutlinedTextField(address, { address = it }, label = { Text("Adresse") }, modifier = Modifier.fillMaxWidth())
             val la = lat
             val lo = lon

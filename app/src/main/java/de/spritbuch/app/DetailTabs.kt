@@ -359,6 +359,12 @@ private fun LazyListScope.overviewItems(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatLine("Ø Verbrauch", Units.consumption(v, fuel, stats.avg))
                 StatLine("Letzter Verbrauch", Units.consumption(v, fuel, stats.last))
+                stats.obcDeviation?.let { d ->
+                    StatLine(
+                        "Bordcomputer (${stats.obcCount}×)",
+                        (if (d >= 0) "+" else "−") + (kotlin.math.abs(d) * 100).fmt(1) + " %",
+                    )
+                }
                 StatLine("Kosten pro 100 $du", stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
                 StatLine("Tankkosten gesamt", "${stats.totalCost.fmt()} $cur")
                 StatLine("Servicekosten gesamt", "${services.sumOf { it.cost }.fmt()} $cur")
