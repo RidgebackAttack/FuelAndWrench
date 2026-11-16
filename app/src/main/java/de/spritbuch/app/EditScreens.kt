@@ -20,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
@@ -95,6 +97,60 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var error by remember { mutableStateOf<String?>(null) }
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var scanning by remember { mutableStateOf(false) }
+    var scanInfo by remember { mutableStateOf<String?>(null) }
+    var odoFromScan by remember { mutableStateOf(false) }
+    var scanMode by remember { mutableStateOf("") }
+    val scanTarget = remember { AttachmentStore.cameraTarget(ctx) }
+
+    fun runScan(uri: android.net.Uri, mode: String) {
+        scope.launch {
+            scanning = true
+            scanInfo = null
+            try {
+                val text = Ocr.recognize(ctx, uri, digitsOnly = mode == "odo")
+                if (mode == "odo") {
+                    val km = ReceiptParser.odometer(text, lastOdo)
+                    if (km != null) {
+                        odometer = km.toString(); odoFromScan = true
+                        scanInfo = str(R.string.scan_odo_found)
+                    } else scanInfo = str(R.string.scan_nothing)
+                } else {
+                    val r = ReceiptParser.parse(text)
+                    val found = mutableListOf<String>()
+                    r.amount?.let { amount = it.fmt(2); found += str(R.string.amount) }
+                    r.pricePerUnit?.let { ppu = it.fmt(3); found += str(R.string.price_per_unit, Units.amount(veh, fuelType)) }
+                    r.total?.let { total = it.fmt(2); found += str(R.string.total) }
+                    r.fuelType?.let { f ->
+                        // Nur übernehmen, wenn es zur Kraftstofffamilie des Fahrzeugs passt
+                        val diesel = { s: String -> s.contains("Diesel") || s == "HVO100" }
+                        val vf = veh?.defaultFuelType ?: fuelType
+                        if (vf.isBlank() || diesel(vf) == diesel(f)) { fuelType = f; found += str(R.string.fuel_type) }
+                    }
+                    r.date?.let { (y, m, d) ->
+                        val c = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }
+                        if (c.timeInMillis <= now()) { timestamp = c.timeInMillis; found += str(R.string.col_date) }
+                    }
+                    scanInfo = if (found.isEmpty()) str(R.string.scan_nothing) else str(R.string.scan_found, found.joinToString(", "))
+                }
+            } catch (e: Throwable) {
+                scanInfo = str(R.string.ocr_failed) + (e.message?.let { " ($it)" } ?: "")
+            } finally {
+                scanning = false
+            }
+        }
+    }
+    val scanCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        if (ok) runScan(android.net.Uri.fromFile(scanTarget), scanMode)
+    }
+    val scanPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) runScan(uri, scanMode)
+    }
+    fun startScan(mode: String) {
+        scanMode = mode
+        runCatching { scanCamera.launch(AttachmentStore.uri(ctx, scanTarget)) }
+            .onFailure { scanPicker.launch("image/*") }
+    }
 
     fun locate() {
         scope.launch {
@@ -234,12 +290,31 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { startScan("receipt") }, enabled = !scanning, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.ReceiptLong, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text(str(R.string.scan_receipt))
+                }
+                OutlinedButton(onClick = { startScan("odo") }, enabled = !scanning, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Speed, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text(str(R.string.scan_odometer))
+                }
+            }
+            if (scanning) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text(str(R.string.scan_running), style = MaterialTheme.typography.bodySmall)
+            }
+            scanInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary) }
+
             OutlinedButton(onClick = { showDate = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.CalendarToday, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.dateTime())
             }
-            NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = du, decimal = false)
+            NumberField(str(R.string.odometer), odometer, { odometer = it; odoFromScan = false }, suffix = du, decimal = false)
+            if (odoFromScan) Text(str(R.string.scan_check_odo), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
             ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes) { fuelType = it }
             NumberField(str(R.string.amount), amount, { amount = it; recalcTotal() }, suffix = unit)
@@ -359,19 +434,24 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
     var interval by remember { mutableStateOf("") }
     var lastDone by remember { mutableStateOf("") }
     var warn by remember { mutableStateOf("") }
+    var months by remember { mutableStateOf("") }
+    var lastDate by remember { mutableLongStateOf(0L) }
+    var showDate by remember { mutableStateOf(false) }
     var du by remember { mutableStateOf("km") }
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(reminderId) {
         du = Units.dist(repo.getVehicle(vehicleId))
-        val r = if (isNew) Reminder(vehicleId = vehicleId, lastDoneKm = repo.currentOdometer(vehicleId))
+        val r = if (isNew) Reminder(vehicleId = vehicleId, lastDoneKm = repo.currentOdometer(vehicleId), lastDoneDate = now())
         else repo.getReminder(reminderId) ?: return@LaunchedEffect
         base = r
         title = r.title
-        interval = r.intervalKm.toString()
+        interval = if (r.intervalKm > 0) r.intervalKm.toString() else ""
         lastDone = r.lastDoneKm.toString()
         warn = r.warnBeforeKm.toString()
+        months = if (r.intervalMonths > 0) r.intervalMonths.toString() else ""
+        lastDate = if (r.lastDoneDate > 0) r.lastDoneDate else now()
     }
 
     Scaffold(
@@ -385,14 +465,16 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
                     }
                     IconButton(onClick = {
                         val b = base ?: return@IconButton
-                        val i = interval.toIntKm()
+                        val i = interval.toIntKm() ?: 0
+                        val m = months.toIntKm() ?: 0
                         if (title.isBlank()) { error = str(R.string.err_enter_title); return@IconButton }
-                        if (i == null || i <= 0) { error = str(R.string.err_enter_interval); return@IconButton }
+                        if (i <= 0 && m <= 0) { error = str(R.string.err_enter_interval); return@IconButton }
                         scope.launch {
                             repo.saveReminder(
                                 b.copy(
                                     title = title.trim(), intervalKm = i,
                                     lastDoneKm = lastDone.toIntKm() ?: 0, warnBeforeKm = warn.toIntKm() ?: 0,
+                                    intervalMonths = m, lastDoneDate = if (m > 0) lastDate else b.lastDoneDate,
                                 )
                             )
                             nav.popBackStack()
@@ -409,12 +491,44 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             SuggestField(str(R.string.title), title, Options.reminderSuggestions) { title = it }
+            Text(str(R.string.reminder_either_info), style = MaterialTheme.typography.bodySmall)
+            SectionTitle(str(R.string.by_distance))
             NumberField(str(R.string.interval), interval, { interval = it }, suffix = du, decimal = false)
             NumberField(str(R.string.last_done_at), lastDone, { lastDone = it }, suffix = du, decimal = false)
             NumberField(str(R.string.warn_before), warn, { warn = it }, suffix = str(R.string.unit_before, du), decimal = false)
-            val due = (lastDone.toIntKm() ?: 0) + (interval.toIntKm() ?: 0)
-            Text(str(R.string.next_due, due.dist(du)), style = MaterialTheme.typography.bodyMedium)
+            SectionTitle(str(R.string.by_time))
+            NumberField(str(R.string.interval), months, { months = it }, suffix = str(R.string.months), decimal = false)
+            OutlinedButton(onClick = { showDate = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.CalendarToday, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(str(R.string.last_done_on, lastDate.date()))
+            }
+            val preview = Reminder(
+                intervalKm = interval.toIntKm() ?: 0, lastDoneKm = lastDone.toIntKm() ?: 0,
+                intervalMonths = months.toIntKm() ?: 0, lastDoneDate = lastDate,
+            )
+            val dueParts = listOfNotNull(
+                if (preview.byKm) preview.dueKm.dist(du) else null,
+                preview.dueDate?.date(),
+            )
+            if (dueParts.isNotEmpty()) {
+                Text(str(R.string.next_due, dueParts.joinToString(str(R.string.or_sep))), style = MaterialTheme.typography.bodyMedium)
+            }
         }
+    }
+
+    if (showDate) {
+        val state = rememberDatePickerState(initialSelectedDateMillis = toUtcDate(lastDate))
+        DatePickerDialog(
+            onDismissRequest = { showDate = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { lastDate = combineDate(it, lastDate) }
+                    showDate = false
+                }) { Text(str(R.string.ok)) }
+            },
+            dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
+        ) { DatePicker(state = state) }
     }
 
     if (confirmDelete) {
@@ -468,6 +582,7 @@ fun SettingsScreen(nav: NavController) {
     var useNetworkLocation by remember { mutableStateOf(prefs.useNetworkLocation) }
     var newTitle by remember { mutableStateOf("") }
     var newKm by remember { mutableStateOf("") }
+    var newMonths by remember { mutableStateOf("") }
     val status by SyncManager.status.collectAsStateWithLifecycle()
     val running by SyncManager.running.collectAsStateWithLifecycle()
 
@@ -594,6 +709,7 @@ fun SettingsScreen(nav: NavController) {
                         prefs.user = user
                         prefs.password = password
                         prefs.uploadedPhotos = emptySet()
+                        prefs.uploadedAttachments = emptySet()
                         SyncScheduler.schedulePeriodic(ctx)
                         SyncManager.sync(ctx)
                     }
@@ -607,6 +723,40 @@ fun SettingsScreen(nav: NavController) {
                 str(R.string.sync_auto_info),
                 style = MaterialTheme.typography.bodySmall,
             )
+
+            HorizontalDivider()
+            SectionTitle(str(R.string.backup))
+            var backupInfo by remember { mutableStateOf<String?>(null) }
+            var backupBusy by remember { mutableStateOf(false) }
+            fun summaryText(s: Backup.Summary) = str(R.string.backup_summary, s.vehicles, s.refuels, s.services, s.expenses, s.files)
+            val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+                if (uri != null) scope.launch {
+                    backupBusy = true
+                    backupInfo = runCatching { Backup.export(ctx, uri) }
+                        .fold({ str(R.string.backup_done) + " " + summaryText(it) }, { str(R.string.error_prefix, it.message ?: "") })
+                    backupBusy = false
+                }
+            }
+            val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                if (uri != null) scope.launch {
+                    backupBusy = true
+                    backupInfo = runCatching { Backup.restore(ctx, uri) }
+                        .fold({ str(R.string.restore_done) + " " + summaryText(it) }, { str(R.string.error_prefix, it.message ?: "") })
+                    backupBusy = false
+                }
+            }
+            Text(str(R.string.backup_info), style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { exportLauncher.launch(Backup.suggestedName()) }, enabled = !backupBusy, modifier = Modifier.weight(1f)) {
+                    Text(str(R.string.backup_create))
+                }
+                OutlinedButton(
+                    onClick = { restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed")) },
+                    enabled = !backupBusy, modifier = Modifier.weight(1f),
+                ) { Text(str(R.string.backup_restore)) }
+            }
+            if (backupBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
+            backupInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
 
             HorizontalDivider()
             SectionTitle(str(R.string.privacy))
@@ -629,6 +779,22 @@ fun SettingsScreen(nav: NavController) {
                 str(R.string.privacy_tiles_info),
                 style = MaterialTheme.typography.bodySmall,
             )
+            if (UpdateChecker.isDirectInstall(ctx)) {
+                var updateCheck by remember { mutableStateOf(prefs.updateCheck) }
+                var updateInfo by remember { mutableStateOf<String?>(null) }
+                LabeledSwitch(str(R.string.update_check), updateCheck) { updateCheck = it; prefs.updateCheck = it }
+                Text(str(R.string.update_check_info), style = MaterialTheme.typography.bodySmall)
+                if (updateCheck) {
+                    TextButton(onClick = {
+                        scope.launch {
+                            val u = UpdateChecker.check(ctx, force = true)
+                            updateInfo = if (u != null) str(R.string.update_available, u.version) else str(R.string.update_none)
+                            if (u != null) UpdateChecker.open(ctx, u)
+                        }
+                    }) { Text(str(R.string.update_check_now)) }
+                    updateInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                }
+            }
 
             HorizontalDivider()
             SectionTitle(str(R.string.default_reminders))
@@ -636,10 +802,10 @@ fun SettingsScreen(nav: NavController) {
                 str(R.string.default_reminders_info),
                 style = MaterialTheme.typography.bodySmall,
             )
-            templates.forEachIndexed { i, (title, km) ->
+            templates.forEachIndexed { i, (title, km, mo) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(templateTitle(title), modifier = Modifier.weight(1f))
-                    Text(km.km())
+                    Text(listOfNotNull(if (km > 0) km.km() else null, if (mo > 0) "$mo " + str(R.string.months_short) else null).joinToString(" / "))
                     IconButton(onClick = {
                         templates = templates.toMutableList().also { it.removeAt(i) }
                         prefs.reminderTemplates = templates
@@ -647,14 +813,18 @@ fun SettingsScreen(nav: NavController) {
                 }
             }
             SuggestField(str(R.string.title), newTitle, Options.reminderSuggestions) { newTitle = it }
-            NumberField(str(R.string.interval), newKm, { newKm = it }, suffix = "km", decimal = false)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                NumberField(str(R.string.interval), newKm, { newKm = it }, suffix = "km", decimal = false, modifier = Modifier.weight(1f))
+                NumberField(str(R.string.interval), newMonths, { newMonths = it }, suffix = str(R.string.months), decimal = false, modifier = Modifier.weight(1f))
+            }
             OutlinedButton(
                 onClick = {
-                    val km = newKm.toIntKm()
-                    if (newTitle.isNotBlank() && km != null && km > 0) {
-                        templates = templates + (newTitle.trim() to km)
+                    val km = newKm.toIntKm() ?: 0
+                    val mo = newMonths.toIntKm() ?: 0
+                    if (newTitle.isNotBlank() && (km > 0 || mo > 0)) {
+                        templates = templates + ReminderTemplate(newTitle.trim(), km, mo)
                         prefs.reminderTemplates = templates
-                        newTitle = ""; newKm = ""
+                        newTitle = ""; newKm = ""; newMonths = ""
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

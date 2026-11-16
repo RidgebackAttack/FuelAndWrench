@@ -122,6 +122,10 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     }
                 }
                 if (s.note.isNotBlank()) Text(s.note, style = MaterialTheme.typography.bodySmall)
+                if (s.attachments.isNotBlank()) {
+                    Text("📎 " + str(R.string.n_receipts, s.attachmentList().size), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary)
+                }
             }
         }
     }
@@ -267,6 +271,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     var cost by remember { mutableStateOf("") }
     var workshop by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var attachments by remember { mutableStateOf(listOf<String>()) }
     var tireSeason by remember { mutableStateOf("") }
     var tireBrand by remember { mutableStateOf("") }
     var tireModel by remember { mutableStateOf("") }
@@ -292,6 +297,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         cost = if (s.cost > 0) s.cost.fmt(2) else ""
         workshop = s.workshop
         note = s.note
+        attachments = s.attachmentList()
         tireSeason = s.tireSeason; tireBrand = s.tireBrand; tireModel = s.tireModel; tireSize = s.tireSize
         mountedSetId = s.tireSetId; removedSetId = s.removedTireSetId
         if (isNew) {
@@ -340,6 +346,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                                     timestamp = timestamp, odometer = odometer.toIntKm() ?: 0, title = title.trim(),
                                     category = category, cost = cost.toDoubleDe() ?: 0.0,
                                     workshop = workshop.trim(), note = note.trim(),
+                                    attachments = attachments.joinToString("|"),
                                     tireSeason = if (category == "Reifen") tireSeason else "",
                                     tireBrand = if (category == "Reifen") tireBrand.trim() else "",
                                     tireModel = if (category == "Reifen") tireModel.trim() else "",
@@ -441,6 +448,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 note, { note = it }, label = { Text(str(R.string.service_note_hint)) }, minLines = 3,
                 modifier = Modifier.fillMaxWidth(),
             )
+            AttachmentSection(attachments) { attachments = it }
             Text(
                 str(R.string.service_reminder_info),
                 style = MaterialTheme.typography.bodySmall,

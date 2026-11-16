@@ -79,6 +79,9 @@ fun VehicleListScreen(nav: NavController) {
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var showArchived by remember { mutableStateOf(false) }
+    val update by UpdateChecker.available.collectAsStateWithLifecycle()
+    var dismissedUpdate by remember { mutableStateOf(Prefs(ctx).dismissedUpdate) }
+    LaunchedEffect(Unit) { UpdateChecker.check(ctx) }
 
     Scaffold(
         topBar = {
@@ -117,6 +120,24 @@ fun VehicleListScreen(nav: NavController) {
                 contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                update?.takeIf { it.version != dismissedUpdate }?.let { u ->
+                    item(key = "update") {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Text(str(R.string.update_available, u.version), style = MaterialTheme.typography.titleSmall)
+                                Row {
+                                    TextButton(onClick = { UpdateChecker.open(ctx, u) }) { Text(str(R.string.update_download)) }
+                                    TextButton(onClick = { Prefs(ctx).dismissedUpdate = u.version; dismissedUpdate = u.version }) {
+                                        Text(str(R.string.later))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 val active = vehicles.filter { !it.archived }
                 val archived = vehicles.filter { it.archived }
                 if (active.isEmpty()) item { Text(str(R.string.all_archived)) }

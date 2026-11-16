@@ -12,6 +12,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        // Texterkennung bringt native Bibliotheken mit; nur gängige Handy-Architekturen beilegen
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
         targetSdk = 35
@@ -83,4 +85,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
+
+    testImplementation("junit:junit:4.13.2")
 }

@@ -121,7 +121,7 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
     val mine = remember(refuels, v.id) { refuels.filter { it.vehicleId == v.id } }
     val stats = remember(mine) { computeStats(mine) }
     val odo = maxOf(v.initialOdometer, v.manualOdometer, mine.maxOfOrNull { it.odometer } ?: 0)
-    val next = reminders.filter { it.vehicleId == v.id }.minByOrNull { it.dueKm - odo }
+    val next = reminders.filter { it.vehicleId == v.id }.minByOrNull { it.state(odo).urgency }
     Card(
         onClick = { nav.navigate("vehicle/${v.id}") },
         modifier = Modifier.fillMaxWidth(),
@@ -147,11 +147,18 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
             StatChip(Icons.Default.LocalGasStation, stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: "Ø –")
             if (odo > 0) StatChip(Icons.Default.Speed, odo.dist(v.distanceUnit))
             if (next != null && !v.archived) {
-                val rem = next.dueKm - odo
+                val st = next.state(odo)
+                val warn = st.overdue || st.warn
+                // Was zuerst eintritt: km oder Tage
+                val kmFirst = st.remainingDays == null || (st.remainingKm != null && st.remainingKm * 1.0 <= st.remainingDays * 50.0)
                 StatChip(
-                    if (rem <= next.warnBeforeKm) Icons.Default.WarningAmber else Icons.Default.Build,
-                    if (rem <= 0) str(R.string.chip_due, next.title) else str(R.string.chip_due_in, next.title, rem.dist(v.distanceUnit)),
-                    warn = rem <= next.warnBeforeKm,
+                    if (warn) Icons.Default.WarningAmber else Icons.Default.Build,
+                    when {
+                        st.overdue -> str(R.string.chip_due, next.title)
+                        kmFirst && st.remainingKm != null -> str(R.string.chip_due_in, next.title, st.remainingKm.dist(v.distanceUnit))
+                        else -> str(R.string.chip_due_in, next.title, str(R.string.n_days, st.remainingDays ?: 0))
+                    },
+                    warn = warn,
                 )
             }
         }

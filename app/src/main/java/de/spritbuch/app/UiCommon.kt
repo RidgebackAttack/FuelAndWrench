@@ -118,6 +118,10 @@ fun AppNav() {
         composable("tireSetEdit/{vehicleId}/{id}") {
             TireSetEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
+        composable("expenseEdit/{vehicleId}/{id}") {
+            ExpenseEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
+        }
+        composable("stats/{vehicleId}") { StatsScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("serviceEdit/{vehicleId}/{id}") {
             ServiceEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }

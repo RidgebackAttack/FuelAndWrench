@@ -52,6 +52,7 @@ class App : Application() {
         repo = Repository(this, AppDatabase.create(this))
         Notifications.createChannel(this)
         SyncScheduler.schedulePeriodic(this)
+        DailyWorker.schedule(this)
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             runCatching { repo.repairImportedData() }
         }
@@ -89,6 +90,18 @@ object Notifications {
 }
 
 object ReminderChecker {
+    /** Text wie „Noch 1.200 km (fällig bei 120.000 km) · noch 40 Tage (01.03.2027)“. */
+    fun describe(r: Reminder, st: ReminderState, unit: String): String = listOfNotNull(
+        st.remainingKm?.let { km ->
+            if (km <= 0) str(R.string.rem_km_over, (-km).dist(unit), r.dueKm.dist(unit))
+            else str(R.string.rem_km_left, km.dist(unit), r.dueKm.dist(unit))
+        },
+        st.remainingDays?.let { d ->
+            val date = r.dueDate?.date() ?: ""
+            if (d < 0) str(R.string.rem_date_over, date) else str(R.string.rem_date_left, d, date)
+        },
+    ).joinToString(" · ")
+
     suspend fun checkAll(ctx: Context) {
         ctx.repo.db.vehicles().getAll().forEach { check(ctx, it.id) }
     }
@@ -103,24 +116,18 @@ object ReminderChecker {
         val notified = prefs.notified.toMutableSet()
         var changed = false
         for (r in repo.db.reminders().forVehicle(vehicleId)) {
-            if (r.intervalKm <= 0) continue
-            val remaining = r.dueKm - odo
+            if (!r.byKm && !r.byDate) continue
+            val st = r.state(odo)
             val level = when {
-                remaining <= 0 -> "due"
-                remaining <= r.warnBeforeKm -> "warn"
+                st.overdue -> "due"
+                st.warn -> "warn"
                 else -> continue
             }
-            val key = "${r.id}@${r.lastDoneKm}@${r.intervalKm}@$level"
+            val key = "${r.id}@${r.lastDoneKm}@${r.intervalKm}@${r.lastDoneDate}@${r.intervalMonths}@$level"
             if (key in notified) continue
             notified += key
             changed = true
-            val u = v.distanceUnit
-            val text = if (level == "due") {
-                ctx.getString(R.string.notif_overdue, (-remaining).dist(u), r.dueKm.dist(u))
-            } else {
-                ctx.getString(R.string.notif_due_in, remaining.dist(u), r.dueKm.dist(u))
-            }
-            Notifications.show(ctx, (r.id + level).hashCode(), "${v.name}: ${r.title}", text)
+            Notifications.show(ctx, (r.id + level).hashCode(), "${v.name}: ${r.title}", describe(r, st, v.distanceUnit))
         }
         if (changed) prefs.notified = notified
     }

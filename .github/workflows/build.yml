@@ -48,7 +48,7 @@ jobs:
         run: openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in app/release.jks.enc -out app/release.jks -pass env:SIGNING_PASSWORD
 
       - name: Build
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: gradle testReleaseUnitTest assembleRelease --no-daemon --stacktrace
 
       - name: Schlüssel entfernen
         if: always()

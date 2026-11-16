@@ -190,6 +190,8 @@ object PhotoStore {
 
 /** Platzhalter für die Standardvorlage „Ölwechsel“, damit sie in jeder Sprache dieselbe Erinnerung bleibt. */
 const val OIL_TEMPLATE = "@oil"
+
+data class ReminderTemplate(val title: String, val km: Int, val months: Int = 0)
 fun templateTitle(t: String): String = if (t == OIL_TEMPLATE) str(R.string.default_oil_change) else t
 /** Schlüssel für die feste Erinnerungs-ID (Ölwechsel behält die bisherige ID). */
 fun templateIdKey(t: String): String = (if (t == OIL_TEMPLATE) "ölwechsel" else t).lowercase().filter { it.isLetterOrDigit() }
@@ -220,29 +222,35 @@ class Prefs(ctx: Context) {
     var uploadedPhotos: Set<String>
         get() = sp.getStringSet("uploadedPhotos", emptySet())?.toSet() ?: emptySet()
         set(v) = sp.edit().putStringSet("uploadedPhotos", v).apply()
+    var uploadedAttachments: Set<String>
+        get() = sp.getStringSet("uploadedAttachments", emptySet())?.toSet() ?: emptySet()
+        set(v) = sp.edit().putStringSet("uploadedAttachments", v).apply()
     var notified: Set<String>
         get() = sp.getStringSet("notified", emptySet())?.toSet() ?: emptySet()
         set(v) = sp.edit().putStringSet("notified", v).apply()
 
-    /** Vorlagen für automatisch angelegte Erinnerungen (Intervall in km). */
-    var reminderTemplates: List<Pair<String, Int>>
+    /** Vorlagen für automatisch angelegte Erinnerungen (Intervall in km und/oder Monaten). */
+    var reminderTemplates: List<ReminderTemplate>
         get() = (sp.getString("reminderTemplates", null) ?: "$OIL_TEMPLATE|10000")
             .split("\n").mapNotNull { line ->
                 val p = line.split("|")
-                val km = p.getOrNull(1)?.toIntOrNull()
-                if (p[0].isBlank() || km == null || km <= 0) null else p[0] to km
+                val km = p.getOrNull(1)?.toIntOrNull() ?: 0
+                val months = p.getOrNull(2)?.toIntOrNull() ?: 0
+                if (p[0].isBlank() || (km <= 0 && months <= 0)) null else ReminderTemplate(p[0], km, months)
             }
         set(v) = sp.edit()
-            .putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" })
+            .putString("reminderTemplates", encodeTemplates(v))
             .putLong("templatesUpdatedAt", now())
             .apply()
+
+    private fun encodeTemplates(v: List<ReminderTemplate>) = v.joinToString("\n") { "${it.title}|${it.km}|${it.months}" }
 
     val templatesUpdatedAt: Long get() = sp.getLong("templatesUpdatedAt", 0L)
 
     /** Übernahme vom Sync, ohne den Zeitstempel neu zu setzen. */
-    fun setTemplatesFromSync(v: List<Pair<String, Int>>, ts: Long) {
+    fun setTemplatesFromSync(v: List<ReminderTemplate>, ts: Long) {
         sp.edit()
-            .putString("reminderTemplates", v.joinToString("\n") { "${it.first}|${it.second}" })
+            .putString("reminderTemplates", encodeTemplates(v))
             .putLong("templatesUpdatedAt", ts)
             .apply()
     }
@@ -263,6 +271,24 @@ class Prefs(ctx: Context) {
         set(v) = sp.edit().putBoolean("useNetworkLocation", v).apply()
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
+
+    /** Update-Hinweis (nur bei direkt installierter APK): fragt GitHub nach der neuesten Version. */
+    var updateCheck: Boolean
+        get() = sp.getBoolean("updateCheck", true)
+        set(v) = sp.edit().putBoolean("updateCheck", v).apply()
+    var lastUpdateCheck: Long
+        get() = sp.getLong("lastUpdateCheck", 0L)
+        set(v) = sp.edit().putLong("lastUpdateCheck", v).apply()
+    var latestRelease: UpdateInfo?
+        get() = sp.getString("latestRelease", null)?.split("|")?.takeIf { it.size >= 2 }
+            ?.let { UpdateInfo(it[0], it[1], it.getOrNull(2)?.ifBlank { null }) }
+        set(v) = sp.edit().putString("latestRelease", v?.let { "${it.version}|${it.pageUrl}|${it.apkUrl ?: ""}" }).apply()
+    var notifiedUpdate: String
+        get() = sp.getString("notifiedUpdate", "") ?: ""
+        set(v) = sp.edit().putString("notifiedUpdate", v).apply()
+    var dismissedUpdate: String
+        get() = sp.getString("dismissedUpdate", "") ?: ""
+        set(v) = sp.edit().putString("dismissedUpdate", v).apply()
 }
 
 

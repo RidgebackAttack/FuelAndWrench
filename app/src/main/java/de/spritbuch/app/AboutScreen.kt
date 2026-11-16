@@ -48,6 +48,8 @@ private val libraries = listOf(
     "OkHttp" to "© Square, Inc.",
     "Coil" to "© Coil Contributors",
     "osmdroid" to "© osmdroid contributors",
+    "Tesseract OCR, Tesseract4Android, tessdata_fast (deu, dan)" to "© Google, Tesseract contributors, Adaptech s.r.o.",
+    "Leptonica, libjpeg, libpng (in Tesseract4Android)" to "© Dan Bloomberg et al. (BSD-2-Clause), Independent JPEG Group (IJG license), libpng contributors (libpng license)",
 )
 
 @Composable

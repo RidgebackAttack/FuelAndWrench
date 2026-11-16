@@ -17,6 +17,18 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
     fun reminders(vehicleId: String) = db.reminders().observeForVehicle(vehicleId)
     fun services(vehicleId: String) = db.services().observeForVehicle(vehicleId)
     fun tireSets(vehicleId: String) = db.tireSets().observeForVehicle(vehicleId)
+    fun expenses(vehicleId: String) = db.expenses().observeForVehicle(vehicleId)
+    suspend fun getExpense(id: String) = db.expenses().get(id)
+
+    suspend fun saveExpense(e: Expense) {
+        db.expenses().upsert(e.copy(updatedAt = now()))
+        changed()
+    }
+
+    suspend fun deleteExpense(id: String) {
+        db.expenses().get(id)?.let { db.expenses().upsert(it.copy(deleted = true, updatedAt = now())) }
+        changed()
+    }
     suspend fun getTireSet(id: String) = db.tireSets().get(id)
 
     suspend fun saveTireSet(t: TireSet) {
@@ -42,8 +54,16 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         db.withTransaction {
             db.services().upsert(s.copy(updatedAt = t))
             db.reminders().forVehicle(s.vehicleId)
-                .filter { it.title.equals(s.title.trim(), ignoreCase = true) && s.odometer > it.lastDoneKm }
-                .forEach { db.reminders().upsert(it.copy(lastDoneKm = s.odometer, updatedAt = t)) }
+                .filter { it.title.equals(s.title.trim(), ignoreCase = true) && (s.odometer > it.lastDoneKm || s.timestamp > it.lastDoneDate) }
+                .forEach {
+                    db.reminders().upsert(
+                        it.copy(
+                            lastDoneKm = maxOf(it.lastDoneKm, s.odometer),
+                            lastDoneDate = maxOf(it.lastDoneDate, s.timestamp),
+                            updatedAt = t,
+                        )
+                    )
+                }
         }
         ReminderChecker.check(ctx, s.vehicleId)
         changed()
@@ -71,9 +91,12 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
                 added++
             }
             for (r in db.reminders().forVehicle(vehicleId)) {
-                val km = imported.filter { (it.title + " " + it.note).contains(r.title, ignoreCase = true) }
-                    .maxOfOrNull { it.odometer } ?: continue
-                if (km > r.lastDoneKm) db.reminders().upsert(r.copy(lastDoneKm = km, updatedAt = t))
+                val match = imported.filter { (it.title + " " + it.note).contains(r.title, ignoreCase = true) }
+                val km = match.maxOfOrNull { it.odometer } ?: continue
+                val date = match.maxOf { it.timestamp }
+                if (km > r.lastDoneKm || date > r.lastDoneDate) {
+                    db.reminders().upsert(r.copy(lastDoneKm = maxOf(km, r.lastDoneKm), lastDoneDate = maxOf(date, r.lastDoneDate), updatedAt = t))
+                }
             }
         }
         if (added > 0) {
@@ -127,7 +150,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
     /** Erinnerung als erledigt markieren und dabei einen Service-Eintrag anlegen. */
     suspend fun completeReminder(r: Reminder, odometer: Int) {
         saveService(ServiceEntry(vehicleId = r.vehicleId, odometer = odometer, title = r.title, category = "Wartung"))
-        db.reminders().get(r.id)?.let { db.reminders().upsert(it.copy(lastDoneKm = odometer, updatedAt = now())) }
+        db.reminders().get(r.id)?.let { db.reminders().upsert(it.copy(lastDoneKm = odometer, lastDoneDate = now(), updatedAt = now())) }
         changed()
     }
 
@@ -214,7 +237,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         if (odo <= 0) return
         val existing = db.reminders().forVehicleRaw(vehicleId)
         var created = false
-        for ((tpl, km) in Prefs(ctx).reminderTemplates) {
+        for ((tpl, km, months) in Prefs(ctx).reminderTemplates) {
             val title = templateTitle(tpl)
             val id = "$vehicleId-auto-" + templateIdKey(tpl)
             if (existing.any { it.id == id || it.title.equals(title, ignoreCase = true) }) continue
@@ -222,6 +245,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
             db.reminders().upsert(
                 Reminder(
                     id = id, vehicleId = vehicleId, title = title, intervalKm = interval, lastDoneKm = odo,
+                    intervalMonths = months, lastDoneDate = now(),
                     warnBeforeKm = (interval * 0.05).roundToInt().coerceAtLeast(100), updatedAt = now(),
                 )
             )

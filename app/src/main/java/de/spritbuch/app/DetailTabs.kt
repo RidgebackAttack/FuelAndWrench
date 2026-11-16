@@ -24,6 +24,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileUpload
@@ -43,7 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -136,7 +138,7 @@ private fun StatLine(label: String, value: String) {
  * Durchschnittslinie, Punkte grün (unter Ø), gelb (um Ø) oder rot (deutlich über Ø).
  */
 @Composable
-fun ConsumptionChart(values: List<Double>, format: (Double) -> String) {
+fun ConsumptionChart(values: List<Double>, title: String? = null, format: (Double) -> String) {
     if (values.size < 2) return
     val line = MaterialTheme.colorScheme.primary
     val avgColor = MaterialTheme.colorScheme.outline
@@ -151,7 +153,7 @@ fun ConsumptionChart(values: List<Double>, format: (Double) -> String) {
     }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(str(R.string.chart_title, values.size), style = MaterialTheme.typography.titleSmall)
+            Text(title ?: str(R.string.chart_title, values.size), style = MaterialTheme.typography.titleSmall)
             Canvas(Modifier.fillMaxWidth().height(140.dp)) {
                 val min = values.min()
                 val max = values.max()
@@ -219,7 +221,8 @@ fun VehicleDetailContent(
 ) {
     val repo = LocalContext.current.repo
     val scope = rememberCoroutineScope()
-    val tabs = listOf(str(R.string.tab_overview), str(R.string.tab_refuels), str(R.string.tab_service))
+    val tabs = listOf(str(R.string.tab_overview), str(R.string.tab_refuels), str(R.string.tab_service), str(R.string.tab_costs))
+    val expenses by repo.expenses(vehicleId).collectAsStateWithLifecycle(emptyList())
     val pager = rememberPagerState { tabs.size }
     val importServices = rememberServiceImporter(vehicleId, vehicle, snackbar)
     val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
@@ -239,6 +242,9 @@ fun VehicleDetailContent(
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     when (pager.currentPage) {
+                        0 -> IconButton(onClick = { nav.navigate("stats/$vehicleId") }) {
+                            Icon(Icons.Default.BarChart, contentDescription = str(R.string.statistics))
+                        }
                         1 -> {
                             IconButton(onClick = { nav.navigate("map/$vehicleId") }) {
                                 Icon(Icons.Default.Map, contentDescription = str(R.string.map))
@@ -264,6 +270,12 @@ fun VehicleDetailContent(
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
                     text = { Text(str(R.string.tab_service)) },
                 )
+            } else if (pager.currentPage == 3) {
+                ExtendedFloatingActionButton(
+                    onClick = { nav.navigate("expenseEdit/$vehicleId/new") },
+                    icon = { Icon(Icons.Default.Payments, contentDescription = null) },
+                    text = { Text(str(R.string.expense)) },
+                )
             } else {
                 ExtendedFloatingActionButton(
                     onClick = { nav.navigate("refuelEdit/$vehicleId/new") },
@@ -275,13 +287,13 @@ fun VehicleDetailContent(
     ) { pad ->
         if (v == null || v.deleted) return@Scaffold
         Column(Modifier.padding(pad).fillMaxSize()) {
-            TabRow(selectedTabIndex = pager.currentPage) {
+            ScrollableTabRow(selectedTabIndex = pager.currentPage, edgePadding = 8.dp) {
                 tabs.forEachIndexed { i, t ->
                     Tab(
                         selected = pager.currentPage == i,
                         onClick = { scope.launch { pager.animateScrollToPage(i) } },
                         text = {
-                            val count = when (i) { 1 -> refuels.size; 2 -> services.size; else -> 0 }
+                            val count = when (i) { 1 -> refuels.size; 2 -> services.size; 3 -> expenses.size; else -> 0 }
                             Text(if (count > 0) "$t ($count)" else t, maxLines = 1)
                         },
                     )
@@ -295,7 +307,7 @@ fun VehicleDetailContent(
                 ) {
                     when (page) {
                         0 -> overviewItems(
-                            nav, v, refuels, reminders, services, stats, currentOdo, fuel, amt, du, cur,
+                            nav, v, refuels, reminders, services, expenses, stats, currentOdo, fuel, amt, du, cur,
                             onEditOdometer,
                             onDone = { r ->
                                 scope.launch {
@@ -310,6 +322,7 @@ fun VehicleDetailContent(
                             tireSetItems(nav, v, tireSets, services)
                             serviceItems(nav, v, services, lineColor, dotColor)
                         }
+                        3 -> expenseItems(nav, v, expenses)
                     }
                 }
             }
@@ -323,6 +336,7 @@ private fun LazyListScope.overviewItems(
     refuels: List<Refuel>,
     reminders: List<Reminder>,
     services: List<ServiceEntry>,
+    expenses: List<Expense>,
     stats: Stats,
     currentOdo: Int,
     fuel: String,
@@ -354,7 +368,8 @@ private fun LazyListScope.overviewItems(
         }
     }
     item(key = "kpi") {
-        KpiSection(v, stats, services.sumOf { it.cost }, currentOdo, onEditOdometer) {
+        val otherCost = services.sumOf { it.cost } + expenses.sumOf { it.amount }
+        KpiSection(v, stats, otherCost, currentOdo, onEditOdometer) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatLine(str(R.string.stat_avg), Units.consumption(v, fuel, stats.avg))
                 StatLine(str(R.string.stat_last), Units.consumption(v, fuel, stats.last))
@@ -367,6 +382,10 @@ private fun LazyListScope.overviewItems(
                 StatLine(str(R.string.stat_cost_per100, du), stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
                 StatLine(str(R.string.stat_fuel_cost), "${stats.totalCost.fmt()} $cur")
                 StatLine(str(R.string.stat_service_cost), "${services.sumOf { it.cost }.fmt()} $cur")
+                if (expenses.isNotEmpty()) StatLine(str(R.string.stat_other_cost), "${expenses.sumOf { it.amount }.fmt()} $cur")
+                if (stats.distance > 0) {
+                    StatLine(str(R.string.stat_total_per100, du), "${((stats.totalCost + otherCost) / stats.distance * 100).fmt()} $cur")
+                }
                 StatLine(str(R.string.stat_total_amount), "${stats.totalAmount.fmt(1)} $amt")
                 StatLine(str(R.string.stat_distance), stats.distance.dist(du))
                 StatLine(str(R.string.odometer), currentOdo.dist(du))
@@ -388,11 +407,12 @@ private fun LazyListScope.overviewItems(
     if (reminders.isEmpty()) item {
         Text(str(R.string.no_reminders), style = MaterialTheme.typography.bodySmall)
     }
-    items(reminders.sortedBy { it.dueKm - currentOdo }, key = { "rem-" + it.id }) { r ->
-        val remaining = r.dueKm - currentOdo
-        val due = remaining <= 0
-        val warn = remaining <= r.warnBeforeKm
-        val progress = if (r.intervalKm > 0) ((currentOdo - r.lastDoneKm).toFloat() / r.intervalKm).coerceIn(0f, 1f) else 0f
+    items(reminders.sortedBy { it.state(currentOdo).urgency }, key = { "rem-" + it.id }) { r ->
+        val st = r.state(currentOdo)
+        val warn = st.overdue || st.warn
+        val kmProgress = if (r.byKm) (currentOdo - r.lastDoneKm).toFloat() / r.intervalKm else 0f
+        val dateProgress = r.dueDate?.let { d -> (now() - r.lastDoneDate).toFloat() / (d - r.lastDoneDate).coerceAtLeast(1) } ?: 0f
+        val progress = maxOf(kmProgress, dateProgress).coerceIn(0f, 1f)
         Card(
             onClick = { nav.navigate("reminderEdit/${v.id}/${r.id}") },
             modifier = Modifier.fillMaxWidth(),
@@ -403,11 +423,7 @@ private fun LazyListScope.overviewItems(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(r.title, style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            if (due) str(R.string.rem_overdue, (-remaining).dist(du), r.dueKm.dist(du))
-                            else str(R.string.rem_remaining, remaining.dist(du), r.dueKm.dist(du)),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
+                        Text(ReminderChecker.describe(r, st, du), style = MaterialTheme.typography.bodySmall)
                     }
                     OutlinedButton(onClick = { onDone(r) }) { Text(str(R.string.done)) }
                 }

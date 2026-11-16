@@ -93,12 +93,13 @@ data class SyncData(
     val reminders: List<Reminder> = emptyList(),
     val services: List<ServiceEntry> = emptyList(),
     val tireSets: List<TireSet> = emptyList(),
+    val expenses: List<Expense> = emptyList(),
     val reminderTemplates: List<TemplateItem> = emptyList(),
     val templatesUpdatedAt: Long = 0,
 )
 
 @Serializable
-data class TemplateItem(val title: String, val km: Int)
+data class TemplateItem(val title: String, val km: Int, val months: Int = 0)
 
 data class SyncResult(val ok: Boolean, val message: String)
 
@@ -143,6 +144,7 @@ object SyncManager {
         val dav = WebDavClient(prefs.url, prefs.user, prefs.password)
         dav.ensureDir("")
         dav.ensureDir("photos")
+        dav.ensureDir(AttachmentStore.DIR)
         val db = ctx.repo.db
 
         var previousEtag: String? = null
@@ -159,9 +161,9 @@ object SyncManager {
             // Vorlagen für Standard-Erinnerungen: die zuletzt geänderte Liste gewinnt
             val remoteTplNewer = r.templatesUpdatedAt > prefs.templatesUpdatedAt
             if (remoteTplNewer) {
-                prefs.setTemplatesFromSync(r.reminderTemplates.map { it.title to it.km }, r.templatesUpdatedAt)
+                prefs.setTemplatesFromSync(r.reminderTemplates.map { ReminderTemplate(it.title, it.km, it.months) }, r.templatesUpdatedAt)
             }
-            val tplList = prefs.reminderTemplates.map { TemplateItem(it.first, it.second) }
+            val tplList = prefs.reminderTemplates.map { TemplateItem(it.title, it.km, it.months) }
             val tplTs = prefs.templatesUpdatedAt
 
             val merged = db.withTransaction {
@@ -173,6 +175,7 @@ object SyncManager {
                     reminders = mergeInto(db.reminders().getAllRaw(), r.reminders, { it.id }, { it.updatedAt }) { db.reminders().upsert(it) },
                     services = mergeInto(db.services().getAllRaw(), r.services, { it.id }, { it.updatedAt }) { db.services().upsert(it) },
                     tireSets = mergeInto(db.tireSets().getAllRaw(), r.tireSets, { it.id }, { it.updatedAt }) { db.tireSets().upsert(it) },
+                    expenses = mergeInto(db.expenses().getAllRaw(), r.expenses, { it.id }, { it.updatedAt }) { db.expenses().upsert(it) },
                 )
             }
 
@@ -182,6 +185,7 @@ object SyncManager {
                 merged.reminders.toSet() != r.reminders.toSet() ||
                 merged.services.toSet() != r.services.toSet() ||
                 merged.tireSets.toSet() != r.tireSets.toSet() ||
+                merged.expenses.toSet() != r.expenses.toSet() ||
                 merged.templatesUpdatedAt != r.templatesUpdatedAt || merged.reminderTemplates != r.reminderTemplates
 
             if (remoteChanged) {
@@ -203,6 +207,11 @@ object SyncManager {
             }
 
             syncPhotos(ctx, dav, prefs, merged.vehicles)
+            syncAttachments(
+                ctx, dav, prefs,
+                merged.services.filter { !it.deleted }.flatMap { it.attachmentList() } +
+                    merged.expenses.filter { !it.deleted }.flatMap { it.attachmentList() },
+            )
             ReminderChecker.checkAll(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }
@@ -225,6 +234,31 @@ object SyncManager {
             }
         }
         return result.values.toList()
+    }
+
+    /** Belege: fehlende hochladen bzw. herunterladen (Dateinamen sind eindeutig, Inhalte ändern sich nie). */
+    private fun syncAttachments(ctx: Context, dav: WebDavClient, prefs: Prefs, names: List<String>) {
+        val uploaded = prefs.uploadedAttachments.toMutableSet()
+        for (name in names.distinct()) {
+            val file = AttachmentStore.file(ctx, name)
+            val remotePath = AttachmentStore.DIR + "/" + name
+            if (file.exists()) {
+                if (name in uploaded) continue
+                if (dav.head(remotePath) == 404) {
+                    val code = dav.put(remotePath, file.readBytes(), AttachmentStore.mime(name))
+                    if (code !in 200..299) continue
+                }
+                uploaded += name
+            } else {
+                val got = dav.get(remotePath)
+                val body = got.body
+                if (got.code in 200..299 && body != null) {
+                    file.writeBytes(body)
+                    uploaded += name
+                }
+            }
+        }
+        prefs.uploadedAttachments = uploaded
     }
 
     private fun syncPhotos(ctx: Context, dav: WebDavClient, prefs: Prefs, vehicles: List<Vehicle>) {

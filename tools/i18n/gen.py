@@ -12,6 +12,8 @@ def esc(v):
     v = v.replace('\\\\n', '\\n')  # \n aus der Tabelle bleibt Zeilenumbruch
     if v.startswith('@') or v.startswith('?'):
         v = '\\' + v
+    if v != v.strip():
+        v = '"' + v + '"'  # Leerzeichen am Rand erhalten
     return v
 
 for col, folder in ((1, 'values'), (2, 'values-de'), (3, 'values-da')):

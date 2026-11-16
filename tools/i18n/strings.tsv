@@ -304,7 +304,7 @@ privacy_policy	Privacy policy	Datenschutzerklärung	Privatlivspolitik
 map_data	Map data	Kartendaten	Kortdata
 map_data_text	Maps and station data: © OpenStreetMap contributors, available under the Open Database License (ODbL). Map tiles: OpenStreetMap Foundation. Station search: Overpass API. Address search: Nominatim.	Karten und Tankstellendaten: © OpenStreetMap-Mitwirkende, verfügbar unter der Open Database License (ODbL). Kartenkacheln: OpenStreetMap Foundation. Tankstellensuche: Overpass API. Adresssuche: Nominatim.	Kort og tankstationsdata: © OpenStreetMap-bidragydere, tilgængelig under Open Database License (ODbL). Kortfliser: OpenStreetMap Foundation. Søgning efter tankstationer: Overpass API. Adressesøgning: Nominatim.
 oss_licenses	Open source licenses	Open-Source-Lizenzen	Open source-licenser
-oss_intro	This app uses the following libraries, each under the Apache License, Version 2.0:	Diese App verwendet folgende Bibliotheken, jeweils unter der Apache License, Version 2.0:	Denne app bruger følgende biblioteker, alle under Apache License, Version 2.0:
+oss_intro	This app uses the following libraries, under the Apache License, Version 2.0 unless noted otherwise:	Diese App verwendet folgende Bibliotheken, soweit nicht anders angegeben unter der Apache License, Version 2.0:	Denne app bruger følgende biblioteker, under Apache License, Version 2.0, medmindre andet er angivet:
 pal_carbon	Carbon blue	Carbonblau	Carbonblå
 pal_racing	Racing red	Rennrot	Racerrød
 pal_brg	British Racing Green	British Racing Green	British Racing Green
@@ -335,3 +335,76 @@ plus_new	+ New	+ Neu	+ Ny
 add_another_set	+ Add another wheel set	+ Weiteren Radsatz anlegen	+ Opret endnu et hjulsæt
 create_tire_set	Create wheel set	Radsatz anlegen	Opret hjulsæt
 language_button	Language: %1$s	Sprache: %1$s	Sprog: %1$s
+opt_exp_insurance	Insurance	Versicherung	Forsikring
+opt_exp_tax	Vehicle tax	Kfz-Steuer	Ejerafgift
+opt_exp_parking	Parking	Parken	Parkering
+opt_exp_toll	Tolls	Maut	Bompenge
+opt_exp_wash	Car wash	Wäsche	Bilvask
+opt_exp_financing	Financing/leasing	Finanzierung/Leasing	Finansiering/leasing
+opt_exp_fees	Fees	Gebühren	Gebyrer
+rem_km_over	%1$s overdue (due at %2$s)	%1$s überfällig (fällig bei %2$s)	%1$s overskredet (forfalder ved %2$s)
+rem_km_left	%1$s left (due at %2$s)	Noch %1$s (fällig bei %2$s)	%1$s tilbage (forfalder ved %2$s)
+rem_date_over	overdue since %1$s	überfällig seit %1$s	forfalden siden %1$s
+rem_date_left	%1$d days left (%2$s)	noch %1$d Tage (%2$s)	%1$d dage tilbage (%2$s)
+n_days	%1$d days	%1$d Tagen	%1$d dage
+reminder_either_info	Due by distance, time or both – whichever comes first. Leave a field empty if not needed.	Fällig nach Strecke, Zeit oder beidem – je nachdem, was zuerst eintritt. Nicht benötigte Felder leer lassen.	Forfalder efter strækning, tid eller begge – det, der kommer først. Lad felter være tomme, hvis de ikke bruges.
+by_distance	By distance	Nach Strecke	Efter strækning
+by_time	By time	Nach Zeit	Efter tid
+months	months	Monate	måneder
+last_done_on	Last done: %1$s	Zuletzt erledigt: %1$s	Sidst udført: %1$s
+or_sep	 or 	 oder 	 eller 
+months_short	mo.	Mon.	md.
+update_channel	App updates	App-Updates	App-opdateringer
+update_available	Version %1$s is available	Version %1$s ist verfügbar	Version %1$s er tilgængelig
+update_tap	Tap to open the release page.	Antippen, um die Release-Seite zu öffnen.	Tryk for at åbne udgivelsessiden.
+update_download	Download	Herunterladen	Hent
+later	Later	Später	Senere
+update_check	Check for updates (GitHub)	Nach Updates suchen (GitHub)	Søg efter opdateringer (GitHub)
+update_check_info	Only for APKs installed directly. Asks api.github.com once a day for the newest version (sends your IP address). Installs via F-Droid or Obtainium are updated there.	Nur bei direkt installierter APK. Fragt einmal täglich api.github.com nach der neuesten Version (dabei wird deine IP-Adresse übertragen). Installationen über F-Droid oder Obtainium werden dort aktualisiert.	Kun for direkte installerede APK'er. Spørger api.github.com én gang dagligt om den nyeste version (din IP-adresse sendes). Installationer via F-Droid eller Obtainium opdateres der.
+update_check_now	Check now	Jetzt prüfen	Tjek nu
+update_none	You are using the latest version.	Du nutzt die neueste Version.	Du bruger den nyeste version.
+receipts	Receipts	Belege	Kvitteringer
+receipt_pdf	PDF document	PDF-Dokument	PDF-dokument
+receipt_photo	Photo	Foto	Foto
+take_photo	Take photo	Foto aufnehmen	Tag foto
+attach_file	Attach file	Datei anhängen	Vedhæft fil
+n_receipts	%1$d receipt(s)	%1$d Beleg(e)	%1$d kvittering(er)
+tab_costs	Costs	Kosten	Omkostninger
+statistics	Statistics	Statistik	Statistik
+expense	Cost	Kosten	Omkostning
+stat_other_cost	Total other costs	Sonstige Kosten gesamt	Øvrige omkostninger i alt
+stat_total_per100	All costs per 100 %1$s	Alle Kosten pro 100 %1$s	Alle omkostninger pr. 100 %1$s
+empty_expenses_title	No other costs yet	Noch keine sonstigen Kosten	Ingen øvrige omkostninger endnu
+empty_expenses_text	Record insurance, tax, parking, tolls and more via “Cost”.	Versicherung, Steuer, Parken, Maut und mehr über „Kosten“ erfassen.	Registrér forsikring, afgift, parkering, bompenge og mere via „Omkostning“.
+expense_new	New cost	Neue Kosten	Ny omkostning
+err_enter_amount_money	Please enter an amount	Bitte Betrag eingeben	Indtast venligst et beløb
+expense_title_hint	Description (optional, e.g. comprehensive insurance 2027)	Bezeichnung (optional, z. B. Vollkasko 2027)	Betegnelse (valgfri, f.eks. kaskoforsikring 2027)
+expense_delete_q	Delete cost entry?	Kosten-Eintrag löschen?	Slet omkostning?
+stats_title	Statistics – %1$s	Statistik – %1$s	Statistik – %1$s
+stats_months	Costs in the last 12 months	Kosten der letzten 12 Monate	Omkostninger de seneste 12 måneder
+legend_fuel	Fuel	Kraftstoff	Brændstof
+legend_other	Other	Sonstiges	Øvrigt
+stats_12m_total	Total: %1$s	Summe: %1$s	I alt: %1$s
+stats_years	Costs per year	Kosten pro Jahr	Omkostninger pr. år
+stats_price_trend	Price per %1$s	Preis pro %1$s	Pris pr. %1$s
+stats_by_tires	Consumption by tires	Verbrauch nach Reifen	Forbrug efter dæk
+stats_by_route	Consumption by route	Verbrauch nach Strecke	Forbrug efter strækning
+stats_by_style	Consumption by driving style	Verbrauch nach Fahrstil	Forbrug efter kørestil
+backup	Backup & export	Datensicherung & Export	Sikkerhedskopi & eksport
+backup_info	Saves all vehicles, refuels, services, costs, photos and receipts in one ZIP file – including CSV tables for spreadsheets. Restoring merges with the existing data; newer entries are kept.	Speichert alle Fahrzeuge, Betankungen, Services, Kosten, Fotos und Belege in einer ZIP-Datei – inklusive CSV-Tabellen für Tabellenkalkulationen. Beim Wiederherstellen wird mit den vorhandenen Daten zusammengeführt; neuere Einträge bleiben erhalten.	Gemmer alle køretøjer, tankninger, service, omkostninger, fotos og kvitteringer i én ZIP-fil – inklusive CSV-tabeller til regneark. Ved gendannelse flettes med de eksisterende data; nyere poster bevares.
+backup_create	Create backup	Backup erstellen	Opret kopi
+backup_restore	Restore	Wiederherstellen	Gendan
+backup_done	Backup saved.	Backup gespeichert.	Sikkerhedskopi gemt.
+restore_done	Backup restored.	Backup wiederhergestellt.	Sikkerhedskopi gendannet.
+backup_summary	%1$d vehicles, %2$d refuels, %3$d services, %4$d costs, %5$d files.	%1$d Fahrzeuge, %2$d Betankungen, %3$d Services, %4$d Kosten, %5$d Dateien.	%1$d køretøjer, %2$d tankninger, %3$d serviceposter, %4$d omkostninger, %5$d filer.
+backup_write_error	File could not be written	Datei konnte nicht geschrieben werden	Filen kunne ikke skrives
+backup_read_error	File could not be read	Datei konnte nicht gelesen werden	Filen kunne ikke læses
+backup_invalid	This is not a Fuel & Wrench backup	Das ist kein Fuel-&-Wrench-Backup	Dette er ikke en Fuel & Wrench-sikkerhedskopi
+scan_receipt	Scan receipt	Beleg scannen	Scan kvittering
+scan_odometer	Scan odometer	Tacho scannen	Scan kilometertæller
+scan_running	Recognizing text on the device …	Texterkennung läuft auf dem Gerät …	Tekstgenkendelse kører på enheden …
+scan_found	Recognized: %1$s – please check.	Erkannt: %1$s – bitte prüfen.	Genkendt: %1$s – kontrollér venligst.
+scan_nothing	Nothing recognized. Try again with more light and the receipt filling the picture.	Nichts erkannt. Nochmal mit mehr Licht versuchen, der Beleg sollte das Bild füllen.	Intet genkendt. Prøv igen med mere lys, og lad kvitteringen fylde billedet.
+scan_odo_found	Odometer recognized.	Kilometerstand erkannt.	Kilometerstand genkendt.
+scan_check_odo	Read from the photo – please compare with the display.	Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.	Aflæst fra fotoet – sammenlign venligst med displayet.
+ocr_failed	Text recognition failed	Texterkennung fehlgeschlagen	Tekstgenkendelse mislykkedes

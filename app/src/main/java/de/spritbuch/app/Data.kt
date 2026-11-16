@@ -60,6 +60,7 @@ object Options {
         "Michelin", "Continental", "Bridgestone", "Pirelli", "Goodyear", "Dunlop", "Metzeler",
         "Hankook", "Nokian", "Vredestein", "Falken", "Kumho", "Toyo", "Yokohama", "Uniroyal", "Firestone",
     )
+    val expenseCategories = listOf("Versicherung", "Steuer", "Parken", "Maut", "Wäsche", "Finanzierung", "Gebühren", "Sonstiges")
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
     val serviceSuggestions get() = strList(R.string.list_service_suggestions)
     val reminderSuggestions get() = strList(R.string.list_reminder_suggestions)
@@ -137,8 +138,38 @@ data class Reminder(
     val warnBeforeKm: Int = 500,
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
+    /** Zeitintervall in Monaten (0 = nur nach Kilometern). Fällig ist, was zuerst eintritt. */
+    @ColumnInfo(defaultValue = "0") val intervalMonths: Int = 0,
+    /** Datum der letzten Erledigung (0 = unbekannt). */
+    @ColumnInfo(defaultValue = "0") val lastDoneDate: Long = 0,
 ) {
     val dueKm: Int get() = lastDoneKm + intervalKm
+    val byKm: Boolean get() = intervalKm > 0
+    val byDate: Boolean get() = intervalMonths > 0 && lastDoneDate > 0
+
+    /** Fälligkeitsdatum (Mitternacht des Tages) oder null. */
+    val dueDate: Long?
+        get() = if (!byDate) null else java.util.Calendar.getInstance().apply {
+            timeInMillis = lastDoneDate
+            add(java.util.Calendar.MONTH, intervalMonths)
+        }.timeInMillis
+
+    /** Zustand bezogen auf Kilometerstand und Datum. */
+    fun state(odometer: Int, at: Long = now()): ReminderState {
+        val remKm = if (byKm) dueKm - odometer else null
+        val due = dueDate
+        val remDays = due?.let { Math.floorDiv(it - at, 86_400_000L).toInt() }
+        val overdue = (remKm != null && remKm <= 0) || (remDays != null && remDays < 0)
+        val warn = !overdue && ((remKm != null && remKm <= warnBeforeKm) || (remDays != null && remDays <= WARN_DAYS))
+        return ReminderState(remKm, remDays, overdue, warn)
+    }
+
+    companion object { const val WARN_DAYS = 30 }
+}
+
+data class ReminderState(val remainingKm: Int?, val remainingDays: Int?, val overdue: Boolean, val warn: Boolean) {
+    /** Sortierwert: je kleiner, desto dringender (km und Tage grob vergleichbar gemacht). */
+    val urgency: Double get() = minOf(remainingKm?.toDouble() ?: Double.MAX_VALUE, remainingDays?.let { it * 50.0 } ?: Double.MAX_VALUE)
 }
 
 @Serializable
@@ -165,7 +196,11 @@ data class ServiceEntry(
     @ColumnInfo(defaultValue = "") val removedTireSetId: String = "",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
+    /** Belege: Dateinamen im Ordner „attachments“, mit „|“ getrennt. */
+    @ColumnInfo(defaultValue = "") val attachments: String = "",
 ) {
+    fun attachmentList(): List<String> = attachments.split("|").filter { it.isNotBlank() }
+
     fun tireSummary(): String = listOf(
         lbl(tireSeason),
         listOf(tireBrand, tireModel).filter { it.isNotBlank() }.joinToString(" "),
@@ -208,6 +243,42 @@ data class TireSet(
         sizeRear.isBlank() || sizeRear == sizeFront -> sizeFront
         else -> str(R.string.sizes_front_rear, sizeFront, sizeRear)
     }
+}
+
+/** Sonstige Kosten (Versicherung, Steuer, Parken …). */
+@Serializable
+@Entity(tableName = "expenses", indices = [Index("vehicleId")])
+data class Expense(
+    @PrimaryKey val id: String = newId(),
+    val vehicleId: String = "",
+    val timestamp: Long = now(),
+    val category: String = "Sonstiges",
+    val title: String = "",
+    val amount: Double = 0.0,
+    val note: String = "",
+    val attachments: String = "",
+    val updatedAt: Long = now(),
+    val deleted: Boolean = false,
+) {
+    fun attachmentList(): List<String> = attachments.split("|").filter { it.isNotBlank() }
+}
+
+@Dao
+interface ExpenseDao {
+    @Query("SELECT * FROM expenses WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY timestamp DESC")
+    fun observeForVehicle(vehicleId: String): Flow<List<Expense>>
+
+    @Query("SELECT * FROM expenses WHERE id = :id")
+    suspend fun get(id: String): Expense?
+
+    @Query("SELECT * FROM expenses WHERE deleted = 0 AND vehicleId = :vehicleId")
+    suspend fun forVehicle(vehicleId: String): List<Expense>
+
+    @Query("SELECT * FROM expenses")
+    suspend fun getAllRaw(): List<Expense>
+
+    @Upsert
+    suspend fun upsert(item: Expense)
 }
 
 @Dao
@@ -327,13 +398,14 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class], version = 7, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 8, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
     abstract fun reminders(): ReminderDao
     abstract fun services(): ServiceDao
     abstract fun tireSets(): TireSetDao
+    abstract fun expenses(): ExpenseDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -374,6 +446,19 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE reminders ADD COLUMN intervalMonths INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE reminders ADD COLUMN lastDoneDate INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE services ADD COLUMN attachments TEXT NOT NULL DEFAULT ''")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `expenses` (`id` TEXT NOT NULL, `vehicleId` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, " +
+                        "`category` TEXT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `note` TEXT NOT NULL, " +
+                        "`attachments` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_expenses_vehicleId` ON `expenses` (`vehicleId`)")
+            }
+        }
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE refuels ADD COLUMN obcConsumption REAL")
@@ -395,7 +480,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .build()
     }
 }

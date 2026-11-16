@@ -1,4 +1,4 @@
-Stand: 15. November 2026
+Stand: 16. November 2026
 
 Fuel & Wrench ist eine App zum Erfassen von Betankungen, Service-Arbeiten und Reifen. Sie kommt ohne Werbung, Tracking, Analyse-Dienste, Absturzberichte und ohne Google-Dienste aus. Der Entwickler betreibt keinen eigenen Server und erhält keine Daten.
 
@@ -8,7 +8,7 @@ Welche Daten verarbeitet die App?
 • Standort (nur wenn du „Aktuelle Position“ antippst und die Berechtigung erteilt hast), um die Tankstelle zu erkennen und bei der Betankung zu speichern.
 • Zugangsdaten für die Synchronisation (Server-Adresse, Benutzername, App-Passwort), sofern du die Synchronisation einrichtest.
 
-Alle Daten werden lokal auf deinem Gerät gespeichert. Die Android-Datensicherung ist für die App deaktiviert.
+Alle Daten werden lokal auf deinem Gerät gespeichert. Die Texterkennung von Belegen und Tachofotos läuft vollständig auf dem Gerät; Fotos werden dafür nicht übertragen. Belege (Fotos/PDFs) werden wie die übrigen Daten nur mit deinem eigenen Sync-Server abgeglichen und landen in Backups, die du selbst erstellst. Die Android-Datensicherung ist für die App deaktiviert.
 
 Wohin werden Daten übertragen?
 
@@ -17,6 +17,7 @@ Wohin werden Daten übertragen?
 • nominatim.openstreetmap.org (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ / „Adresse“ – Adresssuche (abschaltbar: ja – gleicher Schalter)
 • Android-Geocoder (auf Geräten mit Google-Diensten: Google): Koordinaten – Adressermittlung (abschaltbar: ja – standardmäßig aus)
 • Netzwerk-Ortung des Systems (auf Geräten mit Google-Diensten: Google): WLAN-/Mobilfunkdaten – Ortung (abschaltbar: ja – standardmäßig aus, dann nur GPS)
+• api.github.com (GitHub): IP-Adresse – einmal täglich Abfrage der neuesten Version, nur bei direkt installierter APK (abschaltbar: ja – Einstellungen → Datenschutz)
 • tile.openstreetmap.org: angezeigter Kartenausschnitt, IP-Adresse – beim Öffnen der Karte (abschaltbar: nur durch Nicht-Nutzung der Karte)
 
 Für die genannten Dienste gelten deren eigene Datenschutzbestimmungen (OpenStreetMap Foundation, FOSSGIS e. V. bzw. Google).
@@ -24,6 +25,7 @@ Für die genannten Dienste gelten deren eigene Datenschutzbestimmungen (OpenStre
 Berechtigungen
 
 • Standort (genau): nur für „Aktuelle Position“ beim Tanken.
+• Kamera: wird nicht als Berechtigung angefordert; Fotos nimmt die Kamera-App des Systems auf, wenn du „Foto aufnehmen“ oder „scannen“ wählst.
 • Internet / Netzwerkstatus: Synchronisation, Tankstellensuche, Karte.
 • Benachrichtigungen: Wartungserinnerungen.
 
