@@ -10,6 +10,8 @@ plugins {
 android {
     namespace = "de.spritbuch.app"
     compileSdk = 35
+    // Gleiche NDK-Version wie Tesseract4Android: nötig, damit die nativen Bibliotheken ohne Debug-Infos verpackt werden
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         // Texterkennung bringt native Bibliotheken mit; nur gängige Handy-Architekturen beilegen
@@ -21,8 +23,8 @@ android {
         targetSdk = 35
         // Feste Version (F-Droid liest sie von hier). Für jedes Release hochzählen
         // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
-        versionCode = 30
-        versionName = "1.3.0"
+        versionCode = 31
+        versionName = "1.3.1"
     }
 
     // Release-Signatur: Schlüssel wird im CI aus app/release.jks.enc entschlüsselt (Passwort = Secret SIGNING_PASSWORD).
