@@ -1,0 +1,9 @@
+Meget mindre APK (1.3.0 indeholdt ved en fejl debug-info).
+- Dansk og engelsk oversættelse
+- Scan kvittering og kilometertæller med kameraet (offline)
+- Påmindelser efter tid (f.eks. syn hver 24. måned)
+- Øvrige omkostninger (forsikring, afgift, parkering, bompenge …)
+- Kvitteringer som foto/PDF på service og omkostninger
+- Statistik: omkostninger pr. måned/år, brændstofpris, forbrug efter dæk/strækning/kørestil
+- Sikkerhedskopi som ZIP med CSV, gendannelse
+Opdatér venligst alle enheder.

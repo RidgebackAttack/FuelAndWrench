@@ -1,0 +1,9 @@
+APK deutlich kleiner (1.3.0 enthielt versehentlich Debug-Infos).
+- Englisch und Dänisch; „Betankung“ als Begriff
+- Beleg und Tacho per Kamera scannen (offline)
+- Erinnerungen nach Zeit (z. B. HU alle 24 Monate)
+- Sonstige Kosten (Versicherung, Steuer, Parken, Maut …)
+- Belege als Foto/PDF an Service und Kosten
+- Statistik: Kosten pro Monat/Jahr, Literpreis, Verbrauch nach Reifen/Strecke/Fahrstil
+- Backup als ZIP mit CSV, Wiederherstellen
+Bitte alle Geräte aktualisieren.
