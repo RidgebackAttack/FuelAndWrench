@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,9 +61,11 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
     val expenses by repo.expenses(vehicleId).collectAsStateWithLifecycle(emptyList())
     val v = vehicle
     val stats = remember(refuels) { computeStats(refuels) }
-    val fuelColor = MaterialTheme.colorScheme.primary
-    val serviceColor = MaterialTheme.colorScheme.tertiary
-    val otherColor = MaterialTheme.colorScheme.secondary
+    // Feste, klar unterscheidbare Farben (die Theme-Farben liegen je nach Farbschema zu dicht beieinander)
+    val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val fuelColor = if (dark) Color(0xFF60A5FA) else Color(0xFF2563EB)
+    val serviceColor = if (dark) Color(0xFFFBBF24) else Color(0xFFD97706)
+    val otherColor = if (dark) Color(0xFF34D399) else Color(0xFF059669)
 
     Scaffold(topBar = { TopAppBar(title = { Text(str(R.string.stats_title, v?.name ?: "")) }, navigationIcon = { BackButton(nav) }) }) { pad ->
         if (v == null) return@Scaffold
@@ -134,7 +137,9 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                                     if (value <= 0) continue
                                     val h = (value / max * size.height).toFloat()
                                     top -= h
-                                    drawRect(color, Offset(x, top), Size(bw, h))
+                                    // kleiner Abstand zwischen den Segmenten
+                                    val gap = if (h > 4f) 1.5f else 0f
+                                    drawRect(color, Offset(x, top + gap), Size(bw, h - gap))
                                 }
                             }
                         }
@@ -144,9 +149,9 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                             }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Legend(fuelColor, str(R.string.legend_fuel))
-                            Legend(serviceColor, str(R.string.tab_service))
-                            Legend(otherColor, str(R.string.legend_other))
+                            Legend(fuelColor, str(R.string.legend_fuel) + " " + months.sumOf { it.fuel }.fmt(0))
+                            Legend(serviceColor, str(R.string.tab_service) + " " + months.sumOf { it.service }.fmt(0))
+                            Legend(otherColor, str(R.string.legend_other) + " " + months.sumOf { it.other }.fmt(0))
                         }
                         Text(
                             str(R.string.stats_12m_total, "${months.sumOf { it.total }.fmt(0)} $cur"),
