@@ -1,0 +1,2 @@
+- Statistics: cost bars in clearly distinct colors, totals in the legend
+- Archived vehicles shown small and greyed out when collapsed

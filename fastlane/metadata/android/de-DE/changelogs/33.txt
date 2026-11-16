@@ -1,0 +1,2 @@
+- Statistik: Kostenbalken in klar unterscheidbaren Farben, Summen in der Legende
+- Archivierte Fahrzeuge zugeklappt klein und ausgegraut sichtbar

@@ -1,0 +1,2 @@
+- Statistik: omkostningssøjler i tydeligt forskellige farver, summer i forklaringen
+- Arkiverede køretøjer vises små og nedtonede, når de er foldet sammen
