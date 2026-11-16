@@ -342,7 +342,7 @@
     <string name="opt_exp_tax">Ejerafgift</string>
     <string name="opt_exp_parking">Parkering</string>
     <string name="opt_exp_toll">Bompenge</string>
-    <string name="opt_exp_wash">Bilvask</string>
+    <string name="opt_exp_wash">Bilvask &amp; pleje</string>
     <string name="opt_exp_financing">Finansiering/leasing</string>
     <string name="opt_exp_fees">Gebyrer</string>
     <string name="rem_km_over">%1$s overskredet (forfalder ved %2$s)</string>
@@ -378,7 +378,7 @@
     <string name="stat_other_cost">Øvrige omkostninger i alt</string>
     <string name="stat_total_per100">Alle omkostninger pr. 100 %1$s</string>
     <string name="empty_expenses_title">Ingen øvrige omkostninger endnu</string>
-    <string name="empty_expenses_text">Registrér forsikring, afgift, parkering, bompenge og mere via „Omkostning“.</string>
+    <string name="empty_expenses_text">Registrér forsikring, afgift, parkering, bompenge og mere via „Omkostning“, eller importér en omkostningseksport fra Spritmonitor øverst.</string>
     <string name="expense_new">Ny omkostning</string>
     <string name="err_enter_amount_money">Indtast venligst et beløb</string>
     <string name="expense_title_hint">Betegnelse (valgfri, f.eks. kaskoforsikring 2027)</string>
@@ -411,4 +411,13 @@
     <string name="scan_odo_found">Kilometerstand genkendt.</string>
     <string name="scan_check_odo">Aflæst fra fotoet – sammenlign venligst med displayet.</string>
     <string name="ocr_failed">Tekstgenkendelse mislykkedes</string>
+    <string name="import_empty">Filen er tom</string>
+    <string name="import_no_entries">Ingen poster fundet</string>
+    <string name="import_need_date_title">Kolonnerne „Dato“ og „Titel“ er påkrævet</string>
+    <string name="import_need_date_amount">Kolonnerne „Dato“ og „Beløb“ er påkrævet</string>
+    <string name="import_repeat_note">gentages: %1$s</string>
+    <string name="cost_import">Import af omkostninger</string>
+    <string name="cost_import_found">%1$d omkostninger og %2$d serviceposter fundet</string>
+    <string name="cost_import_info">Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.</string>
+    <string name="cd_cost_import">Importér omkostninger</string>
 </resources>

@@ -430,10 +430,10 @@ object ServiceImport {
     data class Result(val entries: List<ServiceEntry>, val skipped: Int, val error: String?)
 
     fun parse(text: String, vehicle: Vehicle): Result {
-        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() } ?: return Result(emptyList(), 0, "Datei ist leer")
+        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() } ?: return Result(emptyList(), 0, str(R.string.import_empty))
         val sep = listOf(';', '\t', ',').maxBy { c -> firstLine.count { it == c } }
         val rows = parseCsv(text, sep)
-        if (rows.size < 2) return Result(emptyList(), 0, "Keine Einträge gefunden")
+        if (rows.size < 2) return Result(emptyList(), 0, str(R.string.import_no_entries))
         val header = rows[0].map { it.trim().lowercase() }
         fun col(vararg c: String) = header.indexOfFirst { h -> c.any { h == it || h.contains(it) } }
         val cDate = col("datum", "date")
@@ -443,7 +443,7 @@ object ServiceImport {
         val cCost = col("kosten", "betrag", "cost", "preis")
         val cShop = col("werkstatt", "workshop", "garage")
         val cNote = col("notiz", "bemerkung", "note", "beschreibung")
-        if (cDate < 0 || cTitle < 0) return Result(emptyList(), rows.size - 1, "Spalten „Datum“ und „Titel“ werden benötigt")
+        if (cDate < 0 || cTitle < 0) return Result(emptyList(), rows.size - 1, str(R.string.import_need_date_title))
 
         var skipped = 0
         val list = rows.drop(1).mapNotNull { f ->
@@ -464,5 +464,86 @@ object ServiceImport {
             )
         }
         return Result(list, skipped, null)
+    }
+}
+
+/**
+ * Kosten-Import (CSV), z. B. Spritmonitor-Export „…_costs.csv“
+ * (Datum;Km-Stand;Kostenart;Gesamtkosten;Währung;Bemerkung;Wiederholung) oder eine eigene Tabelle.
+ * Werkstattnahe Kostenarten (Wartung, Reparatur, Reifen, TÜV …) werden zu Service-Einträgen,
+ * der Rest zu sonstigen Kosten.
+ */
+object CostImport {
+    data class Result(val expenses: List<Expense>, val services: List<ServiceEntry>, val skipped: Int, val error: String?) {
+        val total: Double get() = expenses.sumOf { it.amount } + services.sumOf { it.cost }
+    }
+
+    /** Ordnet eine Kostenart einer Ziel-Kategorie zu: (true = Service, Kategorie-Schlüssel). */
+    fun classify(type: String): Pair<Boolean, String> {
+        val t = type.lowercase()
+        fun has(vararg k: String) = k.any { t.contains(it) }
+        return when {
+            has("tüv", "tuev", "hu/au", "hauptuntersuchung", "abgasuntersuchung", "roadworthiness") || t.trim() in setOf("hu", "au", "mot", "syn") ->
+                true to "HU/AU"
+            has("reifen", "tire", "tyre", "dæk") -> true to "Reifen"
+            has("reparatur", "repair", "reparation", "werkstatt", "garage service") -> true to "Reparatur"
+            has("wartung", "inspektion", "service", "ölwechsel", "oil", "maintenance", "vedligehold") -> true to "Wartung"
+            has("zubehör", "accessor", "tilbehør", "tuning", "umbau") -> true to "Zubehör"
+            has("versicherung", "insurance", "forsikring") -> false to "Versicherung"
+            has("steuer", "tax", "afgift") -> false to "Steuer"
+            has("park") -> false to "Parken"
+            has("maut", "vignette", "toll", "bompenge", "brücke", "fähre", "ferry", "færge") -> false to "Maut"
+            has("pflege", "wäsche", "wasch", "wash", "care", "vask", "pleje", "reinigung") -> false to "Wäsche"
+            has("finanz", "leasing", "kredit", "rate", "loan", "finans") -> false to "Finanzierung"
+            has("gebühr", "fee", "zulassung", "bußgeld", "bussgeld", "strafzettel", "fine", "gebyr", "bøde") -> false to "Gebühren"
+            else -> false to "Sonstiges"
+        }
+    }
+
+    fun parse(text: String, vehicle: Vehicle): Result {
+        val firstLine = text.lineSequence().firstOrNull { it.isNotBlank() } ?: return Result(emptyList(), emptyList(), 0, str(R.string.import_empty))
+        val sep = listOf(';', '\t', ',').maxBy { c -> firstLine.count { it == c } }
+        val rows = ServiceImport.parseCsv(text, sep)
+        if (rows.size < 2) return Result(emptyList(), emptyList(), 0, str(R.string.import_no_entries))
+        val header = rows[0].map { it.trim().trim('\uFEFF').lowercase() }
+        fun col(vararg c: String) = header.indexOfFirst { h -> c.any { h == it } }
+            .takeIf { it >= 0 } ?: header.indexOfFirst { h -> c.any { h.contains(it) } }
+        val cDate = col("datum", "date", "dato")
+        val cOdo = col("km-stand", "kilometerstand", "odometer", "km")
+        val cType = col("kostenart", "kategorie", "category", "type", "art", "kategori")
+        val cAmount = col("gesamtkosten", "betrag", "amount", "kosten", "cost", "beløb", "total")
+        val cTitle = col("bezeichnung", "titel", "title", "betegnelse")
+        val cNote = col("bemerkung", "notiz", "note", "beschreibung", "description")
+        val cRepeat = col("wiederholung", "repeat")
+        if (cDate < 0 || cAmount < 0) return Result(emptyList(), emptyList(), rows.size - 1, str(R.string.import_need_date_amount))
+
+        var skipped = 0
+        val expenses = mutableListOf<Expense>()
+        val services = mutableListOf<ServiceEntry>()
+        for (f in rows.drop(1)) {
+            fun v(i: Int) = if (i in f.indices) f[i].trim() else ""
+            val date = CsvImport.parseDate(v(cDate), "")
+            val amount = CsvImport.parseNum(v(cAmount), false)
+            if (date == null || amount == null) { skipped++; continue }
+            val type = v(cType)
+            val (isService, cat) = classify(type)
+            val title = v(cTitle).ifBlank { type }
+            val repeat = v(cRepeat).takeIf { it.isNotBlank() && it != "0" }
+            val note = listOfNotNull(v(cNote).ifBlank { null }, repeat?.let { str(R.string.import_repeat_note, it) }).joinToString(" · ")
+            val odo = CsvImport.parseNum(v(cOdo), true)?.toInt() ?: 0
+            if (isService) {
+                services += ServiceEntry(
+                    vehicleId = vehicle.id, timestamp = date, odometer = odo, title = title.ifBlank { lbl(cat) },
+                    category = cat, cost = amount, note = note,
+                )
+            } else {
+                expenses += Expense(
+                    vehicleId = vehicle.id, timestamp = date, category = cat,
+                    title = if (title.equals(lbl(cat), true) || title.equals(cat, true)) "" else title,
+                    amount = amount, note = listOfNotNull(note.ifBlank { null }, if (odo > 0) odo.dist(vehicle.distanceUnit) else null).joinToString(" · "),
+                )
+            }
+        }
+        return Result(expenses, services, skipped, null)
     }
 }

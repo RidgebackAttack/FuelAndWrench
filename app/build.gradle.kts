@@ -23,8 +23,8 @@ android {
         targetSdk = 35
         // Feste Version (F-Droid liest sie von hier). Für jedes Release hochzählen
         // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
-        versionCode = 31
-        versionName = "1.3.1"
+        versionCode = 32
+        versionName = "1.3.2"
     }
 
     // Release-Signatur: Schlüssel wird im CI aus app/release.jks.enc entschlüsselt (Passwort = Secret SIGNING_PASSWORD).

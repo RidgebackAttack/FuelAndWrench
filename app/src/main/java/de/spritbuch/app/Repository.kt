@@ -74,6 +74,26 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
      * Erinnerungen, deren Name im Titel oder in der Notiz vorkommt (z. B. „Ölwechsel“), werden
      * auf den höchsten passenden km-Stand als erledigt gesetzt.
      */
+    /** Kosten importieren; gleiche Kategorie, gleicher Tag und gleicher Betrag gilt als Duplikat. */
+    suspend fun importExpenses(vehicleId: String, items: List<Expense>): Pair<Int, Int> {
+        var added = 0
+        var dups = 0
+        val t = now()
+        db.withTransaction {
+            val existing = db.expenses().forVehicle(vehicleId).toMutableList()
+            for (e in items) {
+                if (existing.any { it.category == e.category && kotlin.math.abs(it.amount - e.amount) < 0.005 &&
+                        it.timestamp / 86_400_000 == e.timestamp / 86_400_000 }) { dups++; continue }
+                val n = e.copy(vehicleId = vehicleId, updatedAt = t)
+                db.expenses().upsert(n)
+                existing += n
+                added++
+            }
+        }
+        if (added > 0) changed()
+        return added to dups
+    }
+
     suspend fun importServices(vehicleId: String, items: List<ServiceEntry>): Pair<Int, Int> {
         var added = 0
         var dups = 0

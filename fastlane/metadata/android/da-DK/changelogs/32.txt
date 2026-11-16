@@ -1,0 +1,2 @@
+- Import af omkostninger (f.eks. Spritmonitor-eksport): værkstedsudgifter går til service, resten til omkostninger
+- „Bilvask & pleje“ i stedet for „Bilvask“

@@ -342,7 +342,7 @@
     <string name="opt_exp_tax">Kfz-Steuer</string>
     <string name="opt_exp_parking">Parken</string>
     <string name="opt_exp_toll">Maut</string>
-    <string name="opt_exp_wash">Wäsche</string>
+    <string name="opt_exp_wash">Wäsche &amp; Pflege</string>
     <string name="opt_exp_financing">Finanzierung/Leasing</string>
     <string name="opt_exp_fees">Gebühren</string>
     <string name="rem_km_over">%1$s überfällig (fällig bei %2$s)</string>
@@ -378,7 +378,7 @@
     <string name="stat_other_cost">Sonstige Kosten gesamt</string>
     <string name="stat_total_per100">Alle Kosten pro 100 %1$s</string>
     <string name="empty_expenses_title">Noch keine sonstigen Kosten</string>
-    <string name="empty_expenses_text">Versicherung, Steuer, Parken, Maut und mehr über „Kosten“ erfassen.</string>
+    <string name="empty_expenses_text">Versicherung, Steuer, Parken, Maut und mehr über „Kosten“ erfassen oder oben einen Spritmonitor-Kostenexport importieren.</string>
     <string name="expense_new">Neue Kosten</string>
     <string name="err_enter_amount_money">Bitte Betrag eingeben</string>
     <string name="expense_title_hint">Bezeichnung (optional, z. B. Vollkasko 2027)</string>
@@ -411,4 +411,13 @@
     <string name="scan_odo_found">Kilometerstand erkannt.</string>
     <string name="scan_check_odo">Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.</string>
     <string name="ocr_failed">Texterkennung fehlgeschlagen</string>
+    <string name="import_empty">Datei ist leer</string>
+    <string name="import_no_entries">Keine Einträge gefunden</string>
+    <string name="import_need_date_title">Spalten „Datum“ und „Titel“ werden benötigt</string>
+    <string name="import_need_date_amount">Spalten „Datum“ und „Betrag“ werden benötigt</string>
+    <string name="import_repeat_note">Wiederholung: %1$s</string>
+    <string name="cost_import">Kosten-Import</string>
+    <string name="cost_import_found">%1$d Kosten und %2$d Service-Einträge gefunden</string>
+    <string name="cost_import_info">Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.</string>
+    <string name="cd_cost_import">Kosten importieren</string>
 </resources>

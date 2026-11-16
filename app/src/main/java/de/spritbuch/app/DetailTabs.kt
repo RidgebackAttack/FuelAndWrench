@@ -77,6 +77,57 @@ import java.util.Calendar
 
 private fun yearOfTs(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts }.get(Calendar.YEAR)
 
+/** Startet den Kosten-Import (CSV, z. B. Spritmonitor) und zeigt den Bestätigungsdialog. */
+@Composable
+fun rememberCostImporter(vehicleId: String, vehicle: Vehicle?, snackbar: SnackbarHostState): () -> Unit {
+    val ctx = LocalContext.current
+    val repo = ctx.repo
+    val scope = rememberCoroutineScope()
+    var pending by remember { mutableStateOf<CostImport.Result?>(null) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val veh = vehicle
+        if (uri != null && veh != null) scope.launch {
+            val res = withContext(Dispatchers.IO) {
+                runCatching {
+                    val bytes = ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
+                    CostImport.parse(CsvImport.decode(bytes), veh)
+                }
+            }
+            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar(str(R.string.import_failed, it.message ?: "")) }
+        }
+    }
+    pending?.let { imp ->
+        val empty = imp.expenses.isEmpty() && imp.services.isEmpty()
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text(str(R.string.cost_import)) },
+            text = {
+                Text(
+                    imp.error ?: (
+                        str(R.string.cost_import_found, imp.expenses.size, imp.services.size) +
+                            (if (imp.skipped > 0) str(R.string.svc_import_skipped, imp.skipped) else "") +
+                            " (${imp.total.fmt()} ${vehicle?.currency ?: "€"}).\n\n" +
+                            str(R.string.cost_import_info)
+                        )
+                )
+            },
+            confirmButton = {
+                if (!empty) TextButton(onClick = {
+                    pending = null
+                    scope.launch {
+                        val (a1, d1) = repo.importExpenses(vehicleId, imp.expenses)
+                        val (a2, d2) = repo.importServices(vehicleId, imp.services)
+                        val dups = d1 + d2
+                        snackbar.showSnackbar(str(R.string.imported_n, a1 + a2) + if (dups > 0) str(R.string.already_present, dups) else "")
+                    }
+                }) { Text(str(R.string.do_import)) }
+            },
+            dismissButton = { TextButton(onClick = { pending = null }) { Text(str(R.string.cancel)) } },
+        )
+    }
+    return { launcher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream")) }
+}
+
 /** Startet den Service-Import (CSV) und zeigt den Bestätigungsdialog. Liefert die Startfunktion. */
 @Composable
 fun rememberServiceImporter(vehicleId: String, vehicle: Vehicle?, snackbar: SnackbarHostState): () -> Unit {
@@ -225,6 +276,7 @@ fun VehicleDetailContent(
     val expenses by repo.expenses(vehicleId).collectAsStateWithLifecycle(emptyList())
     val pager = rememberPagerState { tabs.size }
     val importServices = rememberServiceImporter(vehicleId, vehicle, snackbar)
+    val importCosts = rememberCostImporter(vehicleId, vehicle, snackbar)
     val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
     val v = vehicle
     val fuel = v?.defaultFuelType ?: ""
@@ -255,6 +307,9 @@ fun VehicleDetailContent(
                         }
                         2 -> IconButton(onClick = importServices) {
                             Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_service_import))
+                        }
+                        3 -> IconButton(onClick = importCosts) {
+                            Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_cost_import))
                         }
                     }
                     IconButton(onClick = { nav.navigate("vehicleEdit/$vehicleId") }) {

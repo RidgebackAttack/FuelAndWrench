@@ -1,0 +1,2 @@
+- Kosten-Import (z. B. Spritmonitor-Kostenexport): Werkstattkosten landen im Service, der Rest bei den Kosten
+- „Wäsche & Pflege“ statt „Wäsche“

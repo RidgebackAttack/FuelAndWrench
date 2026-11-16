@@ -342,7 +342,7 @@
     <string name="opt_exp_tax">Vehicle tax</string>
     <string name="opt_exp_parking">Parking</string>
     <string name="opt_exp_toll">Tolls</string>
-    <string name="opt_exp_wash">Car wash</string>
+    <string name="opt_exp_wash">Car wash &amp; care</string>
     <string name="opt_exp_financing">Financing/leasing</string>
     <string name="opt_exp_fees">Fees</string>
     <string name="rem_km_over">%1$s overdue (due at %2$s)</string>
@@ -378,7 +378,7 @@
     <string name="stat_other_cost">Total other costs</string>
     <string name="stat_total_per100">All costs per 100 %1$s</string>
     <string name="empty_expenses_title">No other costs yet</string>
-    <string name="empty_expenses_text">Record insurance, tax, parking, tolls and more via “Cost”.</string>
+    <string name="empty_expenses_text">Record insurance, tax, parking, tolls and more via “Cost”, or import a Spritmonitor cost export at the top.</string>
     <string name="expense_new">New cost</string>
     <string name="err_enter_amount_money">Please enter an amount</string>
     <string name="expense_title_hint">Description (optional, e.g. comprehensive insurance 2027)</string>
@@ -411,4 +411,13 @@
     <string name="scan_odo_found">Odometer recognized.</string>
     <string name="scan_check_odo">Read from the photo – please compare with the display.</string>
     <string name="ocr_failed">Text recognition failed</string>
+    <string name="import_empty">File is empty</string>
+    <string name="import_no_entries">No entries found</string>
+    <string name="import_need_date_title">Columns “Date” and “Title” are required</string>
+    <string name="import_need_date_amount">Columns “Date” and “Amount” are required</string>
+    <string name="import_repeat_note">repeats: %1$s</string>
+    <string name="cost_import">Cost import</string>
+    <string name="cost_import_found">%1$d costs and %2$d service entries found</string>
+    <string name="cost_import_info">Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.</string>
+    <string name="cd_cost_import">Import costs</string>
 </resources>

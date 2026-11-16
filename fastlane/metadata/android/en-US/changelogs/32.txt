@@ -1,0 +1,2 @@
+- Cost import (e.g. Spritmonitor cost export): workshop costs go to service, everything else to costs
+- “Car wash & care” instead of “Car wash”

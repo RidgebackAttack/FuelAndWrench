@@ -339,7 +339,7 @@ opt_exp_insurance	Insurance	Versicherung	Forsikring
 opt_exp_tax	Vehicle tax	Kfz-Steuer	Ejerafgift
 opt_exp_parking	Parking	Parken	Parkering
 opt_exp_toll	Tolls	Maut	Bompenge
-opt_exp_wash	Car wash	Wäsche	Bilvask
+opt_exp_wash	Car wash & care	Wäsche & Pflege	Bilvask & pleje
 opt_exp_financing	Financing/leasing	Finanzierung/Leasing	Finansiering/leasing
 opt_exp_fees	Fees	Gebühren	Gebyrer
 rem_km_over	%1$s overdue (due at %2$s)	%1$s überfällig (fällig bei %2$s)	%1$s overskredet (forfalder ved %2$s)
@@ -375,7 +375,7 @@ expense	Cost	Kosten	Omkostning
 stat_other_cost	Total other costs	Sonstige Kosten gesamt	Øvrige omkostninger i alt
 stat_total_per100	All costs per 100 %1$s	Alle Kosten pro 100 %1$s	Alle omkostninger pr. 100 %1$s
 empty_expenses_title	No other costs yet	Noch keine sonstigen Kosten	Ingen øvrige omkostninger endnu
-empty_expenses_text	Record insurance, tax, parking, tolls and more via “Cost”.	Versicherung, Steuer, Parken, Maut und mehr über „Kosten“ erfassen.	Registrér forsikring, afgift, parkering, bompenge og mere via „Omkostning“.
+empty_expenses_text	Record insurance, tax, parking, tolls and more via “Cost”, or import a Spritmonitor cost export at the top.	Versicherung, Steuer, Parken, Maut und mehr über „Kosten“ erfassen oder oben einen Spritmonitor-Kostenexport importieren.	Registrér forsikring, afgift, parkering, bompenge og mere via „Omkostning“, eller importér en omkostningseksport fra Spritmonitor øverst.
 expense_new	New cost	Neue Kosten	Ny omkostning
 err_enter_amount_money	Please enter an amount	Bitte Betrag eingeben	Indtast venligst et beløb
 expense_title_hint	Description (optional, e.g. comprehensive insurance 2027)	Bezeichnung (optional, z. B. Vollkasko 2027)	Betegnelse (valgfri, f.eks. kaskoforsikring 2027)
@@ -408,3 +408,12 @@ scan_nothing	Nothing recognized. Try again with more light and the receipt filli
 scan_odo_found	Odometer recognized.	Kilometerstand erkannt.	Kilometerstand genkendt.
 scan_check_odo	Read from the photo – please compare with the display.	Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.	Aflæst fra fotoet – sammenlign venligst med displayet.
 ocr_failed	Text recognition failed	Texterkennung fehlgeschlagen	Tekstgenkendelse mislykkedes
+import_empty	File is empty	Datei ist leer	Filen er tom
+import_no_entries	No entries found	Keine Einträge gefunden	Ingen poster fundet
+import_need_date_title	Columns “Date” and “Title” are required	Spalten „Datum“ und „Titel“ werden benötigt	Kolonnerne „Dato“ og „Titel“ er påkrævet
+import_need_date_amount	Columns “Date” and “Amount” are required	Spalten „Datum“ und „Betrag“ werden benötigt	Kolonnerne „Dato“ og „Beløb“ er påkrævet
+import_repeat_note	repeats: %1$s	Wiederholung: %1$s	gentages: %1$s
+cost_import	Cost import	Kosten-Import	Import af omkostninger
+cost_import_found	%1$d costs and %2$d service entries found	%1$d Kosten und %2$d Service-Einträge gefunden	%1$d omkostninger og %2$d serviceposter fundet
+cost_import_info	Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.	Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.	Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.
+cd_cost_import	Import costs	Kosten importieren	Importér omkostninger
