@@ -4,16 +4,21 @@ Fuel & Wrench er logbogen til bil og motorcykel: tankninger, forbrug, servicehis
 • Tankninger med brændstoftype, tankstation, position, kørestil, strækning, dæk og ekstra forbrugere
 • Forbrug efter fuld-til-fuld-metoden, omkostninger pr. 100 km, forbrugsgraf, sammenligning med kørecomputeren
 • Enheder pr. køretøj: km/miles, liter/gallons, l/100 km, km/l eller mpg, valgfri valuta
+• Scan kvittering og kilometertæller med kameraet – tekstgenkendelse udelukkende på enheden
+• Statistik efter måned, år, dæk, strækning og kørestil
 • Tankstationer på kort (OpenStreetMap)
 
 <b>Service & påmindelser</b>
 • Servicehistorik som tidslinje med omkostninger og værksted
-• Vedligeholdelsespåmindelser efter kilometer, oprettes automatisk
+• Vedligeholdelsespåmindelser efter kilometer og/eller tid (f.eks. syn hver 24. måned), oprettes automatisk
+• Øvrige omkostninger som forsikring, afgift, parkering og bompenge
+• Kvitteringer (foto eller PDF) på serviceposter og omkostninger
 • Hjulsæt (sommer/vinter), hjulskift med mønsterdybde ved opbevaring, forskellige dæk pr. aksel
 
 <b>Import & synkronisering</b>
 • Import af eksporter fra Spritmonitor.de og servicehistorik (CSV)
 • Synkronisering via din egen Nextcloud / WebDAV – flere enheder på samme tid
+• Sikkerhedskopi som ZIP inklusive CSV-tabeller, gendannelse når som helst
 
 <b>Privatliv</b>
 Alle data forbliver på din enhed eller din egen server. Onlinetjenester kan slås fra enkeltvis.

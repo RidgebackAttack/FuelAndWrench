@@ -8,7 +8,13 @@ Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronis
 - Tankstelle: Betreiber (Aral, Shell, …), Adresse, GPS-Position; „Aktuelle Position“ erkennt die nächste Tankstelle über OpenStreetMap
 - Bedingungen: Standheizung, Anhänger, Dachbox, Klimaanlage; Fahrstil; Strecke; Reifentyp
 - Verbrauch nach Voll-zu-Voll-Methode, Kosten pro 100 km, Gesamtkosten
-- Wartungserinnerungen nach Kilometern (Vorwarnung + Fälligkeit als Benachrichtigung)
+- Wartungserinnerungen nach Kilometern und/oder Zeit (Vorwarnung + Fälligkeit als Benachrichtigung)
+- Sonstige Kosten (Versicherung, Steuer, Parken, Maut …), Belege als Foto/PDF an Service und Kosten
+- Statistik: Kosten pro Monat/Jahr, Literpreis-Verlauf, Verbrauch nach Reifen, Strecke und Fahrstil
+- Beleg- und Tacho-Scan per Kamera (Tesseract, offline auf dem Gerät)
+- Backup als ZIP (inkl. Fotos, Belege, CSV-Tabellen) und Wiederherstellen
+- Sprachen: Deutsch, Englisch, Dänisch (Texte in `tools/i18n/strings.tsv`, `python3 tools/i18n/gen.py` erzeugt die strings.xml)
+- Update-Hinweis für direkt installierte APKs (abschaltbar)
 - Sync über WebDAV (Nextcloud): automatisch nach jeder Änderung, beim Öffnen und alle 15 Min.; mehrere Geräte gleichzeitig (Zusammenführung pro Datensatz, ETag-Absicherung)
 - Import von Spritmonitor.de-CSV (getestet mit echtem Export) und anderen CSV-Dateien; Zahlencodes von Spritmonitor (Kraftstoff, Reifen, Fahrweise, Strecken) werden beim Import zugeordnet
 - Fahrzeuge archivieren (Daten bleiben erhalten, Erinnerungen pausiert)
@@ -23,8 +29,8 @@ Ohne Secret (z. B. in Forks) wird nur eine Debug-signierte APK als Artefakt geba
 Lokal bauen: `gradle assembleRelease` (ohne `SIGNING_PASSWORD` mit Debug-Schlüssel).
 
 ## Lizenz
-GPL-3.0-or-later, siehe [LICENSE](LICENSE). Verwendete Bibliotheken stehen unter der Apache License 2.0
-(Übersicht in der App unter Einstellungen → Über & Lizenzen).
+GPL-3.0-or-later, siehe [LICENSE](LICENSE). Verwendete Bibliotheken stehen überwiegend unter der Apache License 2.0
+(Übersicht in der App unter Einstellungen → Über & Lizenzen); Tesseract4Android bringt Leptonica, libjpeg und libpng mit.
 Karten- und Tankstellendaten © OpenStreetMap-Mitwirkende (ODbL).
 
 Diese App wurde mit KI-Unterstützung (Claude, Anthropic) entwickelt.

@@ -4,19 +4,24 @@ Fuel & Wrench ist das Logbuch für Auto und Motorrad: Betankungen, Verbrauch, Se
 • Betankungen mit Kraftstoffart, Tankstelle, Position, Fahrstil, Strecke, Reifen und Zusatzverbrauchern (Standheizung, Anhänger …)
 • Verbrauch nach der Voll-zu-Voll-Methode, Kosten pro 100 km, Verbrauchsverlauf
 • Einheiten pro Fahrzeug: km/Meilen, Liter/Gallonen, l/100 km, km/l oder mpg, beliebige Währung
+• Beleg und Tacho per Kamera scannen – Texterkennung komplett auf dem Gerät
+• Vergleich mit dem Bordcomputer, Statistik nach Monat, Jahr, Reifen, Strecke und Fahrstil
 • Tankstellen auf der Karte (OpenStreetMap)
 
 <b>Service & Erinnerungen</b>
 • Service-Historie als Timeline mit Kosten und Werkstatt
-• Wartungserinnerungen nach Kilometern, automatisch für jedes Fahrzeug
+• Wartungserinnerungen nach Kilometern und/oder Zeit (z. B. HU alle 24 Monate), automatisch für jedes Fahrzeug
+• Sonstige Kosten wie Versicherung, Steuer, Parken und Maut
+• Belege (Foto oder PDF) an Service-Einträgen und Kosten
 • Radsätze (Sommer/Winter), Radwechsel mit Profiltiefe bei der Einlagerung, unterschiedliche Reifen je Achse
 
 <b>Import & Sync</b>
 • Import von Spritmonitor.de-Exporten und Service-Historien (CSV)
 • Synchronisation über die eigene Nextcloud bzw. WebDAV – mehrere Geräte gleichzeitig
 • Einfache Nextcloud-Anmeldung per Login-Flow, Ordnerauswahl
+• Backup als ZIP inklusive CSV-Tabellen, Wiederherstellen jederzeit
 
 <b>Datenschutz</b>
 Alle Daten bleiben auf dem Gerät bzw. deinem eigenen Server. Online-Dienste (Tankstellensuche, Adressermittlung, Netzwerk-Ortung) lassen sich einzeln abschalten.
 
-Quelloffen unter GPL-3.0.
+Auf Deutsch, Englisch und Dänisch. Quelloffen unter GPL-3.0.

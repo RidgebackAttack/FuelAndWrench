@@ -1,0 +1,9 @@
+- English and Danish translations
+- Scan receipt and odometer with the camera (offline)
+- Time-based reminders (e.g. inspection every 24 months)
+- Other costs (insurance, tax, parking, tolls …)
+- Receipts as photo/PDF on services and costs
+- Statistics: costs per month/year, fuel price, consumption by tires/route/style
+- Backup as ZIP with CSV, restore
+- Update notice for directly installed APKs
+Please update all devices.
