@@ -26,7 +26,9 @@ Jeder Push auf `main` baut per GitHub Actions eine APK. Der Release-Schlüssel l
 `app/release.jks.enc`; das Passwort steht ausschließlich im Repository-Secret `SIGNING_PASSWORD`.
 Ohne Secret (z. B. in Forks) wird nur eine Debug-signierte APK als Artefakt gebaut und kein Release veröffentlicht.
 
-Lokal bauen: `gradle assembleRelease` (ohne `SIGNING_PASSWORD` mit Debug-Schlüssel).
+Lokal bauen: `git submodule update --init`, dann `gradle assembleRelease` (ohne `SIGNING_PASSWORD` mit Debug-Schlüssel).
+Die Texterkennung (Tesseract4Android 4.9.0 mit Tesseract, Leptonica, libjpeg, libpng) wird aus dem Submodul
+`external/Tesseract4Android` mit dem Android NDK gebaut (NDK 27.2.12479018, CMake 3.22.1).
 
 ## Lizenz
 GPL-3.0-or-later, siehe [LICENSE](LICENSE). Verwendete Bibliotheken stehen überwiegend unter der Apache License 2.0

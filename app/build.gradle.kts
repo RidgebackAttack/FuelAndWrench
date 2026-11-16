@@ -14,6 +14,8 @@ android {
     defaultConfig {
         // Texterkennung bringt native Bibliotheken mit; nur gängige Handy-Architekturen beilegen
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
+        // Tesseract4Android gibt es als „standard“ und „openmp“; wir nehmen die einfache Variante
+        missingDimensionStrategy("parallelization", "standard")
         applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
         targetSdk = 35
@@ -85,7 +87,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("org.osmdroid:osmdroid-android:6.1.20")
-    implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
+    implementation(project(":tesseract4android"))
 
     testImplementation("junit:junit:4.13.2")
 }

@@ -10,11 +10,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // Nur für die Texterkennung (Tesseract4Android, Apache-2.0)
-        maven("https://jitpack.io") {
-            content { includeGroup("cz.adaptech.tesseract4android") }
-        }
     }
 }
 rootProject.name = "FuelAndWrench"
 include(":app")
+
+// Texterkennung (Tesseract4Android 4.9.0, Apache-2.0) wird aus dem Quellcode im Git-Submodul gebaut
+include(":tesseract4android")
+project(":tesseract4android").projectDir = file("external/Tesseract4Android/tesseract4android")
