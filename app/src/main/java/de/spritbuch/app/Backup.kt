@@ -141,7 +141,8 @@ object Csv {
         return table(
             listOf("vehicle", "date", "odometer", "quantity", "unit", "total", "currency", "price per unit", "full",
                 "missed previous", "fuel", "station", "address", "latitude", "longitude", "driving style", "route", "tires",
-                "extras", "consumption per 100", "on-board computer per 100", "note"),
+                "extras", "consumption per 100", "on-board computer per 100", "charge location", "battery before %",
+                "battery after %", "note"),
             list.sortedWith(compareBy({ vehicles[it.vehicleId]?.name }, { it.odometer })).map { r ->
                 val v = vehicles[r.vehicleId]
                 listOf(
@@ -151,7 +152,8 @@ object Csv {
                     r.latitude?.let { String.format(Locale.ROOT, "%.6f", it) } ?: "",
                     r.longitude?.let { String.format(Locale.ROOT, "%.6f", it) } ?: "",
                     r.drivingStyle, r.routeType, r.tireType, r.extrasList().joinToString(", "),
-                    num(per[r.id]), num(r.obcConsumption), r.note,
+                    num(per[r.id]), num(r.obcConsumption), r.chargeLocation, r.socStart?.toString() ?: "",
+                    r.socEnd?.toString() ?: "", r.note,
                 )
             },
         )

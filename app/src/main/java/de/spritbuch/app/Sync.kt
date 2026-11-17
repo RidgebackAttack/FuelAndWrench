@@ -225,15 +225,9 @@ object SyncManager {
         id: (T) -> String, ts: (T) -> Long,
         write: suspend (T) -> Unit,
     ): List<T> {
-        val result = local.associateBy(id).toMutableMap()
-        for (item in remote) {
-            val l = result[id(item)]
-            if (l == null || ts(item) > ts(l)) {
-                result[id(item)] = item
-                write(item)
-            }
-        }
-        return result.values.toList()
+        val (merged, changed) = mergeRecords(local, remote, id, ts)
+        for (item in changed) write(item)
+        return merged
     }
 
     /** Belege: fehlende hochladen bzw. herunterladen (Dateinamen sind eindeutig, Inhalte ändern sich nie). */
@@ -314,4 +308,22 @@ object SyncScheduler {
             .build()
         WorkManager.getInstance(ctx).enqueueUniqueWork("sync-now", ExistingWorkPolicy.REPLACE, req)
     }
+}
+
+/**
+ * Führt zwei Datenstände zusammen: je Datensatz gewinnt die neuere Änderung (updatedAt).
+ * Gelöschte Einträge sind nur markiert und setzen sich so ebenfalls durch.
+ * Liefert den zusammengeführten Stand und die Einträge, die lokal übernommen werden müssen.
+ */
+fun <T> mergeRecords(local: List<T>, remote: List<T>, id: (T) -> String, ts: (T) -> Long): Pair<List<T>, List<T>> {
+    val result = local.associateBy(id).toMutableMap()
+    val changed = mutableListOf<T>()
+    for (item in remote) {
+        val l = result[id(item)]
+        if (l == null || ts(item) > ts(l)) {
+            result[id(item)] = item
+            changed += item
+        }
+    }
+    return result.values.toList() to changed
 }

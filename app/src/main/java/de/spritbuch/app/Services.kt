@@ -207,9 +207,11 @@ object LocationHelper {
     }
 
     /** Sucht über OpenStreetMap (Overpass) die nächste Tankstelle im Umkreis von 250 m. */
-    suspend fun nearbyStation(lat: Double, lon: Double): Station? = withContext(Dispatchers.IO) {
+    suspend fun nearbyStation(lat: Double, lon: Double, charging: Boolean = false): Station? = withContext(Dispatchers.IO) {
         runCatching {
-            val q = "[out:json][timeout:10];nwr(around:250,$lat,$lon)[amenity=fuel];out center tags;"
+            val amenity = if (charging) "charging_station" else "fuel"
+            val radius = if (charging) 150 else 250
+            val q = "[out:json][timeout:10];nwr(around:$radius,$lat,$lon)[amenity=$amenity];out center tags;"
             val req = Request.Builder()
                 .url("https://overpass-api.de/api/interpreter")
                 .header("User-Agent", "FuelAndWrench-Android/1.0")
@@ -226,8 +228,9 @@ object LocationHelper {
             } ?: return@runCatching null
             val tags = best["tags"]?.jsonObject
             fun tag(k: String) = tags?.get(k)?.jsonPrimitive?.contentOrNull
-            val rawBrand = tag("brand") ?: tag("operator") ?: tag("name")
-            val brand = rawBrand?.let { Options.matchBrand(it) }
+            val rawBrand = if (charging) tag("network") ?: tag("brand") ?: tag("operator") ?: tag("name")
+            else tag("brand") ?: tag("operator") ?: tag("name")
+            val brand = rawBrand?.let { if (charging) it.trim() else Options.matchBrand(it) }
             val street = listOfNotNull(tag("addr:street"), tag("addr:housenumber")).joinToString(" ")
             val city = listOfNotNull(tag("addr:postcode"), tag("addr:city")).joinToString(" ")
             val (sLat, sLon) = coords(best) ?: (lat to lon)

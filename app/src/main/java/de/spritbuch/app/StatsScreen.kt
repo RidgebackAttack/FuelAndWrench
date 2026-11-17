@@ -60,7 +60,7 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
     val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
     val expenses by repo.expenses(vehicleId).collectAsStateWithLifecycle(emptyList())
     val v = vehicle
-    val stats = remember(refuels) { computeStats(refuels) }
+    val stats = remember(refuels, vehicle?.batteryCapacity) { computeStats(refuels, vehicle?.batteryCapacity) }
     // Feste, klar unterscheidbare Farben (die Theme-Farben liegen je nach Farbschema zu dicht beieinander)
     val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val fuelColor = if (dark) Color(0xFF60A5FA) else Color(0xFF2563EB)
@@ -108,11 +108,22 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
             refuels.filter { it.amount > 0 && it.totalPrice > 0 && Units.isLiquid(it.fuelType) }
                 .sortedBy { it.timestamp }.map { it.pricePerUnit }.takeLast(40)
         }
-        fun groupAvg(key: (Refuel) -> String) = refuels.mapNotNull { r -> stats.perRefuel[r.id]?.let { key(r) to it } }
+        fun groupAvg(key: (Refuel) -> String) = refuels.filter { it.isCharge == (v.defaultFuelType == ELECTRIC) }.mapNotNull { r -> stats.perRefuel[r.id]?.let { key(r) to it } }
             .filter { it.first.isNotBlank() }
             .groupBy({ it.first }, { it.second })
             .map { (k, list) -> Triple(k, list.average(), list.size) }
             .sortedBy { it.second }
+        val kwhPrices = remember(refuels) {
+            refuels.filter { it.isCharge && it.amount > 0 && it.totalPrice > 0 }.sortedBy { it.timestamp }.map { it.pricePerUnit }.takeLast(40)
+        }
+        // Anteil der geladenen Energie je Ladeort
+        val chargeShare = remember(refuels) {
+            val charges = refuels.filter { it.isCharge && it.amount > 0 }
+            val sum = charges.sumOf { it.amount }
+            charges.groupBy { it.chargeLocation.ifBlank { "?" } }
+                .map { (k, l) -> Triple(k, l.sumOf { it.amount } / sum, l.sumOf { it.totalPrice } / l.sumOf { it.amount }) }
+                .sortedByDescending { it.second }
+        }
         val byTires = remember(refuels) { groupAvg { it.tireType } }
         val byRoute = remember(refuels) { groupAvg { it.routeType } }
         val byStyle = remember(refuels) { groupAvg { it.drivingStyle } }
@@ -191,8 +202,24 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                 }
             }
             if (prices.size >= 2) item {
-                val unit = Units.amount(v, v.defaultFuelType)
+                val unit = Units.amount(v, if (v.defaultFuelType == ELECTRIC) "Super E10" else v.defaultFuelType)
                 ConsumptionChart(prices, str(R.string.stats_price_trend, unit)) { "${it.fmt(3)} $cur" }
+            }
+            if (kwhPrices.size >= 2) item {
+                ConsumptionChart(kwhPrices, str(R.string.stats_price_trend, "kWh")) { "${it.fmt(3)} $cur" }
+            }
+            if (chargeShare.size >= 2) item {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(str(R.string.stats_charge_share), style = MaterialTheme.typography.titleSmall)
+                        chargeShare.forEach { (loc, share, price) ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(if (loc == "?") str(R.string.not_specified) else lbl(loc), modifier = Modifier.weight(1f))
+                                Text("${(share * 100).fmt(0)} % · ${price.fmt(2)} $cur/kWh", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
             }
             listOf(
                 R.string.stats_by_tires to byTires,

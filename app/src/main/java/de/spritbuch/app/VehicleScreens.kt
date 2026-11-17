@@ -241,7 +241,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     val reminders by repo.reminders(vehicleId).collectAsStateWithLifecycle(emptyList())
     val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
     var odoDialog by remember { mutableStateOf(false) }
-    val stats = remember(refuels) { computeStats(refuels) }
+    val stats = remember(refuels, vehicle?.batteryCapacity) { computeStats(refuels, vehicle?.batteryCapacity) }
     val v = vehicle
     val currentOdo = if (v == null) 0 else maxOf(v.initialOdometer, v.manualOdometer, refuels.maxOfOrNull { it.odometer } ?: 0)
     val fuel = v?.defaultFuelType ?: ""
@@ -422,12 +422,16 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                 } ?: ""
                 Text(str(R.string.obc_value, Units.consumption(v, r.fuelType, o) + diff), style = MaterialTheme.typography.bodySmall)
             }
-            val station = listOf(r.stationBrand, r.fuelType).filter { it.isNotBlank() }.joinToString(" · ") { lbl(it) }
+            val station = (if (r.isCharge) listOf("⚡ " + str(R.string.charge), r.stationBrand, r.chargeLocation) else listOf(r.stationBrand, r.fuelType))
+                .filter { it.isNotBlank() }.joinToString(" · ") { lbl(it) }
+            if (r.socStart != null || r.socEnd != null) {
+                Text(str(R.string.soc_range, r.socStart?.toString() ?: "?", r.socEnd?.toString() ?: "?"), style = MaterialTheme.typography.bodySmall)
+            }
             if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
             if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
             val cond = (listOf(r.tireType, r.drivingStyle, r.routeType) + r.extrasList()).filter { it.isNotBlank() }
             if (cond.isNotEmpty()) Text(cond.joinToString(" · ") { lbl(it) }, style = MaterialTheme.typography.bodySmall)
-            if (!r.fullTank) Text(str(R.string.partial_refuel), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+            if (!r.fullTank) Text(str(if (r.isCharge) R.string.partial_charge else R.string.partial_refuel), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
             if (r.missedPrevious) Text(str(R.string.previous_missing), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
         }
     }
@@ -452,6 +456,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var largePos by remember { mutableStateOf(PhotoPos()) }
     var distU by remember { mutableStateOf("km") }
     var vType by remember { mutableStateOf("Auto") }
+    var drive by remember { mutableStateOf("Verbrenner") }
+    var battery by remember { mutableStateOf("") }
     var volU by remember { mutableStateOf("l") }
     var fmtU by remember { mutableStateOf("per100") }
     var cur by remember { mutableStateOf("€") }
@@ -469,6 +475,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         thumbPos = PhotoPos.parse(v.photoThumbPos); largePos = PhotoPos.parse(v.photoLargePos)
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
         vType = v.vehicleType
+        drive = if (v.driveType == "Verbrenner" && v.defaultFuelType == ELECTRIC) "Elektro" else v.driveType
+        battery = v.batteryCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.fmt(1) } ?: ""
     }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -501,6 +509,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     photoThumbPos = thumbPos.encode(), photoLargePos = largePos.encode(),
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                     vehicleType = vType,
+                                    driveType = drive,
+                                    batteryCapacity = if (drive == "Elektro" || drive == "Plug-in-Hybrid") battery.toDoubleDe() else null,
                                 )
                             )
                             if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
@@ -528,9 +538,24 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             OutlinedTextField(name, { name = it }, label = { Text(str(R.string.vehicle_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text(str(R.string.plate)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             ChoiceField(str(R.string.vehicle_type), vType, Options.vehicleTypes) { vType = it }
-            ChoiceField(str(R.string.default_fuel), fuel, Options.fuelTypes) { fuel = it }
+            SectionTitle(str(R.string.drive_type))
+            SingleChips(Options.driveTypes, drive) { sel ->
+                if (sel.isEmpty()) return@SingleChips
+                drive = sel
+                if (sel == "Elektro") fuel = ELECTRIC
+                else if (fuel == ELECTRIC) fuel = "Super E10"
+            }
+            if (drive != "Elektro") {
+                ChoiceField(str(R.string.default_fuel), fuel, Options.fuelTypes.filter { it != ELECTRIC }) { fuel = it }
+            }
             val previewVehicle = b.copy(volumeUnit = volU, distanceUnit = distU)
-            NumberField(str(R.string.tank_capacity), tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
+            if (drive != "Elektro") {
+                NumberField(str(R.string.tank_capacity), tank, { tank = it }, suffix = Units.amount(previewVehicle, fuel))
+            }
+            if (drive == "Elektro" || drive == "Plug-in-Hybrid") {
+                NumberField(str(R.string.battery_capacity), battery, { battery = it }, suffix = "kWh")
+                if (drive == "Plug-in-Hybrid") Text(str(R.string.phev_info), style = MaterialTheme.typography.bodySmall)
+            }
             NumberField(str(R.string.initial_odometer), initialOdo, { initialOdo = it }, suffix = distU, decimal = false)
 
             SectionTitle(str(R.string.units))

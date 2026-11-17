@@ -82,4 +82,20 @@ class ReceiptParserTest {
         close(1234.56, ReceiptParser.num("1,234.56"))
         close(1.689, ReceiptParser.num("1,689"))
     }
+
+    @Test
+    fun chargingReceipt() {
+        val text = """
+            EnBW mobility+
+            Ladevorgang 12.11.2026
+            Energie: 42,35 kWh
+            0,59 EUR/kWh
+            Gesamtbetrag 24,99 EUR
+        """.trimIndent()
+        val r = ReceiptParser.parse(text, nowYear = 2026)
+        close(42.35, r.amount)
+        close(0.59, r.pricePerUnit)
+        close(24.99, r.total)
+        assertEquals(ELECTRIC, r.fuelType)
+    }
 }

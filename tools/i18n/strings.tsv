@@ -421,3 +421,34 @@ archive_title	Archive (%1$d)	Archiv (%1$d)	Arkiv (%1$d)
 archive_expand	Show large	Groß anzeigen	Vis stort
 archive_compact	Show small	Klein anzeigen	Vis småt
 archived_last	last refuel %1$s	letzte Betankung %1$s	seneste tankning %1$s
+opt_drive_ice	Combustion	Verbrenner	Forbrænding
+opt_drive_hybrid	Hybrid (no plug)	Hybrid (ohne Stecker)	Hybrid (uden stik)
+opt_drive_phev	Plug-in hybrid	Plug-in-Hybrid	Plug-in-hybrid
+opt_drive_ev	Electric	Elektro	El
+opt_charge_home	Home	Zuhause	Hjemme
+opt_charge_ac	Public AC	Öffentlich AC	Offentlig AC
+opt_charge_dc	Fast charger DC	Schnelllader DC	Lynlader DC
+opt_charge_work	Employer	Arbeitgeber	Arbejdsgiver
+stat_avg_electric	Ø electricity	Ø Strom	Ø strøm
+stat_battery	From battery (without charging losses)	Ab Akku (ohne Ladeverluste)	Fra batteriet (uden ladetab)
+stat_charge_loss	Charging losses	Ladeverluste	Ladetab
+stat_energy_cost	Total fuel/charging cost	Tank-/Ladekosten gesamt	Brændstof-/ladeudgifter i alt
+stat_total_charged	Total charged	Geladen gesamt	Opladet i alt
+charge	Charging	Laden	Opladning
+charge_new	New charge	Neuer Ladevorgang	Ny opladning
+energy	Energy	Energie	Energi
+charged_to_target	Charged to usual target	Bis zum Ladeziel geladen	Opladet til sædvanligt mål
+charged_to_target_info	Turn on if you charged to your usual target (e.g. 80 % or 100 %) – the consumption is calculated between such charges.	Einschalten, wenn bis zum gewohnten Ladeziel geladen wurde (z. B. 80 % oder 100 %) – der Verbrauch wird zwischen solchen Ladungen berechnet.	Slå til, hvis der er ladet til det sædvanlige mål (f.eks. 80 % eller 100 %) – forbruget beregnes mellem sådanne opladninger.
+missed_previous_charge	Previous charge not recorded	Vorheriges Laden nicht erfasst	Forrige opladning ikke registreret
+charge_location	Charging location	Ladeort	Ladested
+soc_before	Battery before	Akku vorher	Batteri før
+soc_after	Battery after	Akku nachher	Batteri efter
+soc_info_capacity	Tip: with the battery capacity in the vehicle, the app also shows consumption from the battery and charging losses.	Tipp: Mit der Akkukapazität im Fahrzeug zeigt die App zusätzlich den Verbrauch ab Akku und die Ladeverluste.	Tip: Med batterikapaciteten i køretøjet viser appen også forbruget fra batteriet og ladetab.
+charging_station	Charging station	Ladestation	Ladestation
+charge_network	Network / operator	Anbieter / Netz	Udbyder / netværk
+soc_range	Battery %1$s %% → %2$s %%	Akku %1$s %% → %2$s %%	Batteri %1$s %% → %2$s %%
+partial_charge	Not charged to target	Nicht bis zum Ladeziel geladen	Ikke ladet til mål
+drive_type	Drive	Antrieb	Drivlinje
+battery_capacity	Usable battery capacity (optional)	Nutzbare Akkukapazität (optional)	Brugbar batterikapacitet (valgfri)
+phev_info	When adding an entry you choose between refueling and charging. Fuel and electricity consumption are shown separately, the cost per 100 km together.	Beim Erfassen wählst du zwischen Tanken und Laden. Kraftstoff- und Stromverbrauch werden getrennt angezeigt, die Kosten pro 100 km gemeinsam.	Ved registrering vælger du mellem tankning og opladning. Brændstof- og strømforbrug vises hver for sig, omkostningerne pr. 100 km samlet.
+stats_charge_share	Charged energy by location	Geladene Energie nach Ladeort	Opladet energi efter ladested

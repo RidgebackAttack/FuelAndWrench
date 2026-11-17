@@ -119,7 +119,7 @@ fun StatChip(icon: ImageVector, text: String, warn: Boolean = false) {
 @Composable
 fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, reminders: List<Reminder>) {
     val mine = remember(refuels, v.id) { refuels.filter { it.vehicleId == v.id } }
-    val stats = remember(mine) { computeStats(mine) }
+    val stats = remember(mine, v.batteryCapacity) { computeStats(mine, v.batteryCapacity) }
     val odo = maxOf(v.initialOdometer, v.manualOdometer, mine.maxOfOrNull { it.odometer } ?: 0)
     val next = reminders.filter { it.vehicleId == v.id }.minByOrNull { it.state(odo).urgency }
     Card(

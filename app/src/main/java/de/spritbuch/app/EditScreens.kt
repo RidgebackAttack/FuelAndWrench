@@ -89,6 +89,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var tires by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var obc by remember { mutableStateOf("") }
+    var chargeLoc by remember { mutableStateOf("") }
+    var socStart by remember { mutableStateOf("") }
+    var socEnd by remember { mutableStateOf("") }
+    var fuelOnlyType by remember { mutableStateOf("") }
     var brandOptions by remember { mutableStateOf(Options.brands) }
     var lastOdo by remember { mutableStateOf<Int?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
@@ -125,7 +129,12 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                         // Nur übernehmen, wenn es zur Kraftstofffamilie des Fahrzeugs passt
                         val diesel = { s: String -> s.contains("Diesel") || s == "HVO100" }
                         val vf = veh?.defaultFuelType ?: fuelType
-                        if (vf.isBlank() || diesel(vf) == diesel(f)) { fuelType = f; found += str(R.string.fuel_type) }
+                        val fits = when {
+                            f == ELECTRIC -> veh?.charges != false
+                            veh?.isElectric == true -> false
+                            else -> vf.isBlank() || vf == ELECTRIC || diesel(vf) == diesel(f)
+                        }
+                        if (fits) { fuelType = f; found += str(R.string.fuel_type) }
                     }
                     r.date?.let { (y, m, d) ->
                         val c = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }
@@ -164,7 +173,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     lat = loc.latitude
                     lon = loc.longitude
                     val p = Prefs(ctx)
-                    val st = if (p.useOverpass) LocationHelper.nearbyStation(loc.latitude, loc.longitude) else null
+                    val st = if (p.useOverpass) LocationHelper.nearbyStation(loc.latitude, loc.longitude, charging = fuelType == ELECTRIC) else null
                     st?.brand?.let { brand = it }
                     val addr = st?.address
                         ?: (if (p.useOverpass) LocationHelper.osmAddress(loc.latitude, loc.longitude) else null)
@@ -228,6 +237,14 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         tires = r.tireType
         note = r.note
         obc = r.obcConsumption?.let { (if (v?.consumptionFormat == "perUnit") 100.0 / it else it).fmt(1) } ?: ""
+        chargeLoc = r.chargeLocation.ifBlank {
+            if (isNew) repo.db.refuels().forVehicle(vehicleId).filter { it.isCharge }.maxByOrNull { it.timestamp }?.chargeLocation ?: "" else ""
+        }
+        socStart = r.socStart?.toString() ?: ""
+        socEnd = r.socEnd?.toString() ?: ""
+        // Für Plug-in-Hybride: welcher Kraftstoff beim Umschalten auf „Tanken“
+        fuelOnlyType = (if (v?.defaultFuelType == ELECTRIC) "" else v?.defaultFuelType) ?: ""
+        if (isNew && v?.isElectric == true) fuelType = ELECTRIC
         // Eigene, häufig genutzte Betreiber zuerst, danach die Standardliste
         val used = repo.db.refuels().getAllRaw().filter { !it.deleted && it.stationBrand.isNotBlank() }
             .groupingBy { it.stationBrand }.eachCount().entries.sortedByDescending { it.value }.map { it.key }
@@ -248,7 +265,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(str(if (isNew) R.string.refuel_new else R.string.refuel)) },
+                title = {
+                    val c = fuelType == ELECTRIC
+                    Text(str(if (isNew) (if (c) R.string.charge_new else R.string.refuel_new) else (if (c) R.string.charge else R.string.refuel)))
+                },
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     if (!isNew) IconButton(onClick = { confirmDelete = true }) {
@@ -274,6 +294,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                                     extras = Options.extras.filter { it in extras }.joinToString("|"),
                                     drivingStyle = style, routeType = route, tireType = tires, note = note.trim(),
                                     obcConsumption = obcVal,
+                                    chargeLocation = if (fuelType == ELECTRIC) chargeLoc else "",
+                                    socStart = if (fuelType == ELECTRIC) socStart.toIntKm()?.coerceIn(0, 100) else null,
+                                    socEnd = if (fuelType == ELECTRIC) socEnd.toIntKm()?.coerceIn(0, 100) else null,
                                 )
                             )
                             nav.popBackStack()
@@ -316,8 +339,19 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             NumberField(str(R.string.odometer), odometer, { odometer = it; odoFromScan = false }, suffix = du, decimal = false)
             if (odoFromScan) Text(str(R.string.scan_check_odo), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
-            ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes) { fuelType = it }
-            NumberField(str(R.string.amount), amount, { amount = it; recalcTotal() }, suffix = unit)
+            val charging = fuelType == ELECTRIC
+            if (veh?.isPlugInHybrid == true) {
+                SingleChips(listOf(str(R.string.refuel), str(R.string.charge)), str(if (charging) R.string.charge else R.string.refuel)) { sel ->
+                    if (sel.isNotEmpty()) fuelType = if (sel == str(R.string.charge)) ELECTRIC else fuelOnlyType.ifBlank { "Super E10" }
+                }
+            }
+            if (!charging) {
+                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes.filter { veh?.isElectric != true || it == ELECTRIC }) { fuelType = it }
+            } else if (veh?.charges != true) {
+                // Fahrzeug ohne Elektro-Antrieb: Rückweg zum Kraftstoff ermöglichen
+                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes) { fuelType = it }
+            }
+            NumberField(str(if (charging) R.string.energy else R.string.amount), amount, { amount = it; recalcTotal() }, suffix = unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumberField(str(R.string.price_per_unit, unit), ppu, { ppu = it; recalcTotal() }, suffix = cur, modifier = Modifier.weight(1f))
                 NumberField(str(R.string.total), total, {
@@ -327,13 +361,23 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     if (a != null && t != null && a > 0) ppu = (t / a).fmt(3)
                 }, suffix = cur, modifier = Modifier.weight(1f))
             }
-            LabeledSwitch(str(R.string.full_tank), fullTank) { fullTank = it }
-            LabeledSwitch(str(R.string.missed_previous), missed) { missed = it }
+            LabeledSwitch(str(if (charging) R.string.charged_to_target else R.string.full_tank), fullTank) { fullTank = it }
+            if (charging) Text(str(R.string.charged_to_target_info), style = MaterialTheme.typography.bodySmall)
+            LabeledSwitch(str(if (charging) R.string.missed_previous_charge else R.string.missed_previous), missed) { missed = it }
+            if (charging) {
+                SectionTitle(str(R.string.charge_location))
+                SingleChips(Options.chargeLocations, chargeLoc) { chargeLoc = it }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NumberField(str(R.string.soc_before), socStart, { socStart = it }, suffix = "%", decimal = false, modifier = Modifier.weight(1f))
+                    NumberField(str(R.string.soc_after), socEnd, { socEnd = it }, suffix = "%", decimal = false, modifier = Modifier.weight(1f))
+                }
+                if (veh?.batteryCapacity == null) Text(str(R.string.soc_info_capacity), style = MaterialTheme.typography.bodySmall)
+            }
             val obcUnit = if (veh?.consumptionFormat == "perUnit") "$du/$unit" else "$unit/100 $du"
             NumberField(str(R.string.obc_field), obc, { obc = it }, suffix = obcUnit)
 
             HorizontalDivider()
-            SectionTitle(str(R.string.station))
+            SectionTitle(str(if (charging) R.string.charging_station else R.string.station))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = { requestLocate() }, enabled = !locating) {
                     Icon(Icons.Default.MyLocation, contentDescription = null)
@@ -344,7 +388,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 if (locating) CircularProgressIndicator(Modifier.size(24.dp))
             }
             info?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            SuggestField(str(R.string.operator), brand, brandOptions) { brand = it }
+            SuggestField(
+                str(if (charging) R.string.charge_network else R.string.operator), brand,
+                if (charging) Options.chargeNetworks else brandOptions,
+            ) { brand = it }
             OutlinedTextField(address, { address = it }, label = { Text(str(R.string.address)) }, modifier = Modifier.fillMaxWidth())
             val la = lat
             val lo = lon

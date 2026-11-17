@@ -61,6 +61,12 @@ object Options {
         "Hankook", "Nokian", "Vredestein", "Falken", "Kumho", "Toyo", "Yokohama", "Uniroyal", "Firestone",
     )
     val expenseCategories = listOf("Versicherung", "Steuer", "Parken", "Maut", "Wäsche", "Finanzierung", "Gebühren", "Sonstiges")
+    val driveTypes = listOf("Verbrenner", "Hybrid", "Plug-in-Hybrid", "Elektro")
+    val chargeLocations = listOf("Zuhause", "AC", "DC")
+    val chargeNetworks = listOf(
+        "Zuhause", "EnBW", "Ionity", "Tesla Supercharger", "Aral pulse", "Shell Recharge", "EWE Go", "E.ON Drive",
+        "Allego", "Fastned", "Maingau", "Clever", "Circle K", "Arbeitgeber",
+    )
     val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
     val serviceSuggestions get() = strList(R.string.list_service_suggestions)
     val reminderSuggestions get() = strList(R.string.list_reminder_suggestions)
@@ -71,6 +77,9 @@ object Options {
         else -> "l"
     }
 }
+
+/** Schlüssel der Energieart „Strom“ (Laden statt Tanken). */
+const val ELECTRIC = "Strom"
 
 @Serializable
 @Entity(tableName = "vehicles")
@@ -95,7 +104,16 @@ data class Vehicle(
     @ColumnInfo(defaultValue = "Auto") val vehicleType: String = "Auto",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
-)
+    /** Antrieb: "Verbrenner", "Hybrid" (ohne Stecker), "Plug-in-Hybrid" oder "Elektro". */
+    @ColumnInfo(defaultValue = "Verbrenner") val driveType: String = "Verbrenner",
+    /** Nutzbare Akkukapazität in kWh (Elektro/Plug-in-Hybrid), für den Verbrauch ab Akku. */
+    val batteryCapacity: Double? = null,
+) {
+    val isElectric: Boolean get() = driveType == "Elektro" || (driveType == "Verbrenner" && defaultFuelType == "Strom")
+    val isPlugInHybrid: Boolean get() = driveType == "Plug-in-Hybrid"
+    /** Fahrzeug wird (auch) geladen. */
+    val charges: Boolean get() = isElectric || isPlugInHybrid
+}
 
 @Serializable
 @Entity(tableName = "refuels", indices = [Index("vehicleId")])
@@ -122,7 +140,14 @@ data class Refuel(
     val obcConsumption: Double? = null,
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
+    /** Nur beim Laden: "Zuhause", "AC" (öffentlich) oder "DC" (Schnelllader). */
+    @ColumnInfo(defaultValue = "") val chargeLocation: String = "",
+    /** Akkustand in Prozent vor bzw. nach dem Laden (optional). */
+    val socStart: Int? = null,
+    val socEnd: Int? = null,
 ) {
+    val isCharge: Boolean get() = fuelType == ELECTRIC
+
     val pricePerUnit: Double get() = if (amount > 0) totalPrice / amount else 0.0
     fun extrasList(): List<String> = extras.split("|").filter { it.isNotBlank() }
 }
@@ -398,7 +423,7 @@ interface ReminderDao {
     suspend fun upsert(item: Reminder)
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 8, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 9, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -446,6 +471,15 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN driveType TEXT NOT NULL DEFAULT 'Verbrenner'")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN batteryCapacity REAL")
+                db.execSQL("ALTER TABLE refuels ADD COLUMN chargeLocation TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE refuels ADD COLUMN socStart INTEGER")
+                db.execSQL("ALTER TABLE refuels ADD COLUMN socEnd INTEGER")
+            }
+        }
         private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE reminders ADD COLUMN intervalMonths INTEGER NOT NULL DEFAULT 0")
@@ -480,7 +514,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun create(ctx: Context): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                 .build()
     }
 }

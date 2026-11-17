@@ -60,6 +60,9 @@ android {
         }
     }
 
+    // Android-Klassen in Unit-Tests liefern Standardwerte statt Fehler
+    testOptions { unitTests.isReturnDefaultValues = true }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

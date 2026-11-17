@@ -27,6 +27,8 @@ object ReceiptParser {
         """(summe|gesamt|total|betrag|zu zahlen|zahlbetrag|i alt|at betale|amount|bar|ec[- ]?karte|girocard|kartenzahlung|visa|mastercard|dankort)""",
         RegexOption.IGNORE_CASE,
     )
+    private val kwhRe = Regex("""$NUM\s*kwh\b""", RegexOption.IGNORE_CASE)
+    private val kwhPriceRe = Regex("""$NUM\s*(?:€|eur|euro|kr\.?|dkk|chf)?\s*/\s*kwh\b""", RegexOption.IGNORE_CASE)
     private val moneyRe = Regex("""(\d{1,5}(?:[.,]\d{3})*[.,]\d{2})(?!\d)""")
     private val dateRe = Regex("""\b(\d{1,2})[./-](\d{1,2})[./-](\d{4}|\d{2})\b""")
 
@@ -55,10 +57,15 @@ object ReceiptParser {
         val text = cleanDigits(raw)
         val lines = text.lines().map { it.trim() }.filter { it.isNotEmpty() }
 
-        val amounts = (amountRe.findAll(text).map { it.groupValues[1] } + amountKeyRe.findAll(text).map { it.groupValues[1] })
-            .mapNotNull { num(it) }.filter { it in 1.0..500.0 }.toList()
-        val ppus = (ppuRe.findAll(text).map { it.groupValues[1] } + ppuKeyRe.findAll(text).map { it.groupValues[1] })
-            .mapNotNull { num(it) }.filter { it in 0.3..30.0 }.toList()
+        // Ladequittung: Energie in kWh und Preis pro kWh
+        val kwh = kwhRe.findAll(text).mapNotNull { num(it.groupValues[1]) }.filter { it in 0.5..250.0 }.toList()
+        val kwhPrice = kwhPriceRe.findAll(text).mapNotNull { num(it.groupValues[1]) }.filter { it in 0.05..15.0 }.toList()
+        val isCharge = kwh.isNotEmpty() || kwhPrice.isNotEmpty()
+
+        val amounts = if (isCharge) kwh else ((amountRe.findAll(text).map { it.groupValues[1] } + amountKeyRe.findAll(text).map { it.groupValues[1] })
+            .mapNotNull { num(it) }.filter { it in 1.0..500.0 }.toList())
+        val ppus = if (isCharge) kwhPrice else ((ppuRe.findAll(text).map { it.groupValues[1] } + ppuKeyRe.findAll(text).map { it.groupValues[1] })
+            .mapNotNull { num(it) }.filter { it in 0.3..30.0 }.toList())
         val totalsOnKeyLines = lines.filter { totalKeyRe.containsMatchIn(it) }
             .flatMap { l -> moneyRe.findAll(l).mapNotNull { num(it.groupValues[1]) }.toList() }
             .filter { it in 1.0..5000.0 }
@@ -88,7 +95,7 @@ object ReceiptParser {
             if (d in 1..31 && mo in 1..12 && y in (nowYear - 1)..nowYear) Triple(y, mo, d) else null
         }.firstOrNull()
 
-        return ReceiptData(amount, ppu, total, date, fuelType(text))
+        return ReceiptData(amount, ppu, total, date, if (isCharge) ELECTRIC else fuelType(text))
     }
 
     fun fuelType(text: String): String? {

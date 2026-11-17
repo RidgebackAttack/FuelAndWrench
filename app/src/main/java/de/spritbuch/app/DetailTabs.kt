@@ -24,6 +24,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Build
@@ -332,10 +333,11 @@ fun VehicleDetailContent(
                     text = { Text(str(R.string.expense)) },
                 )
             } else {
+                val ev = vehicle?.isElectric == true
                 ExtendedFloatingActionButton(
                     onClick = { nav.navigate("refuelEdit/$vehicleId/new") },
-                    icon = { Icon(Icons.Default.LocalGasStation, contentDescription = null) },
-                    text = { Text(str(R.string.refuel)) },
+                    icon = { Icon(if (ev) Icons.Default.EvStation else Icons.Default.LocalGasStation, contentDescription = null) },
+                    text = { Text(str(if (ev) R.string.charge else R.string.refuel)) },
                 )
             }
         },
@@ -428,6 +430,14 @@ private fun LazyListScope.overviewItems(
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatLine(str(R.string.stat_avg), Units.consumption(v, fuel, stats.avg))
                 StatLine(str(R.string.stat_last), Units.consumption(v, fuel, stats.last))
+                if (stats.avgElectric != null) {
+                    StatLine(str(R.string.stat_avg_electric), Units.consumption(v, ELECTRIC, stats.avgElectric))
+                }
+                stats.batteryAvg?.let { b ->
+                    StatLine(str(R.string.stat_battery), Units.consumption(v, ELECTRIC, b))
+                    val grid = if (fuel == ELECTRIC) stats.avg else stats.avgElectric
+                    if (grid != null && grid > b) StatLine(str(R.string.stat_charge_loss), "≈ ${((grid / b - 1) * 100).fmt(0)} %")
+                }
                 stats.obcDeviation?.let { d ->
                     StatLine(
                         str(R.string.stat_obc, stats.obcCount),
@@ -435,20 +445,22 @@ private fun LazyListScope.overviewItems(
                     )
                 }
                 StatLine(str(R.string.stat_cost_per100, du), stats.costPer100?.let { "${it.fmt()} $cur" } ?: "–")
-                StatLine(str(R.string.stat_fuel_cost), "${stats.totalCost.fmt()} $cur")
+                StatLine(str(if (v.charges) R.string.stat_energy_cost else R.string.stat_fuel_cost), "${stats.totalCost.fmt()} $cur")
                 StatLine(str(R.string.stat_service_cost), "${services.sumOf { it.cost }.fmt()} $cur")
                 if (expenses.isNotEmpty()) StatLine(str(R.string.stat_other_cost), "${expenses.sumOf { it.amount }.fmt()} $cur")
                 if (stats.distance > 0) {
                     StatLine(str(R.string.stat_total_per100, du), "${((stats.totalCost + otherCost) / stats.distance * 100).fmt()} $cur")
                 }
-                StatLine(str(R.string.stat_total_amount), "${stats.totalAmount.fmt(1)} $amt")
+                StatLine(str(if (fuel == ELECTRIC) R.string.stat_total_charged else R.string.stat_total_amount), "${stats.totalAmount.fmt(1)} $amt")
+                if (fuel != ELECTRIC && stats.totalElectric > 0) StatLine(str(R.string.stat_total_charged), "${stats.totalElectric.fmt(1)} kWh")
                 StatLine(str(R.string.stat_distance), stats.distance.dist(du))
                 StatLine(str(R.string.odometer), currentOdo.dist(du))
             }
         }
     }
     // Verbrauchsverlauf: letzte 30 Werte chronologisch
-    val chartValues = refuels.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
+    val chartValues = refuels.filter { it.isCharge == (fuel == ELECTRIC) }
+        .sortedWith(compareBy({ it.odometer }, { it.timestamp }))
         .mapNotNull { stats.perRefuel[it.id] }.takeLast(30)
     if (chartValues.size >= 2) item {
         ConsumptionChart(chartValues) { Units.consumption(v, fuel, it) }
@@ -525,7 +537,9 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
             }
         }
         items(list, key = { it.id }) { r ->
-            RefuelCard(v, r, stats.perRefuel[r.id], stats.avg) { nav.navigate("refuelEdit/${v.id}/${r.id}") }
+            RefuelCard(v, r, stats.perRefuel[r.id], if (r.isCharge && stats.avgElectric != null) stats.avgElectric else stats.avg) {
+                nav.navigate("refuelEdit/${v.id}/${r.id}")
+            }
         }
     }
 }

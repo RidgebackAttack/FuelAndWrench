@@ -103,13 +103,63 @@ data class Stats(
     /** Mittlere Abweichung Bordcomputer gegenüber berechnetem Verbrauch (0,05 = BC zeigt 5 % mehr). */
     val obcDeviation: Double? = null,
     val obcCount: Int = 0,
+    /** Plug-in-Hybrid: Stromverbrauch zusätzlich zum Kraftstoff (kWh je 100 Strecke). */
+    val avgElectric: Double? = null,
+    val lastElectric: Double? = null,
+    /** Geladene Energie gesamt (kWh). */
+    val totalElectric: Double = 0.0,
+    /** Verbrauch ab Akku (aus Akkustand und Kapazität), ohne Ladeverluste. */
+    val batteryAvg: Double? = null,
 )
 
 /**
  * Verbrauch nach der Voll-zu-Voll-Methode: Die Menge aller Tankvorgänge seit der letzten
  * Volltankung wird auf die gefahrene Strecke umgelegt. "Tankvorgang vergessen" startet neu.
  */
-fun computeStats(refuels: List<Refuel>): Stats {
+/**
+ * Kennzahlen eines Fahrzeugs. Kraftstoff und Strom werden getrennt nach der Voll-zu-voll-Methode
+ * berechnet (beim Laden: „bis zum Ladeziel geladen“); bei Plug-in-Hybriden ergeben sich so
+ * z. B. 3,1 l/100 km plus 9,8 kWh/100 km bezogen auf die gesamte Strecke.
+ */
+fun computeStats(refuels: List<Refuel>, batteryCapacity: Double? = null): Stats {
+    val fuel = refuels.filter { !it.isCharge }
+    val elec = refuels.filter { it.isCharge }
+    val f = computeGroup(fuel)
+    val e = computeGroup(elec)
+    val primary = if (fuel.isEmpty()) e else f
+    val sorted = refuels.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
+    val costParts = listOfNotNull(f.costPer100, e.costPer100)
+    // Verbrauch ab Akku: aus Akkustand nach dem letzten und vor diesem Laden
+    val battery = if (batteryCapacity != null && batteryCapacity > 0) {
+        val s = elec.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
+        var used = 0.0
+        var dist = 0
+        for (i in 1 until s.size) {
+            val prev = s[i - 1]
+            val cur = s[i]
+            val a = prev.socEnd ?: continue
+            val b = cur.socStart ?: continue
+            val d = cur.odometer - prev.odometer
+            if (d > 0 && a >= b && !cur.missedPrevious) {
+                used += (a - b) / 100.0 * batteryCapacity
+                dist += d
+            }
+        }
+        if (dist > 0) used / dist * 100.0 else null
+    } else null
+    return primary.copy(
+        totalCost = refuels.sumOf { it.totalPrice },
+        costPer100 = if (costParts.isEmpty()) null else costParts.sum(),
+        distance = if (sorted.size >= 2) sorted.last().odometer - sorted.first().odometer else 0,
+        perRefuel = f.perRefuel + e.perRefuel,
+        avgElectric = if (fuel.isNotEmpty()) e.avg else null,
+        lastElectric = if (fuel.isNotEmpty()) e.last else null,
+        totalElectric = elec.sumOf { it.amount },
+        batteryAvg = battery,
+    )
+}
+
+private fun computeGroup(refuels: List<Refuel>): Stats {
     val sorted = refuels.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
     val per = mutableMapOf<String, Double>()
     var lastFull: Refuel? = null
