@@ -1,0 +1,3 @@
+# Startprofil: Code der App beim Installieren vorkompilieren (Compose bringt eigene Profile mit)
+HSPLde/spritbuch/app/**->**(**)**
+Lde/spritbuch/app/**;

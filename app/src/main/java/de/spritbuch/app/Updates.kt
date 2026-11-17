@@ -89,8 +89,13 @@ object UpdateChecker {
             val o = Json.parseToJsonElement(body).jsonObject
             val tag = o["tag_name"]?.jsonPrimitive?.contentOrNull ?: return@runCatching null
             val page = o["html_url"]?.jsonPrimitive?.contentOrNull ?: "$SOURCE_URL/releases"
-            val apk = o["assets"]?.jsonArray?.mapNotNull { it.jsonObject["browser_download_url"]?.jsonPrimitive?.contentOrNull }
-                ?.firstOrNull { it.endsWith(".apk") }
+            val apks = o["assets"]?.jsonArray?.mapNotNull { it.jsonObject["browser_download_url"]?.jsonPrimitive?.contentOrNull }
+                ?.filter { it.endsWith(".apk") }.orEmpty()
+            // Passende APK für den Prozessor, sonst die Universal-APK
+            val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: ""
+            val apk = apks.firstOrNull { it.endsWith("-$abi.apk") }
+                ?: apks.firstOrNull { a -> listOf("arm64-v8a", "armeabi-v7a").none { a.endsWith("-$it.apk") } }
+                ?: apks.firstOrNull()
             UpdateInfo(tag.removePrefix("v"), page, apk)
         }.getOrNull()
         prefs.lastUpdateCheck = now()

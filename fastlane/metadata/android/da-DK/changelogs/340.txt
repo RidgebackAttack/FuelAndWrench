@@ -1,0 +1,2 @@
+- Mindre APK pr. processortype (arm64-v8a til de fleste telefoner) plus universel APK
+- Hurtigere opstart: ubrugt kode fjernes, opstartsprofil installeres

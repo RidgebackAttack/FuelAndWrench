@@ -1,0 +1,2 @@
+- Kleinere APK je Prozessortyp (arm64-v8a für die meisten Handys) plus Universal-APK
+- Schnellerer Start: ungenutzter Code wird entfernt, Startprofil wird mitinstalliert

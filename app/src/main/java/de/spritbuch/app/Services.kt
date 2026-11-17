@@ -50,10 +50,11 @@ class App : Application() {
         super.onCreate()
         instance = this
         repo = Repository(this, AppDatabase.create(this))
-        Notifications.createChannel(this)
-        SyncScheduler.schedulePeriodic(this)
-        DailyWorker.schedule(this)
+        // Alles, was nicht für das erste Bild nötig ist, im Hintergrund (schnellerer Start)
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            runCatching { Notifications.createChannel(this@App) }
+            runCatching { SyncScheduler.schedulePeriodic(this@App) }
+            runCatching { DailyWorker.schedule(this@App) }
             runCatching { repo.repairImportedData() }
         }
     }
