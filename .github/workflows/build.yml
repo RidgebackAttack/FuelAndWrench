@@ -69,7 +69,7 @@ jobs:
           path: FuelAndWrench-*.apk
 
       - name: Release veröffentlichen
-        if: env.SIGNING_PASSWORD != '' && env.NEW_RELEASE == 'true'
+        if: env.SIGNING_PASSWORD != '' && env.NEW_RELEASE == 'true' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
