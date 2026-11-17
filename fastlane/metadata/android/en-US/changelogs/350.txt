@@ -1,0 +1,5 @@
+- Electric cars and plug-in hybrids: charges with kWh, location and battery level, consumption in kWh/100 km, charging losses, charging station search
+- Plug-in hybrids: fuel and electricity consumption separately, cost per 100 km combined
+- Receipt scan recognizes charging receipts
+- Statistics: electricity price trend and share per charging location
+- More automated checks during the build

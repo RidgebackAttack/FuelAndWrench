@@ -1,0 +1,5 @@
+- Elektroautos und Plug-in-Hybride: Ladevorgänge mit kWh, Ladeort und Akkustand, Verbrauch in kWh/100 km, Ladeverluste, Ladestationssuche
+- Plug-in-Hybride: Sprit- und Stromverbrauch getrennt, Kosten pro 100 km gemeinsam
+- Beleg-Scan erkennt Ladequittungen
+- Statistik: Strompreis-Verlauf und Anteil je Ladeort
+- Mehr automatische Prüfungen beim Bauen

@@ -1,0 +1,4 @@
+- Elbiler og plug-in-hybrider: opladninger med kWh, ladested og batteriniveau, forbrug i kWh/100 km, ladetab, søgning efter ladestationer
+- Plug-in-hybrider: brændstof- og strømforbrug hver for sig, omkostninger pr. 100 km samlet
+- Kvitteringsscanning genkender ladekvitteringer
+- Statistik: strømprisudvikling og andel pr. ladested
