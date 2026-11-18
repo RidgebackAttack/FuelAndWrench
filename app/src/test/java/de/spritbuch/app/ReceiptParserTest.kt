@@ -113,4 +113,12 @@ class ReceiptParserTest {
         assertEquals(true, 413158.0 in values)
         assertEquals(false, values.any { it == 12.0 || it == 30.0 || it == 3.0 })
     }
+
+    @Test
+    fun ownStationsAreRecognized() {
+        val text = "WIKING Tankstelle\nHauptstr. 5\n25899 Niebüll\n40,00 l x 1,699 EUR/l\nSUMME 67,96"
+        assertEquals(null, ReceiptParser.parse(text, nowYear = 2026).station)
+        assertEquals("Wiking", ReceiptParser.parse(text, nowYear = 2026, ownStations = listOf("Wiking", "Tankstelle")).station)
+        assertEquals("Hauptstr. 5, 25899 Niebüll", ReceiptParser.parse(text, nowYear = 2026).address)
+    }
 }

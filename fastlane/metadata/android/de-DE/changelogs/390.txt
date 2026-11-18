@@ -1,0 +1,1 @@
+- Scan erkennt auch deine eigenen Tankstellen (z. B. kleine freie Stationen aus früheren Betankungen)

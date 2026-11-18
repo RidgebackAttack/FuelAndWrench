@@ -57,7 +57,12 @@ object ReceiptParser {
         else t.map { c -> when (c) { 'O', 'o' -> '0'; 'I' -> '1'; 'S' -> '5'; 'B' -> '8'; else -> c } }.joinToString("")
     }
 
-    fun parse(raw: String, nowYear: Int = Calendar.getInstance().get(Calendar.YEAR)): ReceiptData {
+    fun parse(
+        raw: String,
+        nowYear: Int = Calendar.getInstance().get(Calendar.YEAR),
+        /** Vom Nutzer schon verwendete Betreiber (z. B. kleine freie Tankstellen). */
+        ownStations: List<String> = emptyList(),
+    ): ReceiptData {
         val text = cleanDigits(raw)
         val lines = text.lines().map { it.trim() }.filter { it.isNotEmpty() }
 
@@ -101,15 +106,19 @@ object ReceiptParser {
 
         return ReceiptData(
             amount, ppu, total, date, if (isCharge) ELECTRIC else fuelType(text),
-            station(lines, isCharge), address(lines),
+            station(lines, isCharge, ownStations), address(lines),
         )
     }
 
     /** Marke aus den ersten Zeilen (dort steht sie auf dem Bon); nur bekannte Marken, ganze Wörter. */
-    fun station(lines: List<String>, charging: Boolean = false): String? {
+    fun station(lines: List<String>, charging: Boolean = false, own: List<String> = emptyList()): String? {
         val head = lines.take(8).joinToString("\n").lowercase()
-        val names = if (charging) Options.chargeNetworks.filter { it != "Zuhause" && it != "Arbeitgeber" }
+        val generic = setOf("tankstelle", "tankstation", "station", "tank", "freie tankstelle", "zuhause", "arbeitgeber", "service")
+        val known = if (charging) Options.chargeNetworks.filter { it != "Zuhause" && it != "Arbeitgeber" }
         else Options.brands.filter { it != "Freie Tankstelle" }
+        // Eigene Einträge (z. B. „Winkler“, „Wiking“) zählen mit, allgemeine Wörter nicht
+        val names = (known + own.map { it.trim() }.filter { it.length >= 3 && it.lowercase() !in generic })
+            .distinctBy { it.lowercase() }
         fun hit(alias: String) =
             Regex("(^|[^\\p{L}\\p{N}])" + Regex.escape(alias.lowercase()) + "($|[^\\p{L}\\p{N}])").containsMatchIn(head)
         // Längere Namen zuerst, damit z. B. „Shell Recharge“ vor „Shell“ greift

@@ -1,0 +1,1 @@
+- Scan also recognizes your own stations (e.g. small independent ones from earlier refuels)

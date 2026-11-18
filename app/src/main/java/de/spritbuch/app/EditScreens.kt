@@ -127,7 +127,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     val nums = ReceiptParser.numbers(text).filter { it.second >= 100 && it.second % 1.0 == 0.0 }
                     ScanReview(true, km?.let { mapOf(ScanTarget.ODOMETER to it.toDouble()) } ?: emptyMap(), null, null, nums)
                 } else {
-                    val r = ReceiptParser.parse(text)
+                    // Eigene Betreiber (aus früheren Betankungen) mit durchsuchen
+                    val own = repo.db.refuels().getAllRaw().filter { !it.deleted }.map { it.stationBrand }.distinct()
+                    val r = ReceiptParser.parse(text, ownStations = own)
                     val v = buildMap {
                         r.amount?.let { put(ScanTarget.AMOUNT, it) }
                         r.pricePerUnit?.let { put(ScanTarget.PRICE, it) }
