@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -68,9 +70,22 @@ fun CropDialog(bitmap: Bitmap, initial: RectF, hint: String, onCancel: () -> Uni
     val handleRadius = with(LocalDensity.current) { 28.dp.toPx() }
     val accent = MaterialTheme.colorScheme.primary
 
-    Dialog(onDismissRequest = onCancel, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxSize().background(Color.Black)) {
-            Text(hint, color = Color.White, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        Column(Modifier.fillMaxSize().background(Color.Black).systemBarsPadding()) {
+            // Knöpfe oben, damit sie nie hinter der Navigationsleiste verschwinden
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onCancel) { Text(str(R.string.cancel), color = Color.White) }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { l = 0f; t = 0f; r = 1f; b = 1f }) { Text(str(R.string.crop_all), color = Color.White) }
+                Button(onClick = { onDone(RectF(l, t, r, b)) }) { Text(str(R.string.crop_recognize)) }
+            }
+            Text(hint, color = Color.White, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().padding(8.dp)) {
                 val boxW = constraints.maxWidth.toFloat()
                 val boxH = constraints.maxHeight.toFloat()
@@ -132,13 +147,10 @@ fun CropDialog(bitmap: Bitmap, initial: RectF, hint: String, onCancel: () -> Uni
                     }
                 }
             }
-            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text(str(R.string.cancel), color = Color.White) }
-                OutlinedButton(onClick = { l = 0f; t = 0f; r = 1f; b = 1f }, modifier = Modifier.weight(1f)) {
-                    Text(str(R.string.crop_all), color = Color.White)
-                }
-                Button(onClick = { onDone(RectF(l, t, r, b)) }, modifier = Modifier.weight(1f)) { Text(str(R.string.crop_recognize)) }
-            }
+            Button(
+                onClick = { onDone(RectF(l, t, r, b)) },
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+            ) { Text(str(R.string.crop_recognize)) }
         }
     }
 }

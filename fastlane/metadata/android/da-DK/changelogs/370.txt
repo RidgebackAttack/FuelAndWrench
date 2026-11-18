@@ -1,0 +1,1 @@
+- Scanning: knappen „Genkend“ findes nu også øverst; på nogle telefoner var den skjult bag navigationslinjen

@@ -1,0 +1,1 @@
+- Scan: the “Recognize” button is now also at the top; on some phones it was hidden behind the navigation bar
