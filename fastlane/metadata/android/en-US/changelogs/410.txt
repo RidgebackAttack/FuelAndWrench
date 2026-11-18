@@ -1,0 +1,1 @@
+- Refuel: only matching fuels offered (petrol cars petrol, diesel cars diesel, gas vehicles gas and petrol, electric only electricity)

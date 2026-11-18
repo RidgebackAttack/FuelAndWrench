@@ -1,0 +1,1 @@
+- Tankning: kun passende brændstoffer vises (benzinbiler benzin, dieselbiler diesel, gaskøretøjer gas og benzin, elbiler kun strøm)

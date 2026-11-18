@@ -26,6 +26,25 @@ object Options {
         "Super E5", "Super E10", "Super Plus", "Diesel", "Premium-Diesel",
         "HVO100", "LPG", "CNG", "Strom"
     )
+    private val petrol = listOf("Super E5", "Super E10", "Super Plus")
+    private val diesel = listOf("Diesel", "Premium-Diesel", "HVO100")
+
+    /**
+     * Sinnvolle Kraftstoffe für ein Fahrzeug: Benziner nur Benzinsorten, Diesel nur Dieselsorten,
+     * Gasfahrzeuge (bivalent) Gas plus Benzin, Elektro nur Strom. Der aktuelle Wert bleibt immer wählbar.
+     */
+    fun fuelsFor(v: Vehicle?, current: String = ""): List<String> {
+        val d = v?.defaultFuelType ?: return fuelTypes
+        val list = when {
+            v.isElectric -> listOf(ELECTRIC)
+            d in diesel -> diesel
+            d == "LPG" -> listOf("LPG") + petrol
+            d == "CNG" -> listOf("CNG") + petrol
+            d in petrol -> petrol
+            else -> fuelTypes.filter { it != ELECTRIC }
+        }
+        return if (current.isNotBlank() && current !in list && current != ELECTRIC) list + current else list
+    }
     val brands = listOf(
         "Agip/Eni", "Aral", "Avia", "bft", "BP", "Calpam", "Circle K", "Classic", "ED", "Elan", "Esso",
         "F24", "famila", "Globus", "HEM", "Hoyer", "Ingo", "JET", "Kaufland", "Marktkauf", "Mundorf",

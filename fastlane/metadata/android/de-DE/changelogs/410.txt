@@ -1,0 +1,1 @@
+- Betankung: nur passende Kraftstoffe zur Auswahl (Benziner nur Benzin, Diesel nur Diesel, Gas-Fahrzeuge Gas und Benzin, Elektro nur Strom)

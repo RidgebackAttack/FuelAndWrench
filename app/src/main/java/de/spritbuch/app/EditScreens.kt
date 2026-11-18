@@ -383,10 +383,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 }
             }
             if (!charging) {
-                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes.filter { veh?.isElectric != true || it == ELECTRIC }) { fuelType = it }
+                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelsFor(veh, fuelType)) { fuelType = it }
             } else if (veh?.charges != true) {
                 // Fahrzeug ohne Elektro-Antrieb: Rückweg zum Kraftstoff ermöglichen
-                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelTypes) { fuelType = it }
+                ChoiceField(str(R.string.fuel_type), fuelType, Options.fuelsFor(veh, fuelType) + ELECTRIC) { fuelType = it }
             }
             NumberField(str(if (charging) R.string.energy else R.string.amount), amount, { amount = it; recalcTotal() }, suffix = unit)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
