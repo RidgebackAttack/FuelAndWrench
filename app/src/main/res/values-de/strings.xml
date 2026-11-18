@@ -471,4 +471,7 @@
     <string name="scan_correct">Korrigieren</string>
     <string name="scan_apply">Übernehmen</string>
     <string name="scan_applied">Aus dem Scan übernommen – bitte prüfen.</string>
+    <string name="device_vehicles">Fahrzeuge auf diesem Gerät</string>
+    <string name="device_vehicles_info">Z. B. im Navi des Autos nur das Auto zeigen. Ausgeblendete Fahrzeuge werden weiter synchronisiert, hier aber nicht angezeigt, angeboten oder gemeldet.</string>
+    <string name="device_all_vehicles">Alle Fahrzeuge anzeigen</string>
 </resources>

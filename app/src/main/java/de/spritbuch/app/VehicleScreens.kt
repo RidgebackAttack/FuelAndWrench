@@ -79,7 +79,10 @@ import kotlinx.coroutines.launch
 fun VehicleListScreen(nav: NavController) {
     val ctx = LocalContext.current
     val repo = ctx.repo
-    val vehicles by repo.vehicles.collectAsStateWithLifecycle(emptyList())
+    val allVehicles by repo.vehicles.collectAsStateWithLifecycle(emptyList())
+    // Auf diesem Gerät ausgeblendete Fahrzeuge (z. B. Navi) nicht zeigen
+    val visiblePrefs = remember { Prefs(ctx) }
+    val vehicles = allVehicles.filter { visiblePrefs.shows(it.id) }
     val refuels by repo.allRefuels.collectAsStateWithLifecycle(emptyList())
     val allReminders by repo.allReminders.collectAsStateWithLifecycle(emptyList())
     val syncing by SyncManager.running.collectAsStateWithLifecycle()

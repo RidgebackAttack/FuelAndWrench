@@ -118,7 +118,7 @@ object ReceiptParser {
      */
     fun numbers(raw: String, max: Int = 30): List<Pair<String, Double>> {
         val text = cleanDigits(raw)
-        val found = Regex("""(?<![\d:])\d{1,3}(?:[.\s]\d{3})+(?:,\d{1,3})?(?![\d:])|(?<![\d:])\d+(?:[.,]\d{1,3})?(?![\d:])""")
+        val found = Regex("""(?<![\d:])\d{1,3}(?:[. ]\d{3})+(?:,\d{1,3})?(?![\d:])|(?<![\d:])\d+(?:[.,]\d{1,3})?(?![\d:])""")
             .findAll(text)
             .map { it.value.trim() }
             .mapNotNull { s -> num(s.replace(" ", "").let { if (Regex("""^\d{1,3}(\.\d{3})+$""").matches(it)) it.replace(".", "") else it })?.let { s to it } }

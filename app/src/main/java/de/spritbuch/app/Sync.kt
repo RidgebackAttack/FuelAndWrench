@@ -209,8 +209,8 @@ object SyncManager {
             syncPhotos(ctx, dav, prefs, merged.vehicles)
             syncAttachments(
                 ctx, dav, prefs,
-                merged.services.filter { !it.deleted }.flatMap { it.attachmentList() } +
-                    merged.expenses.filter { !it.deleted }.flatMap { it.attachmentList() },
+                merged.services.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
+                    merged.expenses.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() },
             )
             ReminderChecker.checkAll(ctx)
             val v = merged.vehicles.count { !it.deleted }
@@ -258,7 +258,7 @@ object SyncManager {
     private fun syncPhotos(ctx: Context, dav: WebDavClient, prefs: Prefs, vehicles: List<Vehicle>) {
         val uploaded = prefs.uploadedPhotos.toMutableSet()
         for (v in vehicles) {
-            if (v.deleted || v.photoVersion == 0L) continue
+            if (v.deleted || v.photoVersion == 0L || !prefs.shows(v.id)) continue
             val name = PhotoStore.name(v.id, v.photoVersion)
             val file = PhotoStore.file(ctx, v.id, v.photoVersion)
             if (file.exists()) {

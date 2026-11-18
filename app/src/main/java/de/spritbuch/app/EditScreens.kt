@@ -217,7 +217,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         val last = repo.lastRefuel(vehicleId)
         val v = repo.getVehicle(vehicleId)
         veh = v
-        if (isNew) vehicleChoices = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived }
+        if (isNew) vehicleChoices = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && Prefs(ctx).shows(it.id) }
         val r = if (isNew) {
             Refuel(
                 vehicleId = vehicleId,
@@ -761,6 +761,28 @@ fun SettingsScreen(nav: NavController) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(str(R.string.language_button, appLocale().getDisplayLanguage(appLocale()))) }
+            }
+
+            SectionTitle(str(R.string.device_vehicles))
+            Text(str(R.string.device_vehicles_info), style = MaterialTheme.typography.bodySmall)
+            var allVehicleList by remember { mutableStateOf(listOf<Vehicle>()) }
+            var visible by remember { mutableStateOf(prefs.visibleVehicles) }
+            LaunchedEffect(Unit) { allVehicleList = ctx.repo.db.vehicles().getAllRaw().filter { !it.deleted }.sortedBy { it.archived } }
+            fun saveVisible(v: Set<String>?) {
+                visible = v
+                prefs.visibleVehicles = v
+                scope.launch { Shortcuts.update(ctx) }
+            }
+            LabeledSwitch(str(R.string.device_all_vehicles), visible == null) { all ->
+                saveVisible(if (all) null else allVehicleList.filter { !it.archived }.map { it.id }.toSet())
+            }
+            if (visible != null) {
+                allVehicleList.forEach { v ->
+                    LabeledSwitch(v.name + if (v.archived) " (" + str(R.string.archived_lower) + ")" else "", v.id in (visible ?: emptySet())) { on ->
+                        val cur = visible ?: emptySet()
+                        saveVisible(if (on) cur + v.id else cur - v.id)
+                    }
+                }
             }
 
             SectionTitle(str(R.string.shortcuts_title))

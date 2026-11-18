@@ -56,7 +56,8 @@ object Shortcuts {
     suspend fun update(ctx: Context) = withContext(Dispatchers.IO) {
         runCatching {
             val repo = ctx.repo
-            val vehicles = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived }
+            val prefs = Prefs(ctx)
+            val vehicles = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && prefs.shows(it.id) }
             if (vehicles.isEmpty()) {
                 ShortcutManagerCompat.removeAllDynamicShortcuts(ctx)
                 return@runCatching
@@ -99,7 +100,8 @@ object Shortcuts {
     /** Ziel-Route für einen Kontextmenü-Aufruf. */
     suspend fun route(ctx: Context, action: String, vehicleId: String?): String? {
         if (action != REFUEL && action != EXPENSE) return null
-        val active = ctx.repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived }
+        val prefs = Prefs(ctx)
+        val active = ctx.repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && prefs.shows(it.id) }
         val id = vehicleId?.takeIf { v -> active.any { it.id == v } } ?: active.singleOrNull()?.id
         return when {
             id != null && action == REFUEL -> "refuelEdit/$id/new"
@@ -114,12 +116,14 @@ object Shortcuts {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VehiclePickScreen(nav: NavController, action: String) {
-    val repo = LocalContext.current.repo
+    val ctx = LocalContext.current
+    val repo = ctx.repo
     var vehicles by remember { mutableStateOf<List<Vehicle>>(emptyList()) }
     LaunchedEffect(Unit) {
         val lastUse = repo.db.refuels().getAllRaw().filter { !it.deleted }
             .groupBy { it.vehicleId }.mapValues { (_, l) -> l.maxOf { it.timestamp } }
-        vehicles = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived }
+        val prefs = Prefs(ctx)
+        vehicles = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && prefs.shows(it.id) }
             .sortedByDescending { lastUse[it.id] ?: it.updatedAt }
     }
     Scaffold(

@@ -2,3 +2,4 @@
 - Køretøj kan skiftes i tankningsformularen
 - Scanning: vælg udsnit, billedforbedring, særlig model til segmentcifre på kilometertælleren
 - Efter scanning „Er det korrekt?“, ellers tryk på genkendte tal og tildel dem
+- Vælg køretøjer pr. enhed (f.eks. viser bilens navigation kun bilen)

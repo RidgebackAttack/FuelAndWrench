@@ -191,6 +191,7 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
      */
     suspend fun saveVehicle(v: Vehicle) {
         val t = now()
+        Prefs(ctx).visibleVehicles?.let { if (v.id !in it) Prefs(ctx).visibleVehicles = it + v.id }
         db.withTransaction {
             val old = db.vehicles().get(v.id)
             var toSave = v

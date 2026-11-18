@@ -2,3 +2,4 @@
 - Vehicle can be switched in the refuel form
 - Scan: choose the area, image enhancement, special model for segment digits on the odometer
 - After scanning “Is this correct?”, otherwise tap recognized numbers to assign them
+- Choose vehicles per device (e.g. the car navigation shows only the car)

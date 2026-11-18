@@ -322,6 +322,16 @@ class Prefs(ctx: Context) {
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 
+    /**
+     * Fahrzeuge, die dieses Gerät anzeigt (z. B. Navi im Auto nur das Auto). null = alle.
+     * Synchronisiert werden trotzdem alle Daten, damit auf dem Server nichts verloren geht.
+     */
+    var visibleVehicles: Set<String>?
+        get() = if (sp.getBoolean("allVehicles", true)) null else sp.getStringSet("visibleVehicles", emptySet())?.toSet()
+        set(v) = sp.edit().putBoolean("allVehicles", v == null).putStringSet("visibleVehicles", v ?: emptySet()).apply()
+
+    fun shows(vehicleId: String): Boolean = visibleVehicles?.contains(vehicleId) ?: true
+
     /** Kontextmenü am App-Icon: "generic" (mit Fahrzeugauswahl) oder "perVehicle". */
     var shortcutMode: String
         get() = sp.getString("shortcutMode", "generic") ?: "generic"

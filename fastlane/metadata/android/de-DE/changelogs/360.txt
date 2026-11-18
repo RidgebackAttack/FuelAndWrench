@@ -2,3 +2,4 @@
 - Fahrzeug im Betankungsformular wechselbar
 - Scan: Ausschnitt wählen, Bild wird aufbereitet, eigenes Modell für Segmentziffern am Tacho
 - Nach dem Scan „Stimmt das?“, sonst erkannte Zahlen antippen und zuordnen
+- Fahrzeuge je Gerät wählbar (z. B. Navi im Auto zeigt nur das Auto)

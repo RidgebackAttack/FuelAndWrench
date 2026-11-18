@@ -471,4 +471,7 @@
     <string name="scan_correct">Correct</string>
     <string name="scan_apply">Apply</string>
     <string name="scan_applied">Applied from the scan – please check.</string>
+    <string name="device_vehicles">Vehicles on this device</string>
+    <string name="device_vehicles_info">E.g. on the car\'s navigation unit only show the car. Hidden vehicles are still synchronized, only not shown, offered or notified here.</string>
+    <string name="device_all_vehicles">Show all vehicles</string>
 </resources>
