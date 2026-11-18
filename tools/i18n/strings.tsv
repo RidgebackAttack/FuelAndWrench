@@ -471,3 +471,4 @@ scan_applied	Applied from the scan – please check.	Aus dem Scan übernommen �
 device_vehicles	Vehicles on this device	Fahrzeuge auf diesem Gerät	Køretøjer på denne enhed
 device_vehicles_info	E.g. on the car's navigation unit only show the car. Hidden vehicles are still synchronized, only not shown, offered or notified here.	Z. B. im Navi des Autos nur das Auto zeigen. Ausgeblendete Fahrzeuge werden weiter synchronisiert, hier aber nicht angezeigt, angeboten oder gemeldet.	F.eks. kun vise bilen på bilens navigation. Skjulte køretøjer synkroniseres stadig, men vises, tilbydes eller meldes ikke her.
 device_all_vehicles	Show all vehicles	Alle Fahrzeuge anzeigen	Vis alle køretøjer
+scan_crop_retry	Not right? Narrow down the area	Nicht richtig? Bereich eingrenzen	Ikke korrekt? Afgræns området

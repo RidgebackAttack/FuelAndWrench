@@ -1,0 +1,2 @@
+- Scan erkennt zuerst selbst; nur wenn das Ergebnis nicht stimmt, grenzt du den Bereich ein
+- Tankstelle und Adresse werden vom Bon übernommen

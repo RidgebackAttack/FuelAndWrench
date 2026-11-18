@@ -474,4 +474,5 @@
     <string name="device_vehicles">Køretøjer på denne enhed</string>
     <string name="device_vehicles_info">F.eks. kun vise bilen på bilens navigation. Skjulte køretøjer synkroniseres stadig, men vises, tilbydes eller meldes ikke her.</string>
     <string name="device_all_vehicles">Vis alle køretøjer</string>
+    <string name="scan_crop_retry">Ikke korrekt? Afgræns området</string>
 </resources>

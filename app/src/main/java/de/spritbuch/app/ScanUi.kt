@@ -177,6 +177,7 @@ fun ScanReviewDialog(
     format: (ScanTarget, Double) -> String,
     extras: String?,
     onDismiss: () -> Unit,
+    onCrop: (() -> Unit)? = null,
     onApply: (Map<ScanTarget, Double>) -> Unit,
 ) {
     val targets = if (review.forOdometer) listOf(ScanTarget.ODOMETER) else listOf(ScanTarget.AMOUNT, ScanTarget.PRICE, ScanTarget.TOTAL)
@@ -200,6 +201,10 @@ fun ScanReviewDialog(
                     }
                 }
                 if (!correcting && extras != null) Text(extras, style = MaterialTheme.typography.bodySmall)
+                if (onCrop != null) {
+                    // Nicht richtig erkannt? Bereich eingrenzen und neu erkennen
+                    OutlinedButton(onClick = onCrop, modifier = Modifier.fillMaxWidth()) { Text(str(R.string.scan_crop_retry)) }
+                }
                 if (correcting) {
                     if (review.numbers.isEmpty()) {
                         Text(str(R.string.scan_nothing), style = MaterialTheme.typography.bodySmall)

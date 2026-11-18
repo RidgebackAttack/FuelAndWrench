@@ -1,0 +1,2 @@
+- Scanning genkender først selv; kun hvis resultatet ikke passer, afgrænser du området
+- Tankstation og adresse overtages fra kvitteringen

@@ -111,19 +111,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
 
     var vehicleChoices by remember { mutableStateOf(listOf<Vehicle>()) }
     var cropSource by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var scanBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
     var review by remember { mutableStateOf<ScanReview?>(null) }
-
-    // 1. Foto laden, 2. Ausschnitt wählen (CropDialog), 3. erkennen, 4. „Stimmt das?“ (ScanReviewDialog)
-    fun loadForScan(uri: android.net.Uri) {
-        scope.launch {
-            scanning = true
-            scanInfo = null
-            runCatching { withContext(Dispatchers.IO) { Ocr.load(ctx, uri, 2400) } }
-                .onSuccess { cropSource = it }
-                .onFailure { scanInfo = str(R.string.ocr_failed) + (it.message?.let { m -> " ($m)" } ?: "") }
-            scanning = false
-        }
-    }
+    var scanStation by remember { mutableStateOf<String?>(null) }
+    var scanAddress by remember { mutableStateOf<String?>(null) }
 
     fun runScan(bitmap: android.graphics.Bitmap, crop: android.graphics.RectF, mode: String) {
         scope.launch {
@@ -152,6 +143,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                             else -> vf.isBlank() || vf == ELECTRIC || diesel(vf) == diesel(f)
                         }
                     }
+                    scanStation = r.station
+                    scanAddress = r.address
                     ScanReview(false, v, f, r.date, ReceiptParser.numbers(text))
                 }
             } catch (e: Throwable) {
@@ -161,6 +154,25 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             }
         }
     }
+    // 1. Foto laden, 2. ganzes Bild erkennen, 3. „Stimmt das?“, 4. bei Bedarf Bereich eingrenzen (CropDialog)
+    fun loadForScan(uri: android.net.Uri) {
+        scope.launch {
+            scanning = true
+            scanInfo = null
+            runCatching { withContext(Dispatchers.IO) { Ocr.load(ctx, uri, 2400) } }
+                .onSuccess { bmp ->
+                    // Erst selbst auf dem ganzen Bild versuchen; eingrenzen nur, wenn das Ergebnis nicht stimmt
+                    scanBitmap = bmp
+                    scanning = false
+                    runScan(bmp, android.graphics.RectF(0f, 0f, 1f, 1f), scanMode)
+                }
+                .onFailure {
+                    scanInfo = str(R.string.ocr_failed) + (it.message?.let { m -> " ($m)" } ?: "")
+                    scanning = false
+                }
+        }
+    }
+
     val scanCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) loadForScan(android.net.Uri.fromFile(scanTarget))
     }
@@ -494,6 +506,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         val u = Units.amount(veh, fuelType)
         val c = Units.cur(veh)
         val extras = listOfNotNull(
+            scanStation?.takeIf { !rv.forOdometer }?.let { lbl(it) },
+            scanAddress?.takeIf { !rv.forOdometer },
             rv.fuelType?.let { lbl(it) },
             rv.date?.let { (y, m, d) -> String.format(appLocale(), "%02d.%02d.%d", d, m, y) },
         ).joinToString(" · ").ifBlank { null }
@@ -517,6 +531,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             },
             extras = extras,
             onDismiss = { review = null },
+            onCrop = scanBitmap?.let { bmp -> { review = null; cropSource = bmp } },
         ) { values ->
             review = null
             values[ScanTarget.ODOMETER]?.let { odometer = it.toInt().toString(); odoFromScan = true }
@@ -528,6 +543,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty() && !rv.forOdometer) total = (a * p).fmt(2)
             if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0 && !rv.forOdometer) ppu = (t / a).fmt(3)
             if (!rv.forOdometer) {
+                scanStation?.let { brand = it }
+                scanAddress?.let { if (address.isBlank()) address = it }
                 rv.fuelType?.let { fuelType = it }
                 rv.date?.let { (y, m, d) ->
                     val cal = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }

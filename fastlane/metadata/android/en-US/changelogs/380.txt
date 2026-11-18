@@ -1,0 +1,2 @@
+- Scan recognizes first by itself; only if the result is wrong you narrow down the area
+- Station and address are taken from the receipt

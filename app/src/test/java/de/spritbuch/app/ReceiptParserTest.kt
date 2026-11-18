@@ -27,6 +27,8 @@ class ReceiptParserTest {
         close(76.55, r.total)
         assertEquals(Triple(2026, 11, 12), r.date)
         assertEquals("Diesel", r.fuelType)
+        assertEquals("Team", r.station)
+        assertEquals("Husumer Str. 30, 24941 Flensburg", r.address)
     }
 
     @Test
@@ -60,6 +62,7 @@ class ReceiptParserTest {
         close(438.43, r.total)
         assertEquals(Triple(2026, 11, 3), r.date)
         assertEquals("Super E10", r.fuelType)
+        assertEquals("Q8", r.station)
     }
 
     @Test
@@ -97,6 +100,7 @@ class ReceiptParserTest {
         close(0.59, r.pricePerUnit)
         close(24.99, r.total)
         assertEquals(ELECTRIC, r.fuelType)
+        assertEquals("EnBW", r.station)
     }
 
     @Test

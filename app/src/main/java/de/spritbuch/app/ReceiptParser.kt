@@ -11,6 +11,10 @@ data class ReceiptData(
     val date: Triple<Int, Int, Int>? = null,
     /** Schlüssel aus Options.fuelTypes. */
     val fuelType: String? = null,
+    /** Erkannte Marke der Tankstelle bzw. des Ladeanbieters (Kopf des Belegs). */
+    val station: String? = null,
+    /** Adresse aus dem Kopf des Belegs, z. B. „Husumer Str. 30, 24941 Flensburg“. */
+    val address: String? = null,
 )
 
 /**
@@ -95,7 +99,35 @@ object ReceiptParser {
             if (d in 1..31 && mo in 1..12 && y in (nowYear - 1)..nowYear) Triple(y, mo, d) else null
         }.firstOrNull()
 
-        return ReceiptData(amount, ppu, total, date, if (isCharge) ELECTRIC else fuelType(text))
+        return ReceiptData(
+            amount, ppu, total, date, if (isCharge) ELECTRIC else fuelType(text),
+            station(lines, isCharge), address(lines),
+        )
+    }
+
+    /** Marke aus den ersten Zeilen (dort steht sie auf dem Bon); nur bekannte Marken, ganze Wörter. */
+    fun station(lines: List<String>, charging: Boolean = false): String? {
+        val head = lines.take(8).joinToString("\n").lowercase()
+        val names = if (charging) Options.chargeNetworks.filter { it != "Zuhause" && it != "Arbeitgeber" }
+        else Options.brands.filter { it != "Freie Tankstelle" }
+        fun hit(alias: String) =
+            Regex("(^|[^\\p{L}\\p{N}])" + Regex.escape(alias.lowercase()) + "($|[^\\p{L}\\p{N}])").containsMatchIn(head)
+        // Längere Namen zuerst, damit z. B. „Shell Recharge“ vor „Shell“ greift
+        return names.sortedByDescending { it.length }.firstOrNull { n ->
+            (n.split("/") + if (n == "TotalEnergies") listOf("total") else emptyList()).any { hit(it) }
+        }
+    }
+
+    /** Straße + PLZ/Ort aus dem Kopf (5-stellige PLZ wie in DE, 4-stellige wie in DK). */
+    fun address(lines: List<String>): String? {
+        val head = lines.take(10)
+        val idx = head.indexOfFirst { Regex("""^(?:[A-Z]{1,2}-)?\d{4,5}\s+\p{L}[\p{L} .\-]+$""").matches(it.trim()) }
+        if (idx < 0) return null
+        val city = head[idx].trim().replace(Regex("""\s+"""), " ")
+        val street = head.getOrNull(idx - 1)?.trim()?.takeIf {
+            Regex("""\p{L}.*\d""").containsMatchIn(it) && it.length in 4..60 && !Regex("""\d{2}[.:]\d{2}""").containsMatchIn(it)
+        }
+        return listOfNotNull(street, city).joinToString(", ")
     }
 
     fun fuelType(text: String): String? {
