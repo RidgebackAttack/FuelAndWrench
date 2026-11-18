@@ -1,0 +1,3 @@
+- Fixed: when creating a vehicle, entries were lost after choosing a photo
+- Electric cars no longer get an oil change reminder
+- Vehicle without photo: smaller placeholder

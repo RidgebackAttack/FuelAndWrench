@@ -1,0 +1,3 @@
+- Rettet: ved oprettelse af et køretøj gik indtastningerne tabt efter valg af foto
+- Elbiler får ikke længere en påmindelse om olieskift
+- Køretøj uden foto: mindre pladsholder

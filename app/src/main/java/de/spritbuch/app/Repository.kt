@@ -262,6 +262,14 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         for ((tpl, km, months) in Prefs(ctx).reminderTemplates) {
             val title = templateTitle(tpl)
             val id = "$vehicleId-auto-" + templateIdKey(tpl)
+            // Elektroautos brauchen keinen Ölwechsel: Vorlage überspringen, automatisch angelegte Erinnerung entfernen
+            if (v.isElectric && templateIdKey(tpl) == templateIdKey(OIL_TEMPLATE)) {
+                existing.firstOrNull { it.id == id && !it.deleted }?.let {
+                    db.reminders().upsert(it.copy(deleted = true, updatedAt = now()))
+                    created = true
+                }
+                continue
+            }
             if (existing.any { it.id == id || it.title.equals(title, ignoreCase = true) }) continue
             val interval = (km / Units.distFactorToKm(v.distanceUnit)).roundToInt()
             db.reminders().upsert(

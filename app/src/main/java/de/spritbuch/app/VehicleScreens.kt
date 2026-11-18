@@ -63,6 +63,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -447,35 +448,40 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     val repo = ctx.repo
     val scope = rememberCoroutineScope()
     val isNew = vehicleId == "new"
+    // Alle Eingaben überstehen das Neuerstellen der Activity (z. B. während der Fotoauswahl)
+    val newVehicleId = rememberSaveable { newId() }
+    var loaded by rememberSaveable { mutableStateOf(false) }
     var base by remember { mutableStateOf<Vehicle?>(null) }
-    var name by remember { mutableStateOf("") }
-    var plate by remember { mutableStateOf("") }
-    var fuel by remember { mutableStateOf("Super E10") }
-    var tank by remember { mutableStateOf("") }
-    var initialOdo by remember { mutableStateOf("") }
-    var photoVersion by remember { mutableLongStateOf(0L) }
-    var archived by remember { mutableStateOf(false) }
-    var thumbPos by remember { mutableStateOf(PhotoPos()) }
-    var largePos by remember { mutableStateOf(PhotoPos()) }
-    var distU by remember { mutableStateOf("km") }
-    var vType by remember { mutableStateOf("Auto") }
-    var drive by remember { mutableStateOf("Verbrenner") }
-    var battery by remember { mutableStateOf("") }
-    var volU by remember { mutableStateOf("l") }
-    var fmtU by remember { mutableStateOf("per100") }
-    var cur by remember { mutableStateOf("€") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var plate by rememberSaveable { mutableStateOf("") }
+    var fuel by rememberSaveable { mutableStateOf("Super E10") }
+    var tank by rememberSaveable { mutableStateOf("") }
+    var initialOdo by rememberSaveable { mutableStateOf("") }
+    var photoVersion by rememberSaveable { mutableLongStateOf(0L) }
+    var archived by rememberSaveable { mutableStateOf(false) }
+    var thumbPosRaw by rememberSaveable { mutableStateOf(PhotoPos().encode()) }
+    var largePosRaw by rememberSaveable { mutableStateOf(PhotoPos().encode()) }
+    var distU by rememberSaveable { mutableStateOf("km") }
+    var vType by rememberSaveable { mutableStateOf("Auto") }
+    var drive by rememberSaveable { mutableStateOf("Verbrenner") }
+    var battery by rememberSaveable { mutableStateOf("") }
+    var volU by rememberSaveable { mutableStateOf("l") }
+    var fmtU by rememberSaveable { mutableStateOf("per100") }
+    var cur by rememberSaveable { mutableStateOf("€") }
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(vehicleId) {
-        val v = if (isNew) Vehicle() else repo.getVehicle(vehicleId) ?: Vehicle()
+        val v = if (isNew) Vehicle(id = newVehicleId) else repo.getVehicle(vehicleId) ?: Vehicle(id = newVehicleId)
         base = v
+        if (loaded) return@LaunchedEffect
+        loaded = true
         name = v.name; plate = v.plate; fuel = v.defaultFuelType
         tank = v.tankCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.fmt(1) } ?: ""
         initialOdo = if (v.initialOdometer > 0) v.initialOdometer.toString() else ""
         photoVersion = v.photoVersion
         archived = v.archived
-        thumbPos = PhotoPos.parse(v.photoThumbPos); largePos = PhotoPos.parse(v.photoLargePos)
+        thumbPosRaw = PhotoPos.parse(v.photoThumbPos).encode(); largePosRaw = PhotoPos.parse(v.photoLargePos).encode()
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
         vType = v.vehicleType
         drive = if (v.driveType == "Verbrenner" && v.defaultFuelType == ELECTRIC) "Elektro" else v.driveType
@@ -486,7 +492,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         val b = base
         if (uri != null && b != null) scope.launch {
             runCatching { PhotoStore.import(ctx, uri, b.id) }
-                .onSuccess { photoVersion = it; thumbPos = PhotoPos(); largePos = PhotoPos() }
+                .onSuccess { photoVersion = it; thumbPosRaw = PhotoPos().encode(); largePosRaw = PhotoPos().encode() }
                 .onFailure { error = it.message }
         }
     }
@@ -509,7 +515,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     name = name.trim(), plate = plate.trim(), defaultFuelType = fuel,
                                     tankCapacity = tank.toDoubleDe(), initialOdometer = initialOdo.toIntKm() ?: 0,
                                     photoVersion = photoVersion, archived = archived,
-                                    photoThumbPos = thumbPos.encode(), photoLargePos = largePos.encode(),
+                                    photoThumbPos = thumbPosRaw, photoLargePos = largePosRaw,
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                     vehicleType = vType,
                                     driveType = drive,
@@ -530,9 +536,13 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         ) {
             val photoFile = if (photoVersion > 0) PhotoStore.file(ctx, b.id, photoVersion) else null
             if (photoFile != null && photoFile.exists()) {
-                PhotoPositionEditor(photoFile, thumbPos, largePos, { thumbPos = it }, { largePos = it })
+                PhotoPositionEditor(
+                    photoFile, PhotoPos.parse(thumbPosRaw), PhotoPos.parse(largePosRaw),
+                    { thumbPosRaw = it.encode() }, { largePosRaw = it.encode() },
+                )
             } else {
-                VehiclePhoto(b, Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT), large = true)
+                // Ohne Foto nur ein kleiner Platzhalter (der Bildeditor bleibt groß)
+                VehiclePhoto(b, Modifier.size(96.dp).align(Alignment.CenterHorizontally))
             }
             OutlinedButton(
                 onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
