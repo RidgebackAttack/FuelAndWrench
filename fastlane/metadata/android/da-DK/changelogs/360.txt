@@ -1,0 +1,4 @@
+- Menu på app-ikonet: start ny tankning eller omkostning direkte (valgfrit én post pr. køretøj)
+- Køretøj kan skiftes i tankningsformularen
+- Scanning: vælg udsnit, billedforbedring, særlig model til segmentcifre på kilometertælleren
+- Efter scanning „Er det korrekt?“, ellers tryk på genkendte tal og tildel dem

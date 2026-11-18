@@ -59,7 +59,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,40 +109,50 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var scanMode by remember { mutableStateOf("") }
     val scanTarget = remember { AttachmentStore.cameraTarget(ctx) }
 
-    fun runScan(uri: android.net.Uri, mode: String) {
+    var vehicleChoices by remember { mutableStateOf(listOf<Vehicle>()) }
+    var cropSource by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    var review by remember { mutableStateOf<ScanReview?>(null) }
+
+    // 1. Foto laden, 2. Ausschnitt wählen (CropDialog), 3. erkennen, 4. „Stimmt das?“ (ScanReviewDialog)
+    fun loadForScan(uri: android.net.Uri) {
+        scope.launch {
+            scanning = true
+            scanInfo = null
+            runCatching { withContext(Dispatchers.IO) { Ocr.load(ctx, uri, 2400) } }
+                .onSuccess { cropSource = it }
+                .onFailure { scanInfo = str(R.string.ocr_failed) + (it.message?.let { m -> " ($m)" } ?: "") }
+            scanning = false
+        }
+    }
+
+    fun runScan(bitmap: android.graphics.Bitmap, crop: android.graphics.RectF, mode: String) {
         scope.launch {
             scanning = true
             scanInfo = null
             try {
-                val text = Ocr.recognize(ctx, uri, digitsOnly = mode == "odo")
-                if (mode == "odo") {
+                val text = Ocr.recognize(ctx, bitmap, crop, digitsOnly = mode == "odo")
+                review = if (mode == "odo") {
                     val km = ReceiptParser.odometer(text, lastOdo)
-                    if (km != null) {
-                        odometer = km.toString(); odoFromScan = true
-                        scanInfo = str(R.string.scan_odo_found)
-                    } else scanInfo = str(R.string.scan_nothing)
+                    val nums = ReceiptParser.numbers(text).filter { it.second >= 100 && it.second % 1.0 == 0.0 }
+                    ScanReview(true, km?.let { mapOf(ScanTarget.ODOMETER to it.toDouble()) } ?: emptyMap(), null, null, nums)
                 } else {
                     val r = ReceiptParser.parse(text)
-                    val found = mutableListOf<String>()
-                    r.amount?.let { amount = it.fmt(2); found += str(R.string.amount) }
-                    r.pricePerUnit?.let { ppu = it.fmt(3); found += str(R.string.price_per_unit, Units.amount(veh, fuelType)) }
-                    r.total?.let { total = it.fmt(2); found += str(R.string.total) }
-                    r.fuelType?.let { f ->
-                        // Nur übernehmen, wenn es zur Kraftstofffamilie des Fahrzeugs passt
+                    val v = buildMap {
+                        r.amount?.let { put(ScanTarget.AMOUNT, it) }
+                        r.pricePerUnit?.let { put(ScanTarget.PRICE, it) }
+                        r.total?.let { put(ScanTarget.TOTAL, it) }
+                    }
+                    // Sorte nur übernehmen, wenn sie zum Fahrzeug passt
+                    val f = r.fuelType?.takeIf { f ->
                         val diesel = { s: String -> s.contains("Diesel") || s == "HVO100" }
                         val vf = veh?.defaultFuelType ?: fuelType
-                        val fits = when {
+                        when {
                             f == ELECTRIC -> veh?.charges != false
                             veh?.isElectric == true -> false
                             else -> vf.isBlank() || vf == ELECTRIC || diesel(vf) == diesel(f)
                         }
-                        if (fits) { fuelType = f; found += str(R.string.fuel_type) }
                     }
-                    r.date?.let { (y, m, d) ->
-                        val c = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }
-                        if (c.timeInMillis <= now()) { timestamp = c.timeInMillis; found += str(R.string.col_date) }
-                    }
-                    scanInfo = if (found.isEmpty()) str(R.string.scan_nothing) else str(R.string.scan_found, found.joinToString(", "))
+                    ScanReview(false, v, f, r.date, ReceiptParser.numbers(text))
                 }
             } catch (e: Throwable) {
                 scanInfo = str(R.string.ocr_failed) + (e.message?.let { " ($it)" } ?: "")
@@ -150,10 +162,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         }
     }
     val scanCamera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-        if (ok) runScan(android.net.Uri.fromFile(scanTarget), scanMode)
+        if (ok) loadForScan(android.net.Uri.fromFile(scanTarget))
     }
     val scanPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) runScan(uri, scanMode)
+        if (uri != null) loadForScan(uri)
     }
     fun startScan(mode: String) {
         scanMode = mode
@@ -205,6 +217,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         val last = repo.lastRefuel(vehicleId)
         val v = repo.getVehicle(vehicleId)
         veh = v
+        if (isNew) vehicleChoices = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived }
         val r = if (isNew) {
             Refuel(
                 vehicleId = vehicleId,
@@ -313,6 +326,16 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
+            if (isNew && vehicleChoices.size > 1) {
+                // Falsches Fahrzeug gewählt? Hier wechseln, ohne neu anzufangen
+                val names = vehicleChoices.map { it.name }
+                ChoiceField(str(R.string.vehicle), veh?.name ?: "", names) { sel ->
+                    val target = vehicleChoices.firstOrNull { it.name == sel } ?: return@ChoiceField
+                    if (target.id != vehicleId) {
+                        nav.navigate("refuelEdit/${target.id}/new") { popUpTo("refuelEdit/{vehicleId}/{id}") { inclusive = true } }
+                    }
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { startScan("receipt") }, enabled = !scanning, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.ReceiptLong, contentDescription = null)
@@ -452,6 +475,67 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             },
             dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
         ) { DatePicker(state = state) }
+    }
+
+    cropSource?.let { bmp ->
+        val odo = scanMode == "odo"
+        CropDialog(
+            bmp,
+            if (odo) android.graphics.RectF(0.15f, 0.35f, 0.85f, 0.65f) else android.graphics.RectF(0.03f, 0.03f, 0.97f, 0.97f),
+            str(if (odo) R.string.crop_hint_odo else R.string.crop_hint_receipt),
+            onCancel = { cropSource = null },
+        ) { rect ->
+            cropSource = null
+            runScan(bmp, rect, scanMode)
+        }
+    }
+
+    review?.let { rv ->
+        val u = Units.amount(veh, fuelType)
+        val c = Units.cur(veh)
+        val extras = listOfNotNull(
+            rv.fuelType?.let { lbl(it) },
+            rv.date?.let { (y, m, d) -> String.format(appLocale(), "%02d.%02d.%d", d, m, y) },
+        ).joinToString(" · ").ifBlank { null }
+        ScanReviewDialog(
+            rv,
+            label = { t ->
+                when (t) {
+                    ScanTarget.ODOMETER -> str(R.string.odometer)
+                    ScanTarget.AMOUNT -> str(if (fuelType == ELECTRIC) R.string.energy else R.string.amount)
+                    ScanTarget.PRICE -> str(R.string.price_per_unit, u)
+                    ScanTarget.TOTAL -> str(R.string.total)
+                }
+            },
+            format = { t, v ->
+                when (t) {
+                    ScanTarget.ODOMETER -> v.toInt().dist(du)
+                    ScanTarget.AMOUNT -> "${v.fmt(2)} $u"
+                    ScanTarget.PRICE -> "${v.fmt(3)} $c"
+                    ScanTarget.TOTAL -> "${v.fmt(2)} $c"
+                }
+            },
+            extras = extras,
+            onDismiss = { review = null },
+        ) { values ->
+            review = null
+            values[ScanTarget.ODOMETER]?.let { odometer = it.toInt().toString(); odoFromScan = true }
+            values[ScanTarget.AMOUNT]?.let { amount = it.fmt(2) }
+            values[ScanTarget.PRICE]?.let { ppu = it.fmt(3) }
+            values[ScanTarget.TOTAL]?.let { total = it.fmt(2) }
+            // Fehlender Wert aus den anderen beiden berechnen
+            val a = amount.toDoubleDe(); val p = ppu.toDoubleDe(); val t = total.toDoubleDe()
+            if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty() && !rv.forOdometer) total = (a * p).fmt(2)
+            if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0 && !rv.forOdometer) ppu = (t / a).fmt(3)
+            if (!rv.forOdometer) {
+                rv.fuelType?.let { fuelType = it }
+                rv.date?.let { (y, m, d) ->
+                    val cal = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }
+                    if (cal.timeInMillis <= now()) timestamp = cal.timeInMillis
+                }
+            }
+            scanInfo = str(R.string.scan_applied)
+        }
     }
 
     if (confirmDelete) {
@@ -677,6 +761,17 @@ fun SettingsScreen(nav: NavController) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(str(R.string.language_button, appLocale().getDisplayLanguage(appLocale()))) }
+            }
+
+            SectionTitle(str(R.string.shortcuts_title))
+            Text(str(R.string.shortcuts_info), style = MaterialTheme.typography.bodySmall)
+            var shortcutMode by remember { mutableStateOf(prefs.shortcutMode) }
+            val modes = linkedMapOf("generic" to str(R.string.shortcuts_generic), "perVehicle" to str(R.string.shortcuts_per_vehicle))
+            SingleChips(modes.values.toList(), modes[shortcutMode] ?: "") { sel ->
+                val key = modes.entries.firstOrNull { it.value == sel }?.key ?: return@SingleChips
+                shortcutMode = key
+                prefs.shortcutMode = key
+                scope.launch { Shortcuts.update(ctx) }
             }
 
             HorizontalDivider()

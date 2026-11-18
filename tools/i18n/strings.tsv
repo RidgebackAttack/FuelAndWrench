@@ -452,3 +452,19 @@ drive_type	Drive	Antrieb	Drivlinje
 battery_capacity	Usable battery capacity (optional)	Nutzbare Akkukapazität (optional)	Brugbar batterikapacitet (valgfri)
 phev_info	When adding an entry you choose between refueling and charging. Fuel and electricity consumption are shown separately, the cost per 100 km together.	Beim Erfassen wählst du zwischen Tanken und Laden. Kraftstoff- und Stromverbrauch werden getrennt angezeigt, die Kosten pro 100 km gemeinsam.	Ved registrering vælger du mellem tankning og opladning. Brændstof- og strømforbrug vises hver for sig, omkostningerne pr. 100 km samlet.
 stats_charge_share	Charged energy by location	Geladene Energie nach Ladeort	Opladet energi efter ladested
+pick_vehicle	Which vehicle?	Für welches Fahrzeug?	Hvilket køretøj?
+shortcuts_title	App icon menu	Menü am App-Icon	Menu på app-ikonet
+shortcuts_info	Long-press the app icon for quick entries. You can also drag them onto the home screen.	App-Icon lange drücken für Schnelleinträge. Du kannst sie auch auf den Startbildschirm ziehen.	Hold app-ikonet nede for hurtige poster. Du kan også trække dem til startskærmen.
+shortcuts_generic	New refuel + vehicle choice	Neue Betankung + Fahrzeugwahl	Ny tankning + valg af køretøj
+shortcuts_per_vehicle	One entry per vehicle	Ein Eintrag je Fahrzeug	Én post pr. køretøj
+crop_hint_odo	Frame the odometer reading as tightly as possible.	Den Kilometerstand möglichst eng einrahmen.	Indram kilometerstanden så tæt som muligt.
+crop_hint_receipt	Frame the part with amount, price and total.	Den Teil mit Menge, Preis und Summe einrahmen.	Indram delen med mængde, pris og total.
+crop_all	Whole image	Ganzes Bild	Hele billedet
+crop_recognize	Recognize	Erkennen	Genkend
+scan_review_title	Is this correct?	Stimmt das?	Er det korrekt?
+scan_correct_title	Assign numbers	Zahlen zuordnen	Tildel tal
+scan_correct_info	Tap a recognized number and choose what it stands for:	Tippe auf eine erkannte Zahl und wähle, wofür sie steht:	Tryk på et genkendt tal og vælg, hvad det står for:
+scan_correct_yes	Yes, apply	Ja, übernehmen	Ja, anvend
+scan_correct	Correct	Korrigieren	Ret
+scan_apply	Apply	Übernehmen	Anvend
+scan_applied	Applied from the scan – please check.	Aus dem Scan übernommen – bitte prüfen.	Overført fra scanningen – kontrollér venligst.

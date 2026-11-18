@@ -3,7 +3,12 @@ package de.spritbuch.app
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.RectF
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.googlecode.tesseract.android.TessBaseAPI
@@ -15,16 +20,18 @@ import java.io.File
 
 /**
  * Texterkennung komplett auf dem Gerät (Tesseract, Apache-2.0). Es werden keine Bilder übertragen.
- * Sprachmodelle (tessdata_fast) liegen in den Assets und werden beim ersten Gebrauch entpackt.
+ * Sprachmodelle (tessdata_fast deu/dan, tessdata_ssd für 7-Segment-Ziffern) liegen in den Assets
+ * und werden beim ersten Gebrauch entpackt.
  */
 object Ocr {
-    private const val LANGS = "deu+dan"
+    private const val TEXT_LANGS = "deu+dan"
+    private const val SEGMENT_LANG = "ssd_int"
     private val mutex = Mutex()
 
     private fun dataDir(ctx: Context): File {
         val base = File(ctx.filesDir, "ocr")
         val td = File(base, "tessdata").apply { mkdirs() }
-        for (l in LANGS.split("+")) {
+        for (l in (TEXT_LANGS.split("+") + SEGMENT_LANG)) {
             val f = File(td, "$l.traineddata")
             if (!f.exists() || f.length() == 0L) {
                 ctx.assets.open("tessdata/$l.traineddata").use { input -> f.outputStream().use { input.copyTo(it) } }
@@ -33,7 +40,8 @@ object Ocr {
         return base
     }
 
-    private fun load(ctx: Context, uri: Uri, maxSide: Int): Bitmap {
+    /** Lädt ein Foto (gedreht nach EXIF), verkleinert auf maxSide. */
+    fun load(ctx: Context, uri: Uri, maxSide: Int): Bitmap {
         val r = ctx.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         r.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
@@ -48,23 +56,79 @@ object Ocr {
         } else bmp
     }
 
-    /** Erkennt Text; mit digitsOnly nur Ziffern (für den Kilometerstand). */
-    suspend fun recognize(ctx: Context, uri: Uri, digitsOnly: Boolean): String = mutex.withLock {
+    /** Ausschnitt (Koordinaten 0…1) und Aufbereitung: Graustufen, Kontrast strecken, kleine Schrift vergrößern. */
+    fun prepare(src: Bitmap, crop: RectF?): Bitmap {
+        val c = crop ?: RectF(0f, 0f, 1f, 1f)
+        val x = (c.left.coerceIn(0f, 1f) * src.width).toInt().coerceAtMost(src.width - 1)
+        val y = (c.top.coerceIn(0f, 1f) * src.height).toInt().coerceAtMost(src.height - 1)
+        val w = ((c.right - c.left).coerceIn(0.02f, 1f) * src.width).toInt().coerceAtMost(src.width - x).coerceAtLeast(1)
+        val h = ((c.bottom - c.top).coerceIn(0.02f, 1f) * src.height).toInt().coerceAtMost(src.height - y).coerceAtLeast(1)
+        val cut = Bitmap.createBitmap(src, x, y, w, h)
+
+        // Kleine Ausschnitte hochskalieren: Tesseract mag Ziffern ab ca. 30 px Höhe
+        val minSide = 1200
+        val scale = if (maxOf(w, h) < minSide) minSide.toFloat() / maxOf(w, h) else 1f
+        val out = Bitmap.createBitmap((w * scale).toInt().coerceAtLeast(1), (h * scale).toInt().coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        val gray = Paint(Paint.FILTER_BITMAP_FLAG).apply { colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) }) }
+        canvas.drawBitmap(cut, null, android.graphics.Rect(0, 0, out.width, out.height), gray)
+
+        // Kontrast: 2 %- und 98 %-Helligkeit auf Schwarz/Weiß strecken (hilft bei blassem Thermopapier)
+        val px = IntArray(out.width * out.height)
+        out.getPixels(px, 0, out.width, 0, 0, out.width, out.height)
+        val hist = IntArray(256)
+        for (p in px) hist[p and 0xFF]++
+        fun percentile(q: Double): Int {
+            val target = (px.size * q).toInt()
+            var acc = 0
+            for (i in 0..255) { acc += hist[i]; if (acc >= target) return i }
+            return 255
+        }
+        val lo = percentile(0.02)
+        val hi = percentile(0.98)
+        if (hi - lo in 10..240) {
+            val f = 255f / (hi - lo)
+            for (i in px.indices) {
+                val v = (((px[i] and 0xFF) - lo) * f).toInt().coerceIn(0, 255)
+                px[i] = (0xFF shl 24) or (v shl 16) or (v shl 8) or v
+            }
+            out.setPixels(px, 0, out.width, 0, 0, out.width, out.height)
+        }
+        return out
+    }
+
+    private fun run(ctx: Context, bmp: Bitmap, lang: String, digitsOnly: Boolean): String {
+        val api = TessBaseAPI()
+        try {
+            if (!api.init(dataDir(ctx).absolutePath, lang)) error(str(R.string.ocr_failed))
+            if (digitsOnly) {
+                api.setVariable("tessedit_char_whitelist", "0123456789")
+                api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT)
+            } else {
+                api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
+            }
+            api.setImage(bmp)
+            return api.getUTF8Text() ?: ""
+        } finally {
+            api.recycle()
+        }
+    }
+
+    /**
+     * Erkennt Text. Für den Kilometerstand (digitsOnly) laufen zwei Modelle: eins für
+     * 7-Segment-Anzeigen und das normale für gedruckte/Punktmatrix-Ziffern; beide Ergebnisse
+     * werden zurückgegeben, die Auswahl trifft ReceiptParser.odometer.
+     */
+    suspend fun recognize(ctx: Context, source: Bitmap, crop: RectF?, digitsOnly: Boolean): String = mutex.withLock {
         withContext(Dispatchers.Default) {
-            val bmp = load(ctx, uri, if (digitsOnly) 1600 else 2400)
-            val api = TessBaseAPI()
-            try {
-                if (!api.init(dataDir(ctx).absolutePath, LANGS)) error(str(R.string.ocr_failed))
-                if (digitsOnly) {
-                    api.setVariable("tessedit_char_whitelist", "0123456789")
-                    api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT)
-                } else {
-                    api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
-                }
-                api.setImage(bmp)
-                api.getUTF8Text() ?: ""
-            } finally {
-                api.recycle()
+            val bmp = prepare(source, crop)
+            if (digitsOnly) {
+                listOf(
+                    runCatching { run(ctx, bmp, SEGMENT_LANG, true) }.getOrDefault(""),
+                    runCatching { run(ctx, bmp, TEXT_LANGS, true) }.getOrDefault(""),
+                ).joinToString("\n")
+            } else {
+                run(ctx, bmp, TEXT_LANGS, false)
             }
         }
     }

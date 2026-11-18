@@ -1,0 +1,4 @@
+- App icon menu: start a new refuel or cost directly (optionally one entry per vehicle)
+- Vehicle can be switched in the refuel form
+- Scan: choose the area, image enhancement, special model for segment digits on the odometer
+- After scanning “Is this correct?”, otherwise tap recognized numbers to assign them

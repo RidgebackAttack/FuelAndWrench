@@ -455,4 +455,20 @@
     <string name="battery_capacity">Brugbar batterikapacitet (valgfri)</string>
     <string name="phev_info">Ved registrering vælger du mellem tankning og opladning. Brændstof- og strømforbrug vises hver for sig, omkostningerne pr. 100 km samlet.</string>
     <string name="stats_charge_share">Opladet energi efter ladested</string>
+    <string name="pick_vehicle">Hvilket køretøj?</string>
+    <string name="shortcuts_title">Menu på app-ikonet</string>
+    <string name="shortcuts_info">Hold app-ikonet nede for hurtige poster. Du kan også trække dem til startskærmen.</string>
+    <string name="shortcuts_generic">Ny tankning + valg af køretøj</string>
+    <string name="shortcuts_per_vehicle">Én post pr. køretøj</string>
+    <string name="crop_hint_odo">Indram kilometerstanden så tæt som muligt.</string>
+    <string name="crop_hint_receipt">Indram delen med mængde, pris og total.</string>
+    <string name="crop_all">Hele billedet</string>
+    <string name="crop_recognize">Genkend</string>
+    <string name="scan_review_title">Er det korrekt?</string>
+    <string name="scan_correct_title">Tildel tal</string>
+    <string name="scan_correct_info">Tryk på et genkendt tal og vælg, hvad det står for:</string>
+    <string name="scan_correct_yes">Ja, anvend</string>
+    <string name="scan_correct">Ret</string>
+    <string name="scan_apply">Anvend</string>
+    <string name="scan_applied">Overført fra scanningen – kontrollér venligst.</string>
 </resources>

@@ -455,4 +455,20 @@
     <string name="battery_capacity">Nutzbare Akkukapazität (optional)</string>
     <string name="phev_info">Beim Erfassen wählst du zwischen Tanken und Laden. Kraftstoff- und Stromverbrauch werden getrennt angezeigt, die Kosten pro 100 km gemeinsam.</string>
     <string name="stats_charge_share">Geladene Energie nach Ladeort</string>
+    <string name="pick_vehicle">Für welches Fahrzeug?</string>
+    <string name="shortcuts_title">Menü am App-Icon</string>
+    <string name="shortcuts_info">App-Icon lange drücken für Schnelleinträge. Du kannst sie auch auf den Startbildschirm ziehen.</string>
+    <string name="shortcuts_generic">Neue Betankung + Fahrzeugwahl</string>
+    <string name="shortcuts_per_vehicle">Ein Eintrag je Fahrzeug</string>
+    <string name="crop_hint_odo">Den Kilometerstand möglichst eng einrahmen.</string>
+    <string name="crop_hint_receipt">Den Teil mit Menge, Preis und Summe einrahmen.</string>
+    <string name="crop_all">Ganzes Bild</string>
+    <string name="crop_recognize">Erkennen</string>
+    <string name="scan_review_title">Stimmt das?</string>
+    <string name="scan_correct_title">Zahlen zuordnen</string>
+    <string name="scan_correct_info">Tippe auf eine erkannte Zahl und wähle, wofür sie steht:</string>
+    <string name="scan_correct_yes">Ja, übernehmen</string>
+    <string name="scan_correct">Korrigieren</string>
+    <string name="scan_apply">Übernehmen</string>
+    <string name="scan_applied">Aus dem Scan übernommen – bitte prüfen.</string>
 </resources>

@@ -322,6 +322,11 @@ class Prefs(ctx: Context) {
 
     val configured: Boolean get() = url.isNotBlank() && user.isNotBlank() && password.isNotBlank()
 
+    /** Kontextmenü am App-Icon: "generic" (mit Fahrzeugauswahl) oder "perVehicle". */
+    var shortcutMode: String
+        get() = sp.getString("shortcutMode", "generic") ?: "generic"
+        set(v) = sp.edit().putString("shortcutMode", v).apply()
+
     /** Update-Hinweis (nur bei direkt installierter APK): fragt GitHub nach der neuesten Version. */
     var updateCheck: Boolean
         get() = sp.getBoolean("updateCheck", true)

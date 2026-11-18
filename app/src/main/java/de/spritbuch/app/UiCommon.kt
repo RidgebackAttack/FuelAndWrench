@@ -1,5 +1,6 @@
 package de.spritbuch.app
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -64,12 +65,26 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
+    /** Aufruf aus dem Kontextmenü des App-Icons: (Aktion, Fahrzeug-ID). */
+    private val shortcut = kotlinx.coroutines.flow.MutableStateFlow<Pair<String, String?>?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         ThemeSettings.load(this)
         enableEdgeToEdge()
-        setContent { AppTheme { AppNav() } }
+        if (savedInstanceState == null) readShortcut(intent)
+        setContent { AppTheme { AppNav(shortcut) } }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        readShortcut(intent)
+    }
+
+    private fun readShortcut(i: android.content.Intent?) {
+        val action = i?.getStringExtra(Shortcuts.EXTRA_ACTION) ?: return
+        shortcut.value = action to i.getStringExtra(Shortcuts.EXTRA_VEHICLE)
     }
 
     override fun onResume() {
@@ -79,9 +94,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNav() {
+fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, String?>?>? = null) {
     val nav = rememberNavController()
     val ctx = LocalContext.current
+    val pending = shortcut?.collectAsStateWithLifecycle()?.value
+    LaunchedEffect(pending) {
+        val (action, vehicleId) = pending ?: return@LaunchedEffect
+        shortcut?.value = null
+        Shortcuts.route(ctx, action, vehicleId)?.let { nav.navigate(it) }
+    }
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -121,6 +142,7 @@ fun AppNav() {
         composable("expenseEdit/{vehicleId}/{id}") {
             ExpenseEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
+        composable("pick/{action}") { VehiclePickScreen(nav, it.arguments?.getString("action") ?: Shortcuts.REFUEL) }
         composable("stats/{vehicleId}") { StatsScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("serviceEdit/{vehicleId}/{id}") {
             ServiceEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")

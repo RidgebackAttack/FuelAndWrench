@@ -113,6 +113,23 @@ object ReceiptParser {
     }
 
     /**
+     * Alle Zahlen im erkannten Text (für die manuelle Zuordnung), ohne Dubletten und Uhrzeiten,
+     * größere bzw. dezimale Zahlen zuerst.
+     */
+    fun numbers(raw: String, max: Int = 30): List<Pair<String, Double>> {
+        val text = cleanDigits(raw)
+        val found = Regex("""(?<![\d:])\d{1,3}(?:[.\s]\d{3})+(?:,\d{1,3})?(?![\d:])|(?<![\d:])\d+(?:[.,]\d{1,3})?(?![\d:])""")
+            .findAll(text)
+            .map { it.value.trim() }
+            .mapNotNull { s -> num(s.replace(" ", "").let { if (Regex("""^\d{1,3}(\.\d{3})+$""").matches(it)) it.replace(".", "") else it })?.let { s to it } }
+            .filter { (s, v) -> v > 0 && (s.any { it == ',' || it == '.' } || v >= 10) }
+            .distinctBy { it.second }
+            .toList()
+        return found.sortedWith(compareByDescending<Pair<String, Double>> { (s, _) -> s.any { it == ',' || it == '.' } }.thenByDescending { it.second })
+            .take(max)
+    }
+
+    /**
      * Kilometerstand aus einem Tachofoto: längste Ziffernfolge (4–7 Stellen), bevorzugt
      * knapp über dem bisherigen Stand.
      */

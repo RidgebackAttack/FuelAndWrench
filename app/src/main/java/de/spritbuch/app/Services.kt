@@ -55,6 +55,7 @@ class App : Application() {
             runCatching { Notifications.createChannel(this@App) }
             runCatching { SyncScheduler.schedulePeriodic(this@App) }
             runCatching { DailyWorker.schedule(this@App) }
+            Shortcuts.update(this@App)
             runCatching { repo.repairImportedData() }
         }
     }

@@ -98,4 +98,15 @@ class ReceiptParserTest {
         close(24.99, r.total)
         assertEquals(ELECTRIC, r.fuelType)
     }
+
+    @Test
+    fun numbersForManualAssignment() {
+        val nums = ReceiptParser.numbers("SUMME 76,55\n45,32 l x 1,689\n12:30 Säule 3\n413 158 km")
+        val values = nums.map { it.second }
+        assertEquals(true, 76.55 in values)
+        assertEquals(true, 45.32 in values)
+        assertEquals(true, 1.689 in values)
+        assertEquals(true, 413158.0 in values)
+        assertEquals(false, values.any { it == 12.0 || it == 30.0 || it == 3.0 })
+    }
 }

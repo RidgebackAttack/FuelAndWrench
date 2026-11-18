@@ -455,4 +455,20 @@
     <string name="battery_capacity">Usable battery capacity (optional)</string>
     <string name="phev_info">When adding an entry you choose between refueling and charging. Fuel and electricity consumption are shown separately, the cost per 100 km together.</string>
     <string name="stats_charge_share">Charged energy by location</string>
+    <string name="pick_vehicle">Which vehicle?</string>
+    <string name="shortcuts_title">App icon menu</string>
+    <string name="shortcuts_info">Long-press the app icon for quick entries. You can also drag them onto the home screen.</string>
+    <string name="shortcuts_generic">New refuel + vehicle choice</string>
+    <string name="shortcuts_per_vehicle">One entry per vehicle</string>
+    <string name="crop_hint_odo">Frame the odometer reading as tightly as possible.</string>
+    <string name="crop_hint_receipt">Frame the part with amount, price and total.</string>
+    <string name="crop_all">Whole image</string>
+    <string name="crop_recognize">Recognize</string>
+    <string name="scan_review_title">Is this correct?</string>
+    <string name="scan_correct_title">Assign numbers</string>
+    <string name="scan_correct_info">Tap a recognized number and choose what it stands for:</string>
+    <string name="scan_correct_yes">Yes, apply</string>
+    <string name="scan_correct">Correct</string>
+    <string name="scan_apply">Apply</string>
+    <string name="scan_applied">Applied from the scan – please check.</string>
 </resources>

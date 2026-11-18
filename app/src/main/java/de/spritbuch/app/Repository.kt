@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 val Context.repo: Repository get() = (applicationContext as App).repo
 
@@ -328,5 +329,8 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         changed()
     }
 
-    private fun changed() = SyncScheduler.syncSoon(ctx)
+    private fun changed() {
+        SyncScheduler.syncSoon(ctx)
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { Shortcuts.update(ctx) }
+    }
 }
