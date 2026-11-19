@@ -498,3 +498,8 @@ pl_import_hint_dups#one	%d duplicate row in the file is only imported once	%d do
 pl_import_hint_dups#other	%d duplicate rows in the file are only imported once	%d doppelte Zeilen in der Datei werden nur einmal übernommen	%d dobbelte rækker i filen importeres kun én gang
 pl_rem_date_left#one	%1$d day left (%2$s)	noch %1$d Tag (%2$s)	%1$d dag tilbage (%2$s)
 pl_rem_date_left#other	%1$d days left (%2$s)	noch %1$d Tage (%2$s)	%1$d dage tilbage (%2$s)
+widget_name	Fuel & Wrench	Fuel & Wrench	Fuel & Wrench
+widget_description	Consumption, costs this month and next due reminder	Verbrauch, Kosten im Monat und nächste fällige Erinnerung	Forbrug, omkostninger denne måned og næste påmindelse
+widget_month	This month: %1$s	Diesen Monat: %1$s	Denne måned: %1$s
+widget_no_vehicle	Tap to add a vehicle	Tippen, um ein Fahrzeug anzulegen	Tryk for at tilføje et køretøj
+widget_next_vehicle	Next vehicle	Nächstes Fahrzeug	Næste køretøj

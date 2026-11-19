@@ -473,6 +473,11 @@
     <string name="e2e_need_password">The data on the server is encrypted. Please enter the sync password under Settings → Sync.</string>
     <string name="e2e_wrong_password">The sync password does not match the data on the server.</string>
     <string name="e2e_key_file_broken">The key file on the server is damaged.</string>
+    <string name="widget_name">Fuel &amp; Wrench</string>
+    <string name="widget_description">Consumption, costs this month and next due reminder</string>
+    <string name="widget_month">This month: %1$s</string>
+    <string name="widget_no_vehicle">Tap to add a vehicle</string>
+    <string name="widget_next_vehicle">Next vehicle</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

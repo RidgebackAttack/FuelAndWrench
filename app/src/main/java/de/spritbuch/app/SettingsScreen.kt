@@ -164,6 +164,7 @@ fun SettingsScreen(nav: NavController) {
                 visible = v
                 prefs.visibleVehicles = v
                 scope.launch { Shortcuts.update(ctx) }
+                FuelWidget.refresh(ctx)
             }
             LabeledSwitch(str(R.string.device_all_vehicles), visible == null) { all ->
                 saveVisible(if (all) null else allVehicleList.filter { !it.archived }.map { it.id }.toSet())

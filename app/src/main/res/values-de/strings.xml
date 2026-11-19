@@ -473,6 +473,11 @@
     <string name="e2e_need_password">Die Daten auf dem Server sind verschlüsselt. Bitte unter Einstellungen → Synchronisierung das Sync-Passwort eintragen.</string>
     <string name="e2e_wrong_password">Das Sync-Passwort passt nicht zu den Daten auf dem Server.</string>
     <string name="e2e_key_file_broken">Die Schlüsseldatei auf dem Server ist beschädigt.</string>
+    <string name="widget_name">Fuel &amp; Wrench</string>
+    <string name="widget_description">Verbrauch, Kosten im Monat und nächste fällige Erinnerung</string>
+    <string name="widget_month">Diesen Monat: %1$s</string>
+    <string name="widget_no_vehicle">Tippen, um ein Fahrzeug anzulegen</string>
+    <string name="widget_next_vehicle">Nächstes Fahrzeug</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

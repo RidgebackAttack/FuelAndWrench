@@ -223,6 +223,7 @@ object SyncManager {
             )
             if (reupload) prefs.reuploadFiles = false
             ReminderChecker.checkAll(ctx)
+            FuelWidget.refresh(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }
             return str(R.string.sync_ok, plural(R.plurals.pl_vehicles, v), plural(R.plurals.pl_refuels, t))

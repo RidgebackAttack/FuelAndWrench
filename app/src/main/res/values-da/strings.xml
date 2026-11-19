@@ -473,6 +473,11 @@
     <string name="e2e_need_password">Dataene på serveren er krypteret. Indtast synkroniseringsadgangskoden under Indstillinger → Synkronisering.</string>
     <string name="e2e_wrong_password">Synkroniseringsadgangskoden passer ikke til dataene på serveren.</string>
     <string name="e2e_key_file_broken">Nøglefilen på serveren er beskadiget.</string>
+    <string name="widget_name">Fuel &amp; Wrench</string>
+    <string name="widget_description">Forbrug, omkostninger denne måned og næste påmindelse</string>
+    <string name="widget_month">Denne måned: %1$s</string>
+    <string name="widget_no_vehicle">Tryk for at tilføje et køretøj</string>
+    <string name="widget_next_vehicle">Næste køretøj</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

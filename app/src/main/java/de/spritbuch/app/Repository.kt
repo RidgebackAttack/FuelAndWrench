@@ -361,6 +361,7 @@ class Repository(
             delay(1500)
             SyncScheduler.syncSoon(ctx)
             Shortcuts.update(ctx)
+            FuelWidget.refresh(ctx)
         }
     }
 
