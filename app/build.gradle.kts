@@ -21,8 +21,8 @@ android {
         // Feste Version (F-Droid liest sie von hier). Für jedes Release um 10 erhöhen
         // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
         // Die APKs je Prozessortyp bekommen +1 (armeabi-v7a) bzw. +2 (arm64-v8a), die Universal-APK +0.
-        versionCode = 420
-        versionName = "1.7.0"
+        versionCode = 430
+        versionName = "1.8.0"
     }
 
     // Eine kleine APK je Prozessortyp plus eine Universal-APK (für F-Droid/Reproducible Builds)
