@@ -472,4 +472,11 @@
     <string name="debug_log_share">Protokoll teilen</string>
     <string name="debug_log_clear">Leeren</string>
     <string name="debug_log_empty">Noch keine Einträge.</string>
+    <string name="e2e_title">Ende-zu-Ende-Verschlüsselung</string>
+    <string name="e2e_info">Verschlüsselt Daten, Fotos und Belege auf dem Gerät, bevor sie auf den Server gehen. Dort sind sie dann nicht lesbar, auch nicht für den Betreiber. Auf allen Geräten dasselbe Sync-Passwort eintragen; die anderen Geräte übernehmen das Ein- und Ausschalten beim nächsten Sync. Das Passwort lässt sich nicht wiederherstellen, die Daten auf deinen Geräten bleiben aber erhalten.</string>
+    <string name="e2e_password">Sync-Passwort</string>
+    <string name="e2e_too_short">Mindestens 8 Zeichen</string>
+    <string name="e2e_need_password">Die Daten auf dem Server sind verschlüsselt. Bitte unter Einstellungen → Synchronisierung das Sync-Passwort eintragen.</string>
+    <string name="e2e_wrong_password">Das Sync-Passwort passt nicht zu den Daten auf dem Server.</string>
+    <string name="e2e_key_file_broken">Die Schlüsseldatei auf dem Server ist beschädigt.</string>
 </resources>

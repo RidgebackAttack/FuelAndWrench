@@ -70,6 +70,7 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
         )
     }
     fun head(path: String): Int = exec(req(path).head().build()).code
+    fun delete(path: String): Int = exec(req(path).delete().build()).code
 
     fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int {
         val b = req(path).put(data.toRequestBody(type.toMediaType()))
@@ -129,6 +130,8 @@ object SyncManager {
             SyncResult(true, withContext(Dispatchers.IO) { doSync(app, prefs) })
         } catch (e: CancellationException) {
             throw e
+        } catch (e: SyncCrypto.WrongPassword) {
+            SyncResult(false, str(R.string.e2e_wrong_password))
         } catch (e: Exception) {
             DebugLog.error("Synchronisierung fehlgeschlagen", e)
             SyncResult(false, str(R.string.error_prefix, e.message ?: e.javaClass.simpleName))
@@ -147,14 +150,17 @@ object SyncManager {
         dav.ensureDir("photos")
         dav.ensureDir(AttachmentStore.DIR)
         val db = ctx.repo.db
+        val crypt = Crypt(dav, prefs)
+        crypt.prepare()
 
         var previousEtag: String? = null
         var etagUnreliable = false
         repeat(5) {
             val remote = dav.get(FILE)
+            val remoteEncrypted = remote.body?.let { SyncCrypto.isEncrypted(it) } == true
             val remoteData: SyncData? = when {
                 remote.code == 404 -> null
-                remote.code in 200..299 -> json.decodeFromString<SyncData>(remote.body?.decodeToString() ?: "{}")
+                remote.code in 200..299 -> json.decodeFromString<SyncData>(remote.body?.let { crypt.open(it) }?.decodeToString() ?: "{}")
                 else -> throw IOException(httpMessage(remote.code))
             }
             val r = remoteData ?: SyncData()
@@ -180,7 +186,7 @@ object SyncManager {
                 )
             }
 
-            val remoteChanged = remoteData == null ||
+            val remoteChanged = remoteData == null || remoteEncrypted != crypt.enabled ||
                 merged.vehicles.toSet() != r.vehicles.toSet() ||
                 merged.refuels.toSet() != r.refuels.toSet() ||
                 merged.reminders.toSet() != r.reminders.toSet() ||
@@ -192,8 +198,8 @@ object SyncManager {
             if (remoteChanged) {
                 val code = dav.put(
                     FILE,
-                    json.encodeToString(merged).toByteArray(),
-                    "application/json",
+                    crypt.seal(json.encodeToString(merged).toByteArray()),
+                    crypt.type("application/json"),
                     ifMatch = if (remoteData != null && !etagUnreliable) remote.etag else null,
                     ifNoneMatch = remoteData == null,
                 )
@@ -206,13 +212,16 @@ object SyncManager {
                 }
                 if (code !in 200..299) throw IOException(httpMessage(code))
             }
+            crypt.finish()
 
-            syncPhotos(ctx, dav, prefs, merged.vehicles)
+            val reupload = prefs.reuploadFiles
+            syncPhotos(ctx, dav, prefs, crypt, reupload, merged.vehicles)
             syncAttachments(
-                ctx, dav, prefs,
+                ctx, dav, prefs, crypt, reupload,
                 merged.services.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
                     merged.expenses.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() },
             )
+            if (reupload) prefs.reuploadFiles = false
             ReminderChecker.checkAll(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }
@@ -232,15 +241,15 @@ object SyncManager {
     }
 
     /** Belege: fehlende hochladen bzw. herunterladen (Dateinamen sind eindeutig, Inhalte ändern sich nie). */
-    private fun syncAttachments(ctx: Context, dav: WebDavClient, prefs: Prefs, names: List<String>) {
+    private fun syncAttachments(ctx: Context, dav: WebDavClient, prefs: Prefs, crypt: Crypt, reupload: Boolean, names: List<String>) {
         val uploaded = prefs.uploadedAttachments.toMutableSet()
         for (name in names.distinct()) {
             val file = AttachmentStore.file(ctx, name)
             val remotePath = AttachmentStore.DIR + "/" + name
             if (file.exists()) {
-                if (name in uploaded) continue
-                if (dav.head(remotePath) == 404) {
-                    val code = dav.put(remotePath, file.readBytes(), AttachmentStore.mime(name))
+                if (name in uploaded && !reupload) continue
+                if (reupload || dav.head(remotePath) == 404) {
+                    val code = dav.put(remotePath, crypt.seal(file.readBytes()), crypt.type(AttachmentStore.mime(name)))
                     if (code !in 200..299) continue
                 }
                 uploaded += name
@@ -248,7 +257,7 @@ object SyncManager {
                 val got = dav.get(remotePath)
                 val body = got.body
                 if (got.code in 200..299 && body != null) {
-                    file.writeBytes(body)
+                    file.writeBytes(crypt.open(body))
                     uploaded += name
                 }
             }
@@ -256,16 +265,16 @@ object SyncManager {
         prefs.uploadedAttachments = uploaded
     }
 
-    private fun syncPhotos(ctx: Context, dav: WebDavClient, prefs: Prefs, vehicles: List<Vehicle>) {
+    private fun syncPhotos(ctx: Context, dav: WebDavClient, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>) {
         val uploaded = prefs.uploadedPhotos.toMutableSet()
         for (v in vehicles) {
             if (v.deleted || v.photoVersion == 0L || !prefs.shows(v.id)) continue
             val name = PhotoStore.name(v.id, v.photoVersion)
             val file = PhotoStore.file(ctx, v.id, v.photoVersion)
             if (file.exists()) {
-                if (name in uploaded) continue
-                if (dav.head("photos/$name") == 404) {
-                    val code = dav.put("photos/$name", file.readBytes(), "image/jpeg")
+                if (name in uploaded && !reupload) continue
+                if (reupload || dav.head("photos/$name") == 404) {
+                    val code = dav.put("photos/$name", crypt.seal(file.readBytes()), crypt.type("image/jpeg"))
                     if (code !in 200..299) continue
                 }
                 uploaded += name
@@ -274,13 +283,79 @@ object SyncManager {
                 val body = got.body
                 if (got.code in 200..299 && body != null) {
                     file.parentFile?.mkdirs()
-                    file.writeBytes(body)
+                    file.writeBytes(crypt.open(body))
                     uploaded += name
                 }
             }
         }
         prefs.uploadedPhotos = uploaded
     }
+}
+
+/**
+ * Ver- und Entschlüsseln für einen Sync-Durchlauf. Ob verschlüsselt wird, entscheidet der Server:
+ * Liegt dort [SyncCrypto.KEY_FILE], verschlüsseln alle Geräte. Ein- und ausgeschaltet wird auf einem Gerät;
+ * die anderen ziehen beim nächsten Sync nach (und brauchen dafür dasselbe Sync-Passwort).
+ */
+private class Crypt(private val dav: WebDavClient, private val prefs: Prefs) {
+    private var salt: ByteArray? = null
+    private var key: javax.crypto.SecretKey? = null
+    /** Wird beim Hochladen verschlüsselt? */
+    var enabled = false
+        private set
+
+    private fun readSalt(): ByteArray? {
+        val kf = dav.get(SyncCrypto.KEY_FILE)
+        return when {
+            kf.code in 200..299 -> kf.body?.let { SyncCrypto.saltFrom(it) } ?: throw IOException(str(R.string.e2e_key_file_broken))
+            kf.code == 404 -> null
+            else -> throw IOException(httpMessage(kf.code))
+        }
+    }
+
+    /** Zustand vom Server holen bzw. eine hier gewählte Änderung vorbereiten. */
+    fun prepare() {
+        salt = readSalt()
+        if (prefs.syncEncryptChanged) {
+            enabled = prefs.syncEncrypt
+            if (enabled && salt == null) {
+                if (prefs.syncPassphrase.isBlank()) throw IOException(str(R.string.e2e_need_password))
+                val s = SyncCrypto.newSalt()
+                val code = dav.put(SyncCrypto.KEY_FILE, SyncCrypto.keyFile(s), "application/octet-stream", ifNoneMatch = true)
+                salt = if (code == 412) readSalt() else if (code in 200..299) s else throw IOException(httpMessage(code))
+            }
+            prefs.reuploadFiles = true
+        } else {
+            enabled = salt != null
+            if (enabled != prefs.syncEncrypt) {
+                // Ein anderes Gerät hat umgeschaltet → übernehmen und eigene Dateien im neuen Format hochladen
+                prefs.syncEncrypt = enabled
+                prefs.reuploadFiles = true
+            }
+        }
+        if (enabled && prefs.syncPassphrase.isBlank()) throw IOException(str(R.string.e2e_need_password))
+    }
+
+    /** Nach erfolgreichem Hochladen: beim Ausschalten erst jetzt die Schlüsseldatei entfernen. */
+    fun finish() {
+        if (!prefs.syncEncryptChanged) return
+        if (!enabled && salt != null) {
+            val code = dav.delete(SyncCrypto.KEY_FILE)
+            if (code !in 200..299 && code != 404) throw IOException(httpMessage(code))
+        }
+        prefs.syncEncryptChanged = false
+    }
+
+    private fun key(): javax.crypto.SecretKey {
+        key?.let { return it }
+        val s = salt ?: throw IOException(str(R.string.e2e_key_file_broken))
+        val pass = prefs.syncPassphrase.ifBlank { throw IOException(str(R.string.e2e_need_password)) }
+        return SyncCrypto.derive(pass, s).also { key = it }
+    }
+
+    fun open(b: ByteArray): ByteArray = if (SyncCrypto.isEncrypted(b)) SyncCrypto.decrypt(key(), b) else b
+    fun seal(b: ByteArray): ByteArray = if (enabled) SyncCrypto.encrypt(key(), b) else b
+    fun type(plain: String) = if (enabled) "application/octet-stream" else plain
 }
 
 class SyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {

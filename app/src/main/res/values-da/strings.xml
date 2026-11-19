@@ -472,4 +472,11 @@
     <string name="debug_log_share">Del log</string>
     <string name="debug_log_clear">Ryd</string>
     <string name="debug_log_empty">Ingen poster endnu.</string>
+    <string name="e2e_title">End-to-end-kryptering</string>
+    <string name="e2e_info">Krypterer data, fotos og kvitteringer på enheden, før de sendes til serveren. Der kan de ikke læses, heller ikke af udbyderen. Indtast den samme synkroniseringsadgangskode på alle enheder; de andre enheder følger med, når krypteringen slås til eller fra, ved næste synkronisering. Adgangskoden kan ikke gendannes, men dataene på dine enheder bevares.</string>
+    <string name="e2e_password">Synkroniseringsadgangskode</string>
+    <string name="e2e_too_short">Mindst 8 tegn</string>
+    <string name="e2e_need_password">Dataene på serveren er krypteret. Indtast synkroniseringsadgangskoden under Indstillinger → Synkronisering.</string>
+    <string name="e2e_wrong_password">Synkroniseringsadgangskoden passer ikke til dataene på serveren.</string>
+    <string name="e2e_key_file_broken">Nøglefilen på serveren er beskadiget.</string>
 </resources>

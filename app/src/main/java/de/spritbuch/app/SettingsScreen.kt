@@ -87,6 +87,9 @@ fun SettingsScreen(nav: NavController) {
     }
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
+    var e2e by remember { mutableStateOf(prefs.syncEncrypt) }
+    var e2ePass by remember { mutableStateOf(prefs.syncPassphrase) }
+    val e2eOk = !e2e || e2ePass.length >= 8
     var cloudInfo by remember { mutableStateOf<String?>(null) }
     var loggingIn by remember { mutableStateOf(false) }
     var pickerDav by remember { mutableStateOf<WebDavClient?>(null) }
@@ -252,9 +255,24 @@ fun SettingsScreen(nav: NavController) {
                     },
                 ) { Text(str(R.string.choose_folder)) }
             }
+            LabeledSwitch(str(R.string.e2e_title), e2e) { e2e = it }
+            Text(str(R.string.e2e_info), style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(
+                e2ePass, { e2ePass = it }, label = { Text(str(R.string.e2e_password)) }, singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = !e2eOk,
+                supportingText = if (!e2eOk) ({ Text(str(R.string.e2e_too_short)) }) else null,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Button(
                 onClick = {
                     scope.launch {
+                        if (e2e != prefs.syncEncrypt) {
+                            prefs.syncEncrypt = e2e
+                            prefs.syncEncryptChanged = true
+                        }
+                        prefs.syncPassphrase = e2ePass
                         val root = resolveRoot()
                         prefs.server = Nextcloud.normalizeServer(server)
                         prefs.folder = folder
@@ -267,7 +285,7 @@ fun SettingsScreen(nav: NavController) {
                         SyncManager.sync(ctx)
                     }
                 },
-                enabled = !running && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
+                enabled = !running && e2eOk && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(str(R.string.save_and_sync)) }
             if (running) LinearProgressIndicator(Modifier.fillMaxWidth())
