@@ -59,6 +59,10 @@ android {
         }
     }
 
+    // Tests gegen den Release-Build (ab AGP 9 gibt es Unit-Tests nur für diesen einen Build-Typ);
+    // so muss die Texterkennung im CI nicht zusätzlich als Debug-Variante gebaut werden
+    testBuildType = "release"
+
     // Android-Klassen in Unit-Tests liefern Standardwerte statt Fehler
     testOptions {
         unitTests.isReturnDefaultValues = true
