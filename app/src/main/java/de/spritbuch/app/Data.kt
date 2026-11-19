@@ -531,9 +531,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        fun create(ctx: Context): AppDatabase =
-            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+        /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
+        val MIGRATIONS: Array<Migration>
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+
+        fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
+            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)
+                .addMigrations(*MIGRATIONS)
                 .build()
     }
 }

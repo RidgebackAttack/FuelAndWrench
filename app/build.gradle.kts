@@ -61,7 +61,10 @@ android {
     }
 
     // Android-Klassen in Unit-Tests liefern Standardwerte statt Fehler
-    testOptions { unitTests.isReturnDefaultValues = true }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -108,6 +111,8 @@ dependencies {
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core:1.6.1")
 }
 
 // versionCode je APK: Basis + 0 (universal), +1 (armeabi-v7a), +2 (arm64-v8a)
