@@ -577,5 +577,3 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         )
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)

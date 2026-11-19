@@ -193,5 +193,3 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
         )
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
