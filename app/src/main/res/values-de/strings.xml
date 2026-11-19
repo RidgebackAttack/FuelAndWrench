@@ -478,6 +478,7 @@
     <string name="widget_month">Diesen Monat: %1$s</string>
     <string name="widget_no_vehicle">Tippen, um ein Fahrzeug anzulegen</string>
     <string name="widget_next_vehicle">Nächstes Fahrzeug</string>
+    <string name="lan_permission_needed">Dein Server liegt im lokalen Netzwerk. Bitte den Zugriff auf Geräte im lokalen Netzwerk erlauben (Einstellungen → Synchronisierung → Speichern und synchronisieren).</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

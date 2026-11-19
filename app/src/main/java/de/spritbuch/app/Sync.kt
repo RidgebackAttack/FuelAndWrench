@@ -134,7 +134,8 @@ object SyncManager {
             SyncResult(false, str(R.string.e2e_wrong_password))
         } catch (e: Exception) {
             DebugLog.error("Synchronisierung fehlgeschlagen", e)
-            SyncResult(false, str(R.string.error_prefix, e.message ?: e.javaClass.simpleName))
+            if (LocalNet.missing(app, prefs.url)) SyncResult(false, str(R.string.lan_permission_needed))
+            else SyncResult(false, str(R.string.error_prefix, e.message ?: e.javaClass.simpleName))
         } finally {
             running.value = false
         }

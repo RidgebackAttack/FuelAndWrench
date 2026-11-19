@@ -478,6 +478,7 @@
     <string name="widget_month">This month: %1$s</string>
     <string name="widget_no_vehicle">Tap to add a vehicle</string>
     <string name="widget_next_vehicle">Next vehicle</string>
+    <string name="lan_permission_needed">Your server is in the local network. Please allow access to devices in the local network (Settings → Sync → Save and sync).</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

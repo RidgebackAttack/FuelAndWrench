@@ -478,6 +478,7 @@
     <string name="widget_month">Denne måned: %1$s</string>
     <string name="widget_no_vehicle">Tryk for at tilføje et køretøj</string>
     <string name="widget_next_vehicle">Næste køretøj</string>
+    <string name="lan_permission_needed">Din server er på det lokale netværk. Tillad adgang til enheder på det lokale netværk (Indstillinger → Synkronisering → Gem og synkroniser).</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

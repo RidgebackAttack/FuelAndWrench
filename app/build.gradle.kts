@@ -17,7 +17,7 @@ android {
         missingDimensionStrategy("parallelization", "standard")
         applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 37
         // Feste Version (F-Droid liest sie von hier). Für jedes Release um 10 erhöhen
         // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
         // Die APKs je Prozessortyp bekommen +1 (armeabi-v7a) bzw. +2 (arm64-v8a), die Universal-APK +0.

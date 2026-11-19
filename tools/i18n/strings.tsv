@@ -503,3 +503,4 @@ widget_description	Consumption, costs this month and next due reminder	Verbrauch
 widget_month	This month: %1$s	Diesen Monat: %1$s	Denne måned: %1$s
 widget_no_vehicle	Tap to add a vehicle	Tippen, um ein Fahrzeug anzulegen	Tryk for at tilføje et køretøj
 widget_next_vehicle	Next vehicle	Nächstes Fahrzeug	Næste køretøj
+lan_permission_needed	Your server is in the local network. Please allow access to devices in the local network (Settings → Sync → Save and sync).	Dein Server liegt im lokalen Netzwerk. Bitte den Zugriff auf Geräte im lokalen Netzwerk erlauben (Einstellungen → Synchronisierung → Speichern und synchronisieren).	Din server er på det lokale netværk. Tillad adgang til enheder på det lokale netværk (Indstillinger → Synkronisering → Gem og synkroniser).

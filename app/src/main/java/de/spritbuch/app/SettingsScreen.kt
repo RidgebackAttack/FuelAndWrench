@@ -94,6 +94,17 @@ fun SettingsScreen(nav: NavController) {
     var loggingIn by remember { mutableStateOf(false) }
     var pickerDav by remember { mutableStateOf<WebDavClient?>(null) }
 
+    // Android 17+: Zugriff aufs lokale Netz erst erfragen, wenn der Server wirklich dort liegt
+    var lanAnswer by remember { mutableStateOf<kotlinx.coroutines.CompletableDeferred<Boolean>?>(null) }
+    val lanLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { lanAnswer?.complete(it) }
+    suspend fun ensureLan() {
+        if (!LocalNet.missing(ctx, server)) return
+        val answer = kotlinx.coroutines.CompletableDeferred<Boolean>()
+        lanAnswer = answer
+        lanLauncher.launch(LocalNet.PERMISSION)
+        answer.await()
+    }
+
     /** WebDAV-Stamm ermitteln: bei Nextcloud automatisch, sonst die Adresse selbst. */
     suspend fun resolveRoot(): String {
         val srv = Nextcloud.normalizeServer(server)
@@ -207,6 +218,7 @@ fun SettingsScreen(nav: NavController) {
                     scope.launch {
                         val srv = Nextcloud.normalizeServer(server)
                         server = srv
+                        ensureLan()
                         loggingIn = true
                         try {
                             val start = Nextcloud.startLogin(srv)
@@ -248,6 +260,7 @@ fun SettingsScreen(nav: NavController) {
                     enabled = server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                     onClick = {
                         scope.launch {
+                            ensureLan()
                             cloudInfo = str(R.string.connecting)
                             val root = resolveRoot()
                             cloudInfo = null
@@ -274,6 +287,7 @@ fun SettingsScreen(nav: NavController) {
                             prefs.syncEncryptChanged = true
                         }
                         prefs.syncPassphrase = e2ePass
+                        ensureLan()
                         val root = resolveRoot()
                         prefs.server = Nextcloud.normalizeServer(server)
                         prefs.folder = folder
