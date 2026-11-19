@@ -54,6 +54,8 @@ android {
         release {
             // R8 entfernt ungenutzten Code (v. a. aus den Icon- und Compose-Bibliotheken): kleiner und schneller
             isMinifyEnabled = true
+            // Ungenutzte Ressourcen ebenfalls entfernen
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release")
         }
@@ -78,7 +80,8 @@ android {
         buildConfig = true
     }
     lint {
-        abortOnError = false
+        // Fehler (z. B. Aufrufe, die es auf älteren Android-Versionen nicht gibt) stoppen das Release
+        abortOnError = true
         checkReleaseBuilds = false
         // Zusätzlich als Text (wird im CI ins Log geschrieben)
         textReport = true

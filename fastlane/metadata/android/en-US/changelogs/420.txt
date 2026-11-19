@@ -1,0 +1,6 @@
+- Fixed: statistics by year could crash on Android 14 and older
+- All entry forms now survive camera, photo and file picking without losing input
+- New: error log (Settings → Privacy), off by default, stays on the device
+- Android device transfer and cloud backup exclude app data and credentials
+- Faster with many entries and imports; smaller APK
+- Under the hood: current libraries, tests for every database upgrade

@@ -1,0 +1,6 @@
+- Behoben: Statistik nach Jahren konnte auf Android 14 und älter abstürzen
+- Alle Eingabeformulare überstehen jetzt Kamera, Fotoauswahl und Dateiauswahl ohne Datenverlust
+- Neu: Fehlerprotokoll (Einstellungen → Datenschutz), standardmäßig aus, bleibt auf dem Gerät
+- Android-Geräteübertragung und Cloud-Sicherung schließen App-Daten und Zugangsdaten aus
+- Schneller bei vielen Einträgen und Importen; kleinere APK
+- Technik: aktuelle Bibliotheken, Tests für alle Datenbank-Updates

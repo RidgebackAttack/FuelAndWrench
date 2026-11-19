@@ -37,8 +37,6 @@
     <string name="cd_back">Zurück</string>
     <string name="cd_choose">Auswahl</string>
     <string name="notif_channel">Wartungserinnerungen</string>
-    <string name="notif_overdue">Fällig seit %1$s (fällig bei %2$s)</string>
-    <string name="notif_due_in">Fällig in %1$s (bei %2$s)</string>
     <string name="unit_km">Kilometer (km)</string>
     <string name="unit_mi">Meilen (mi)</string>
     <string name="unit_l">Liter (l)</string>
@@ -140,8 +138,6 @@
     <string name="welcome_title">Willkommen bei Fuel &amp; Wrench</string>
     <string name="welcome_text">Lege dein erstes Fahrzeug über „Fahrzeug“ an. Danach kannst du Betankungen und Service erfassen oder Daten aus Spritmonitor importieren.</string>
     <string name="all_archived">Alle Fahrzeuge sind archiviert.</string>
-    <string name="archive_hide">Archiv ausblenden</string>
-    <string name="archive_show">Archiv anzeigen (%1$d)</string>
     <string name="archived_lower">archiviert</string>
     <string name="no_consumption_yet">Noch kein Verbrauch berechenbar</string>
     <string name="import_failed">Import fehlgeschlagen: %1$s</string>
@@ -217,8 +213,6 @@
     <string name="stat_distance">Erfasste Strecke</string>
     <string name="reminders">Erinnerungen</string>
     <string name="no_reminders">Keine Erinnerungen angelegt.</string>
-    <string name="rem_overdue">Fällig seit %1$s (bei %2$s)</string>
-    <string name="rem_remaining">Noch %1$s (fällig bei %2$s)</string>
     <string name="done">Erledigt</string>
     <string name="last_refuel">Letzte Betankung</string>
     <string name="last_service">Letzter Service</string>
@@ -406,9 +400,7 @@
     <string name="scan_receipt">Beleg scannen</string>
     <string name="scan_odometer">Tacho scannen</string>
     <string name="scan_running">Texterkennung läuft auf dem Gerät …</string>
-    <string name="scan_found">Erkannt: %1$s – bitte prüfen.</string>
     <string name="scan_nothing">Nichts erkannt. Nochmal mit mehr Licht versuchen, der Beleg sollte das Bild füllen.</string>
-    <string name="scan_odo_found">Kilometerstand erkannt.</string>
     <string name="scan_check_odo">Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.</string>
     <string name="ocr_failed">Texterkennung fehlgeschlagen</string>
     <string name="import_empty">Datei ist leer</string>

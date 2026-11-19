@@ -76,7 +76,7 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
         val years = remember(refuels, services, expenses) {
             val ys = (refuels.map { cal(it.timestamp).get(Calendar.YEAR) } +
                 services.map { cal(it.timestamp).get(Calendar.YEAR) } +
-                expenses.map { cal(it.timestamp).get(Calendar.YEAR) }).toSortedSet().reversed()
+                expenses.map { cal(it.timestamp).get(Calendar.YEAR) }).distinct().sortedDescending()
             ys.map { y ->
                 val r = refuels.filter { cal(it.timestamp).get(Calendar.YEAR) == y }
                 val dist = if (r.size >= 2) r.maxOf { it.odometer } - r.minOf { it.odometer } else 0

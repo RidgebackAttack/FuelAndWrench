@@ -15,6 +15,7 @@ import java.util.Locale
  * Bleibt auf dem Gerät, bis es bewusst geteilt wird. Server-Adresse und Benutzername
  * werden vor dem Schreiben unkenntlich gemacht.
  */
+@android.annotation.SuppressLint("StaticFieldLeak") // nur der Application-Kontext
 object DebugLog {
     private const val MAX_BYTES = 256 * 1024
     @Volatile private var enabled = false

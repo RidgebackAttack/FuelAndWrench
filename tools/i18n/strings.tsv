@@ -34,8 +34,6 @@ pos_rear_right	Rear right	Hinten rechts	Højre bag
 cd_back	Back	Zurück	Tilbage
 cd_choose	Choose	Auswahl	Vælg
 notif_channel	Maintenance reminders	Wartungserinnerungen	Vedligeholdelsespåmindelser
-notif_overdue	Overdue by %1$s (due at %2$s)	Fällig seit %1$s (fällig bei %2$s)	Forfalden med %1$s (forfalder ved %2$s)
-notif_due_in	Due in %1$s (at %2$s)	Fällig in %1$s (bei %2$s)	Forfalder om %1$s (ved %2$s)
 unit_km	Kilometers (km)	Kilometer (km)	Kilometer (km)
 unit_mi	Miles (mi)	Meilen (mi)	Miles (mi)
 unit_l	Liters (l)	Liter (l)	Liter (l)
@@ -105,7 +103,7 @@ amoled	Pure black in dark mode (AMOLED)	Reines Schwarz im dunklen Modus (AMOLED)
 sync	Synchronization	Synchronisation	Synkronisering
 sync_help	Enter the address of your Nextcloud, sign in and choose a folder. Other WebDAV servers: enter the full WebDAV address and fill in the credentials manually.	Adresse deiner Nextcloud eingeben, anmelden und Ordner wählen. Andere WebDAV-Server: vollständige WebDAV-Adresse eingeben und Zugangsdaten von Hand eintragen.	Indtast adressen på din Nextcloud, log ind og vælg en mappe. Andre WebDAV-servere: indtast den fulde WebDAV-adresse og udfyld loginoplysningerne manuelt.
 server_hint	Server (e.g. https://cloud.example.com)	Server (z. B. https://cloud.example.de)	Server (f.eks. https://cloud.example.dk)
-login_browser	Please sign in in the browser and allow access, then return here …	Bitte im Browser anmelden und den Zugriff erlauben, dann hierher zurückkehren …	Log ind i browseren og tillad adgang, og vend så tilbage hertil …
+login_browser	Please sign in via the browser and allow access, then return here …	Bitte im Browser anmelden und den Zugriff erlauben, dann hierher zurückkehren …	Log ind i browseren og tillad adgang, og vend så tilbage hertil …
 logged_in_as	Signed in as %1$s. Now choose a folder.	Angemeldet als %1$s. Jetzt Ordner wählen.	Logget ind som %1$s. Vælg nu en mappe.
 login_expired	Sign-in expired – please try again.	Anmeldung abgelaufen – bitte erneut versuchen.	Login udløbet – prøv igen.
 login_failed	Sign-in not possible: %1$s	Anmeldung nicht möglich: %1$s	Login ikke muligt: %1$s
@@ -137,8 +135,6 @@ vehicle	Vehicle	Fahrzeug	Køretøj
 welcome_title	Welcome to Fuel & Wrench	Willkommen bei Fuel & Wrench	Velkommen til Fuel & Wrench
 welcome_text	Add your first vehicle via “Vehicle”. Then you can log refuels, record services or import data from Spritmonitor.	Lege dein erstes Fahrzeug über „Fahrzeug“ an. Danach kannst du Betankungen und Service erfassen oder Daten aus Spritmonitor importieren.	Opret dit første køretøj via „Køretøj“. Derefter kan du registrere tankninger og service eller importere data fra Spritmonitor.
 all_archived	All vehicles are archived.	Alle Fahrzeuge sind archiviert.	Alle køretøjer er arkiveret.
-archive_hide	Hide archive	Archiv ausblenden	Skjul arkiv
-archive_show	Show archive (%1$d)	Archiv anzeigen (%1$d)	Vis arkiv (%1$d)
 archived_lower	archived	archiviert	arkiveret
 no_consumption_yet	No consumption calculable yet	Noch kein Verbrauch berechenbar	Endnu intet forbrug at beregne
 import_failed	Import failed: %1$s	Import fehlgeschlagen: %1$s	Import mislykkedes: %1$s
@@ -214,8 +210,6 @@ stat_total_amount	Total refueled	Getankt gesamt	Tanket i alt
 stat_distance	Distance logged	Erfasste Strecke	Registreret strækning
 reminders	Reminders	Erinnerungen	Påmindelser
 no_reminders	No reminders set up.	Keine Erinnerungen angelegt.	Ingen påmindelser oprettet.
-rem_overdue	Overdue by %1$s (at %2$s)	Fällig seit %1$s (bei %2$s)	Forfalden med %1$s (ved %2$s)
-rem_remaining	%1$s left (due at %2$s)	Noch %1$s (fällig bei %2$s)	%1$s tilbage (forfalder ved %2$s)
 done	Done	Erledigt	Udført
 last_refuel	Last refuel	Letzte Betankung	Seneste tankning
 last_service	Last service	Letzter Service	Seneste service
@@ -403,9 +397,7 @@ backup_invalid	This is not a Fuel & Wrench backup	Das ist kein Fuel-&-Wrench-Bac
 scan_receipt	Scan receipt	Beleg scannen	Scan kvittering
 scan_odometer	Scan odometer	Tacho scannen	Scan kilometertæller
 scan_running	Recognizing text on the device …	Texterkennung läuft auf dem Gerät …	Tekstgenkendelse kører på enheden …
-scan_found	Recognized: %1$s – please check.	Erkannt: %1$s – bitte prüfen.	Genkendt: %1$s – kontrollér venligst.
 scan_nothing	Nothing recognized. Try again with more light and the receipt filling the picture.	Nichts erkannt. Nochmal mit mehr Licht versuchen, der Beleg sollte das Bild füllen.	Intet genkendt. Prøv igen med mere lys, og lad kvitteringen fylde billedet.
-scan_odo_found	Odometer recognized.	Kilometerstand erkannt.	Kilometerstand genkendt.
 scan_check_odo	Read from the photo – please compare with the display.	Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.	Aflæst fra fotoet – sammenlign venligst med displayet.
 ocr_failed	Text recognition failed	Texterkennung fehlgeschlagen	Tekstgenkendelse mislykkedes
 import_empty	File is empty	Datei ist leer	Filen er tom

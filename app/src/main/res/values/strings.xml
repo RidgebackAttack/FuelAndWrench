@@ -37,8 +37,6 @@
     <string name="cd_back">Back</string>
     <string name="cd_choose">Choose</string>
     <string name="notif_channel">Maintenance reminders</string>
-    <string name="notif_overdue">Overdue by %1$s (due at %2$s)</string>
-    <string name="notif_due_in">Due in %1$s (at %2$s)</string>
     <string name="unit_km">Kilometers (km)</string>
     <string name="unit_mi">Miles (mi)</string>
     <string name="unit_l">Liters (l)</string>
@@ -108,7 +106,7 @@
     <string name="sync">Synchronization</string>
     <string name="sync_help">Enter the address of your Nextcloud, sign in and choose a folder. Other WebDAV servers: enter the full WebDAV address and fill in the credentials manually.</string>
     <string name="server_hint">Server (e.g. https://cloud.example.com)</string>
-    <string name="login_browser">Please sign in in the browser and allow access, then return here …</string>
+    <string name="login_browser">Please sign in via the browser and allow access, then return here …</string>
     <string name="logged_in_as">Signed in as %1$s. Now choose a folder.</string>
     <string name="login_expired">Sign-in expired – please try again.</string>
     <string name="login_failed">Sign-in not possible: %1$s</string>
@@ -140,8 +138,6 @@
     <string name="welcome_title">Welcome to Fuel &amp; Wrench</string>
     <string name="welcome_text">Add your first vehicle via “Vehicle”. Then you can log refuels, record services or import data from Spritmonitor.</string>
     <string name="all_archived">All vehicles are archived.</string>
-    <string name="archive_hide">Hide archive</string>
-    <string name="archive_show">Show archive (%1$d)</string>
     <string name="archived_lower">archived</string>
     <string name="no_consumption_yet">No consumption calculable yet</string>
     <string name="import_failed">Import failed: %1$s</string>
@@ -217,8 +213,6 @@
     <string name="stat_distance">Distance logged</string>
     <string name="reminders">Reminders</string>
     <string name="no_reminders">No reminders set up.</string>
-    <string name="rem_overdue">Overdue by %1$s (at %2$s)</string>
-    <string name="rem_remaining">%1$s left (due at %2$s)</string>
     <string name="done">Done</string>
     <string name="last_refuel">Last refuel</string>
     <string name="last_service">Last service</string>
@@ -406,9 +400,7 @@
     <string name="scan_receipt">Scan receipt</string>
     <string name="scan_odometer">Scan odometer</string>
     <string name="scan_running">Recognizing text on the device …</string>
-    <string name="scan_found">Recognized: %1$s – please check.</string>
     <string name="scan_nothing">Nothing recognized. Try again with more light and the receipt filling the picture.</string>
-    <string name="scan_odo_found">Odometer recognized.</string>
     <string name="scan_check_odo">Read from the photo – please compare with the display.</string>
     <string name="ocr_failed">Text recognition failed</string>
     <string name="import_empty">File is empty</string>

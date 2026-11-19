@@ -51,11 +51,11 @@ jobs:
       - name: Build
         run: gradle testReleaseUnitTest assembleRelease --no-daemon --stacktrace
 
-      # Android Lint: findet typische Fehler (z. B. fehlende Übersetzungen, API-Level); bricht den Build nicht ab
+      # Android Lint: Warnungen stehen im Log, Fehler (z. B. Aufrufe, die es auf älteren Android-Versionen
+      # nicht gibt) verhindern das Release
       - name: Lint
-        continue-on-error: true
         run: |
-          gradle :app:lintRelease --no-daemon
+          gradle :app:lintRelease --no-daemon || { cat app/build/reports/lint-results-release.txt; exit 1; }
           cat app/build/reports/lint-results-release.txt
 
       - uses: actions/upload-artifact@v4

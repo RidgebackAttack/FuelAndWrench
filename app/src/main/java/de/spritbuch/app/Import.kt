@@ -79,7 +79,7 @@ object CsvImport {
         } catch (_: CharacterCodingException) {
             String(bytes, Charset.forName("windows-1252"))
         }
-        return text.removePrefix("﻿")
+        return text.removePrefix("\uFEFF")
     }
 
     fun parse(text: String, vehicle: Vehicle): ImportResult {
