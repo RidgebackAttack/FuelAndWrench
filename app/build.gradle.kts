@@ -144,3 +144,10 @@ tasks.withType<Test>().configureEach {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
+
+// Startprofil erzeugen (Workflow baseline.yml): misst auf einem Emulator, welcher Code beim Start
+// gebraucht wird. Das Ergebnis landet in src/main/baseline-prof.txt; normale Builds brauchen das Plug-in nicht.
+if (providers.gradleProperty("baselineProfile").isPresent) {
+    apply(plugin = "androidx.baselineprofile")
+    dependencies { add("baselineProfile", project(":baselineprofile")) }
+}

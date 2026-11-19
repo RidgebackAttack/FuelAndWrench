@@ -1,0 +1,60 @@
+# Startprofil auf einem Emulator erzeugen und ins Repository übernehmen.
+# Läuft nur bei Bedarf (manuell oder wenn sich dieser Workflow/das Messmodul ändert), nicht bei jedem Build.
+name: Startprofil erzeugen
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - .github/workflows/baseline.yml
+      - baselineprofile/**
+
+permissions:
+  contents: write
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.9.1
+
+      - name: KVM für den Emulator freigeben
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Profil auf dem Emulator messen
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: gradle :app:generateReleaseBaselineProfile -PbaselineProfile --no-daemon
+
+      - name: Profil übernehmen
+        run: |
+          gen=$(find app/src -path '*generated/baselineProfiles/baseline-prof.txt' | head -1)
+          test -n "$gen"
+          cat app/src/main/baseline-prof.txt "$gen" | sort -u > /tmp/profile.txt
+          mv /tmp/profile.txt app/src/main/baseline-prof.txt
+          wc -l app/src/main/baseline-prof.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/baseline-prof.txt
+          git diff --cached --quiet || git commit -m "Startprofil aktualisiert (automatisch gemessen)"
+          git push
