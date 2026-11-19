@@ -414,6 +414,13 @@ interface RefuelDao {
     @Query("SELECT * FROM refuels")
     suspend fun getAllRaw(): List<Refuel>
 
+    /** Eigene Betreiber, häufigste zuerst – ohne alle Betankungen zu laden. */
+    @Query("SELECT stationBrand FROM refuels WHERE deleted = 0 AND stationBrand != '' GROUP BY stationBrand ORDER BY COUNT(*) DESC")
+    suspend fun usedBrands(): List<String>
+
+    @Query("SELECT vehicleId, MAX(timestamp) AS lastTime FROM refuels WHERE deleted = 0 GROUP BY vehicleId")
+    suspend fun lastUse(): List<VehicleLastUse>
+
     @Upsert
     suspend fun upsert(item: Refuel)
 }
@@ -441,6 +448,9 @@ interface ReminderDao {
     @Upsert
     suspend fun upsert(item: Reminder)
 }
+
+/** Letzte Betankung je Fahrzeug (für die Sortierung im App-Icon-Menü). */
+data class VehicleLastUse(val vehicleId: String, val lastTime: Long)
 
 @Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 9, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -531,9 +541,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        fun create(ctx: Context): AppDatabase =
-            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, "spritbuch.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+        /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
+        val MIGRATIONS: Array<Migration>
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+
+        fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
+            Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)
+                .addMigrations(*MIGRATIONS)
                 .build()
     }
 }

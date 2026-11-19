@@ -134,7 +134,7 @@ object Csv {
     } else s
 
     private fun table(header: List<String>, rows: List<List<String>>): String =
-        "﻿" + (listOf(header) + rows).joinToString("\r\n") { r -> r.joinToString(sep.toString()) { cell(it) } } + "\r\n"
+        "\uFEFF" + (listOf(header) + rows).joinToString("\r\n") { r -> r.joinToString(sep.toString()) { cell(it) } } + "\r\n"
 
     fun refuels(list: List<Refuel>, vehicles: Map<String, Vehicle>): String {
         val per = list.groupBy { it.vehicleId }.values.flatMap { computeStats(it).perRefuel.entries }.associate { it.key to it.value }

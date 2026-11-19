@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -108,17 +109,19 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
     val repo = LocalContext.current.repo
     val scope = rememberCoroutineScope()
     val isNew = setId == "new"
+    // Eingaben überstehen das Neuerstellen der Activity (z. B. während Kamera/Dateiauswahl)
+    var loaded by rememberSaveable { mutableStateOf(false) }
     var base by remember { mutableStateOf<TireSet?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
-    var season by remember { mutableStateOf("") }
-    var brandF by remember { mutableStateOf("") }
-    var modelF by remember { mutableStateOf("") }
-    var sizeF by remember { mutableStateOf("") }
-    var brandR by remember { mutableStateOf("") }
-    var modelR by remember { mutableStateOf("") }
-    var sizeR by remember { mutableStateOf("") }
-    var same by remember { mutableStateOf(true) }
-    var note by remember { mutableStateOf("") }
+    var season by rememberSaveable { mutableStateOf("") }
+    var brandF by rememberSaveable { mutableStateOf("") }
+    var modelF by rememberSaveable { mutableStateOf("") }
+    var sizeF by rememberSaveable { mutableStateOf("") }
+    var brandR by rememberSaveable { mutableStateOf("") }
+    var modelR by rememberSaveable { mutableStateOf("") }
+    var sizeR by rememberSaveable { mutableStateOf("") }
+    var same by rememberSaveable { mutableStateOf(true) }
+    var note by rememberSaveable { mutableStateOf("") }
     var confirmDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(setId) {
@@ -126,6 +129,8 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
         veh = v
         val t = if (isNew) TireSet(vehicleId = vehicleId) else repo.getTireSet(setId) ?: return@LaunchedEffect
         base = t
+        if (loaded) return@LaunchedEffect
+        loaded = true
         season = t.season
         brandF = t.brandFront; modelF = t.modelFront; sizeF = t.sizeFront
         brandR = t.brandRear; modelR = t.modelRear; sizeR = t.sizeRear

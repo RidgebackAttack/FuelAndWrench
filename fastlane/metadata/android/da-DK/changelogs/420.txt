@@ -1,0 +1,6 @@
+- Rettet: statistik pr. år kunne gå ned på Android 14 og ældre
+- Alle indtastningsformularer overlever nu kamera, fotovalg og filvalg uden datatab
+- Nyt: fejllog (Indstillinger → Privatliv), slået fra som standard, bliver på enheden
+- Androids enhedsoverførsel og cloud-backup udelukker appdata og loginoplysninger
+- Hurtigere med mange poster og importer; mindre APK
+- Teknik: opdaterede biblioteker, tests for alle databaseopdateringer

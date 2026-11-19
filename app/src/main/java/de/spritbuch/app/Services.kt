@@ -49,9 +49,10 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        DebugLog.install(this)
         repo = Repository(this, AppDatabase.create(this))
         // Alles, was nicht für das erste Bild nötig ist, im Hintergrund (schnellerer Start)
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        repo.launch {
             runCatching { Notifications.createChannel(this@App) }
             runCatching { SyncScheduler.schedulePeriodic(this@App) }
             runCatching { DailyWorker.schedule(this@App) }

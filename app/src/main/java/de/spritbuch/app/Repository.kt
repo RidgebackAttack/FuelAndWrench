@@ -4,11 +4,21 @@ import android.content.Context
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 val Context.repo: Repository get() = (applicationContext as App).repo
 
-class Repository(private val ctx: Context, val db: AppDatabase) {
+class Repository(
+    private val ctx: Context,
+    val db: AppDatabase,
+    /** Lebt so lange wie die App; ein Fehler in einer Aufgabe beendet nicht die anderen. */
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+) {
     val vehicles: Flow<List<Vehicle>> = db.vehicles().observeAll()
     val allRefuels: Flow<List<Refuel>> = db.refuels().observeAll()
     val allReminders: Flow<List<Reminder>> = db.reminders().observeAll()
@@ -338,8 +348,22 @@ class Repository(private val ctx: Context, val db: AppDatabase) {
         changed()
     }
 
+    private var pending: Job? = null
+
+    /**
+     * Nach Änderungen synchronisieren und das App-Icon-Menü aktualisieren – gebündelt:
+     * Bei vielen Änderungen am Stück (Import, Wiederherstellung) läuft das nur einmal am Ende.
+     */
+    @Synchronized
     private fun changed() {
-        SyncScheduler.syncSoon(ctx)
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { Shortcuts.update(ctx) }
+        pending?.cancel()
+        pending = scope.launch {
+            delay(1500)
+            SyncScheduler.syncSoon(ctx)
+            Shortcuts.update(ctx)
+        }
     }
+
+    /** Für Hintergrundarbeiten, die den Bildschirm überleben sollen. */
+    fun launch(block: suspend CoroutineScope.() -> Unit): Job = scope.launch(block = block)
 }

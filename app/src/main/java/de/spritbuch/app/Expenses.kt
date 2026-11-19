@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -124,14 +125,16 @@ fun ExpenseEditScreen(nav: NavController, vehicleId: String, expenseId: String) 
     val repo = ctx.repo
     val scope = rememberCoroutineScope()
     val isNew = expenseId == "new"
+    // Eingaben überstehen das Neuerstellen der Activity (z. B. während Kamera/Dateiauswahl)
+    var loaded by rememberSaveable { mutableStateOf(false) }
     var base by remember { mutableStateOf<Expense?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
-    var timestamp by remember { mutableLongStateOf(now()) }
-    var category by remember { mutableStateOf("Versicherung") }
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var attachments by remember { mutableStateOf(listOf<String>()) }
+    var timestamp by rememberSaveable { mutableLongStateOf(now()) }
+    var category by rememberSaveable { mutableStateOf("Versicherung") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
+    var attachments by rememberSaveable { mutableStateOf(listOf<String>()) }
     var error by remember { mutableStateOf<String?>(null) }
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -140,6 +143,8 @@ fun ExpenseEditScreen(nav: NavController, vehicleId: String, expenseId: String) 
         veh = repo.getVehicle(vehicleId)
         val e = if (isNew) Expense(vehicleId = vehicleId, category = "Versicherung") else repo.getExpense(expenseId) ?: return@LaunchedEffect
         base = e
+        if (loaded) return@LaunchedEffect
+        loaded = true
         timestamp = e.timestamp
         category = e.category
         title = e.title
