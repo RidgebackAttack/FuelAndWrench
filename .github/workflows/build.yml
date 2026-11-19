@@ -54,7 +54,9 @@ jobs:
       # Android Lint: findet typische Fehler (z. B. fehlende Übersetzungen, API-Level); bricht den Build nicht ab
       - name: Lint
         continue-on-error: true
-        run: gradle :app:lintRelease --no-daemon
+        run: |
+          gradle :app:lintRelease --no-daemon
+          cat app/build/reports/lint-results-release.txt
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -80,9 +80,9 @@ android {
     lint {
         abortOnError = false
         checkReleaseBuilds = false
-        // Ergebnis zusätzlich als Text ins CI-Log
+        // Zusätzlich als Text (wird im CI ins Log geschrieben)
         textReport = true
-        textOutput = file("stdout")
+        textOutput = layout.buildDirectory.file("reports/lint-results-release.txt").get().asFile
     }
 }
 
