@@ -14,6 +14,7 @@ Hvor sendes data hen?
 
 • Din egen WebDAV-/Nextcloud-server: alle appdata og fotos af køretøjer – ved synkronisering (kan slås fra: ja – opsæt ikke synkronisering)
 • overpass-api.de (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ – søgning efter tankstation (kan slås fra: ja – Indstillinger → Privatliv)
+• creativecommons.tankerkoenig.de (Tankerkönig): position afrundet til ca. 1 km, brændstoftype, din egen nøgle, IP-adresse – kun med indtastet nøgle, når priser vises – aktuelle brændstofpriser (kan slås fra: ja – fjern nøglen under Indstillinger → Brændstofpriser)
 • nominatim.openstreetmap.org (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ / „Adresse“ – adressesøgning (kan slås fra: ja – samme kontakt)
 • Android-geocoder (på enheder med Google-tjenester: Google): koordinater – adressesøgning (kan slås fra: ja – slået fra som standard)
 • Systemets netværksplacering (på enheder med Google-tjenester: Google): Wi-Fi-/mobildata – positionering (kan slås fra: ja – slået fra som standard, så kun GPS)

@@ -404,6 +404,26 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     if (a != null && t != null && a > 0) ppu = (t / a).fmt(3)
                 }, suffix = cur, modifier = Modifier.weight(1f))
             }
+            // Plausibilitätsprüfung (z. B. Lesefehler beim Bon): aktueller Preis dieser Tankstelle laut Tankerkönig
+            var reported by remember { mutableStateOf<Double?>(null) }
+            LaunchedEffect(lat, lon, fuelType) {
+                reported = null
+                val la = lat ?: return@LaunchedEffect
+                val lo = lon ?: return@LaunchedEffect
+                if (!isNew || !FuelPrices.enabled(ctx)) return@LaunchedEffect
+                val type = FuelPrices.typeFor(fuelType) ?: return@LaunchedEffect
+                reported = runCatching { FuelPrices.nearby(ctx, la, lo, type, radiusKm = 2) }.getOrNull()
+                    ?.let { FuelPrices.at(it, la, lo) }?.price
+            }
+            val entered = ppu.toDoubleDe()
+            val rep = reported
+            if (rep != null && entered != null && entered > 0 && FuelPrices.deviates(entered, rep)) {
+                Text(
+                    str(R.string.prices_check_hint, FuelPrices.price(rep)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             LabeledSwitch(str(if (charging) R.string.charged_to_target else R.string.full_tank), fullTank) { fullTank = it }
             if (charging) Text(str(R.string.charged_to_target_info), style = MaterialTheme.typography.bodySmall)
             LabeledSwitch(str(if (charging) R.string.missed_previous_charge else R.string.missed_previous), missed) { missed = it }

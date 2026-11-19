@@ -65,6 +65,16 @@
         android:textSize="13sp" />
 
     <TextView
+        android:id="@+id/widget_prices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+    <TextView
         android:id="@+id/widget_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

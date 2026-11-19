@@ -311,6 +311,40 @@ fun SettingsScreen(nav: NavController) {
             )
 
             HorizontalDivider()
+            SectionTitle(str(R.string.prices_section))
+            Text(str(R.string.prices_info), style = MaterialTheme.typography.bodySmall)
+            var tkKey by remember { mutableStateOf(prefs.tankerkoenigKey) }
+            var tkInfo by remember { mutableStateOf<String?>(null) }
+            var radius by remember { mutableStateOf(prefs.priceRadius) }
+            OutlinedTextField(
+                tkKey, { tkKey = it.trim(); prefs.tankerkoenigKey = it.trim(); tkInfo = null },
+                label = { Text(str(R.string.prices_key)) }, singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = {
+                    runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FuelPrices.REGISTER_URL))) }
+                }) { Text(str(R.string.prices_register)) }
+                OutlinedButton(enabled = tkKey.isNotBlank(), onClick = {
+                    scope.launch {
+                        tkInfo = str(R.string.connecting)
+                        // Probeabfrage an einem festen Ort (Berlin-Mitte), nicht am eigenen Standort
+                        tkInfo = runCatching { FuelPrices.nearby(ctx, 52.52, 13.40, "diesel", radiusKm = 1) }
+                            .fold({ str(R.string.prices_key_ok) }, { str(R.string.error_prefix, it.message ?: str(R.string.prices_error)) })
+                    }
+                }) { Text(str(R.string.prices_check)) }
+            }
+            tkInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            Text(str(R.string.prices_radius), style = MaterialTheme.typography.labelLarge)
+            val radii = listOf(2, 5, 10, 25)
+            SingleChips(radii.map { "$it km" }, "$radius km") { sel ->
+                radius = sel.removeSuffix(" km").toInt()
+                prefs.priceRadius = radius
+            }
+            Text(str(R.string.prices_attribution), style = MaterialTheme.typography.bodySmall)
+
+            HorizontalDivider()
             SectionTitle(str(R.string.backup))
             var backupInfo by remember { mutableStateOf<String?>(null) }
             var backupBusy by remember { mutableStateOf(false) }

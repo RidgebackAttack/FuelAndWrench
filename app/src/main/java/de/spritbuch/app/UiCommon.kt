@@ -91,6 +91,12 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         SyncScheduler.syncSoon(this, delaySeconds = 0)
     }
+
+    override fun onStop() {
+        super.onStop()
+        // Widget mit frischen Werten (z. B. Spritpreisen) zeigen, sobald man zum Homescreen zurückkehrt
+        FuelWidget.refresh(this)
+    }
 }
 
 @Composable
@@ -137,6 +143,7 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
         composable("settings") { SettingsScreen(nav) }
         composable("about") { AboutScreen(nav) }
         composable("map/{vehicleId}") { MapScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
+        composable("prices/{vehicleId}") { PricesScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("services/{vehicleId}") { ServiceTimelineScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("tireSetEdit/{vehicleId}/{id}") {
             TireSetEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")

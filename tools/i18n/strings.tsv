@@ -504,3 +504,23 @@ widget_month	This month: %1$s	Diesen Monat: %1$s	Denne måned: %1$s
 widget_no_vehicle	Tap to add a vehicle	Tippen, um ein Fahrzeug anzulegen	Tryk for at tilføje et køretøj
 widget_next_vehicle	Next vehicle	Nächstes Fahrzeug	Næste køretøj
 lan_permission_needed	Your server is in the local network. Please allow access to devices in the local network (Settings → Sync → Save and sync).	Dein Server liegt im lokalen Netzwerk. Bitte den Zugriff auf Geräte im lokalen Netzwerk erlauben (Einstellungen → Synchronisierung → Speichern und synchronisieren).	Din server er på det lokale netværk. Tillad adgang til enheder på det lokale netværk (Indstillinger → Synkronisering → Gem og synkroniser).
+prices_section	Fuel prices	Spritpreise	Brændstofpriser
+prices_info	Shows current prices of nearby filling stations in Germany (petrol E5/E10 and diesel). You need your own free key from Tankerkönig. For a query, your location rounded to about 1 km is sent to Tankerkönig.	Zeigt aktuelle Preise der Tankstellen in der Nähe (Deutschland, Super E5/E10 und Diesel). Dafür brauchst du einen eigenen kostenlosen Schlüssel von Tankerkönig. Bei einer Abfrage wird dein Standort, auf etwa 1 km gerundet, an Tankerkönig übertragen.	Viser aktuelle priser på tankstationer i nærheden (Tyskland, benzin E5/E10 og diesel). Du skal bruge din egen gratis nøgle fra Tankerkönig. Ved en forespørgsel sendes din position, afrundet til ca. 1 km, til Tankerkönig.
+prices_key	Tankerkönig key	Tankerkönig-Schlüssel	Tankerkönig-nøgle
+prices_register	Request key	Schlüssel beantragen	Anmod om nøgle
+prices_check	Check key	Schlüssel prüfen	Kontrollér nøgle
+prices_key_ok	Key works.	Schlüssel funktioniert.	Nøglen virker.
+prices_radius	Search radius	Suchradius	Søgeradius
+prices_title	%1$s nearby	%1$s in der Nähe	%1$s i nærheden
+prices_refresh	Refresh prices	Preise aktualisieren	Opdater priser
+prices_need_key	To see current fuel prices, enter your Tankerkönig key in the settings.	Für aktuelle Spritpreise bitte in den Einstellungen deinen Tankerkönig-Schlüssel eintragen.	For at se aktuelle brændstofpriser skal du indtaste din Tankerkönig-nøgle i indstillingerne.
+prices_unsupported	No current prices are reported for %1$s (only petrol E5/E10 and diesel).	Für %1$s werden keine aktuellen Preise gemeldet (nur Super E5/E10 und Diesel).	Der indberettes ingen aktuelle priser for %1$s (kun benzin E5/E10 og diesel).
+prices_no_location	Location not available. Please check location access and GPS.	Standort nicht verfügbar. Bitte Standortzugriff und GPS prüfen.	Position ikke tilgængelig. Kontrollér placeringsadgang og GPS.
+prices_none	No filling stations with prices in this radius.	Keine Tankstellen mit Preis in diesem Umkreis.	Ingen tankstationer med priser inden for denne radius.
+prices_error	Fuel prices could not be loaded.	Spritpreise konnten nicht geladen werden.	Brændstofpriserne kunne ikke hentes.
+prices_distance	%1$s km away	%1$s km entfernt	%1$s km væk
+prices_closed	closed	geschlossen	lukket
+prices_attribution	Prices: Market Transparency Unit for Fuels (MTS-K) via Tankerkönig, CC BY 4.0. Without guarantee.	Preise: Markttransparenzstelle für Kraftstoffe (MTS-K) über Tankerkönig, CC BY 4.0. Ohne Gewähr.	Priser: Markttransparenzstelle für Kraftstoffe (MTS-K) via Tankerkönig, CC BY 4.0. Uden garanti.
+prices_cheapest	%1$s %2$s · %3$s, %4$s km	%1$s %2$s · %3$s, %4$s km	%1$s %2$s · %3$s, %4$s km
+prices_cd	Fuel prices nearby	Spritpreise in der Nähe	Brændstofpriser i nærheden
+prices_check_hint	Tankerkönig currently reports %1$s at this station – please check the price.	Tankerkönig meldet für diese Tankstelle gerade %1$s – bitte den Preis prüfen.	Tankerkönig melder lige nu %1$s for denne tankstation – kontrollér venligst prisen.

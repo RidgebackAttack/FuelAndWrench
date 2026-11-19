@@ -162,6 +162,23 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
                 )
             }
         }
+        // Günstigste Tankstelle in der Nähe (nur mit Tankerkönig-Schlüssel und bekanntem Standort)
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        var cheapest by remember(v.id) { mutableStateOf<String?>(null) }
+        LaunchedEffect(v.id, v.defaultFuelType) {
+            if (v.archived) return@LaunchedEffect
+            val type = FuelPrices.typeFor(v.defaultFuelType) ?: return@LaunchedEffect
+            if (!FuelPrices.enabled(ctx)) return@LaunchedEffect
+            val loc = LocationHelper.lastKnown(ctx) ?: return@LaunchedEffect
+            cheapest = runCatching { FuelPrices.nearby(ctx, loc.latitude, loc.longitude, type) }.getOrNull()
+                ?.firstOrNull { it.isOpen && it.price != null }?.let { FuelPrices.summary(v.defaultFuelType, it) }
+        }
+        cheapest?.let {
+            Text(
+                "⛽ $it", style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.clickable { nav.navigate("prices/${v.id}") }.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            )
+        }
     }
 }
 

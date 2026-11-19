@@ -141,6 +141,18 @@ class FuelWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_month, str(R.string.widget_month, cost.fmt() + " " + v.currency))
             views.setTextViewText(R.id.widget_reminder, reminderText)
             views.setViewVisibility(R.id.widget_reminder, if (reminderText.isEmpty()) View.GONE else View.VISIBLE)
+            // Günstigste Tankstelle in der Nähe (mit Tankerkönig-Schlüssel und bekanntem Standort)
+            val cheapest = FuelPrices.typeFor(v.defaultFuelType)?.takeIf { FuelPrices.enabled(ctx) }?.let { type ->
+                val loc = LocationHelper.lastKnown(ctx) ?: return@let null
+                runCatching { FuelPrices.nearby(ctx, loc.latitude, loc.longitude, type) }.getOrNull()
+                    ?.firstOrNull { it.isOpen && it.price != null }
+            }
+            if (cheapest != null) {
+                views.setTextViewText(R.id.widget_prices, "⛽ " + FuelPrices.summary(v.defaultFuelType, cheapest) + " (" + now().time() + ")")
+                views.setViewVisibility(R.id.widget_prices, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_prices, View.GONE)
+            }
             views.setTextViewText(R.id.widget_add, "+ " + str(if (v.isElectric) R.string.charge else R.string.refuel))
             views.setViewVisibility(R.id.widget_add, View.VISIBLE)
             views.setOnClickPendingIntent(R.id.widget_add, open(ctx, id * 10 + 1, Shortcuts.REFUEL, v.id))

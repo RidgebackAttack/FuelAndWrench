@@ -25,6 +25,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EvStation
+import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Build
@@ -296,8 +297,15 @@ fun VehicleDetailContent(
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     when (pager.currentPage) {
-                        0 -> IconButton(onClick = { nav.navigate("stats/$vehicleId") }) {
-                            Icon(Icons.Default.BarChart, contentDescription = str(R.string.statistics))
+                        0 -> {
+                            if (v != null && FuelPrices.typeFor(v.defaultFuelType) != null) {
+                                IconButton(onClick = { nav.navigate("prices/$vehicleId") }) {
+                                    Icon(Icons.Default.Euro, contentDescription = str(R.string.prices_cd))
+                                }
+                            }
+                            IconButton(onClick = { nav.navigate("stats/$vehicleId") }) {
+                                Icon(Icons.Default.BarChart, contentDescription = str(R.string.statistics))
+                            }
                         }
                         1 -> {
                             IconButton(onClick = { nav.navigate("map/$vehicleId") }) {

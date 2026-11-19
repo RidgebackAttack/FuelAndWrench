@@ -159,6 +159,13 @@ object LocationHelper {
             if (allowNetwork) runCatching { lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) }.getOrNull() else null,
         ).maxByOrNull { it.time }
 
+    /** Zuletzt bekannte Position ohne neue Ortung (schnell, für Preise auf Fahrzeugkarte und Widget). */
+    fun lastKnown(ctx: Context): Location? {
+        if (!hasPermission(ctx)) return null
+        val lm = ctx.getSystemService(LocationManager::class.java) ?: return null
+        return lastKnownAny(lm, Prefs(ctx).useNetworkLocation)
+    }
+
     /** Aktuelle Position ohne Google-Dienste (funktioniert auch auf Geräten ohne Play Services). */
     @SuppressLint("MissingPermission")
     suspend fun current(ctx: Context): Location? {

@@ -56,6 +56,7 @@ object Units {
     }
 }
 private fun pattern(skeleton: String) = android.text.format.DateFormat.getBestDateTimePattern(appLocale(), skeleton)
+fun Long.time(): String = SimpleDateFormat(pattern("HHmm"), appLocale()).format(Date(this))
 fun Long.dateTime(): String = SimpleDateFormat(pattern("ddMMyyyyHHmm"), appLocale()).format(Date(this))
 fun Long.date(): String = SimpleDateFormat(pattern("ddMMyyyy"), appLocale()).format(Date(this))
 
@@ -263,6 +264,14 @@ class Prefs(ctx: Context) {
             return Secrets.open(stored)
         }
         set(v) = sp.edit().putString("password", Secrets.seal(v)).apply()
+    /** Persönlicher Tankerkönig-Schlüssel für aktuelle Spritpreise (verschlüsselt gespeichert). */
+    var tankerkoenigKey: String
+        get() = Secrets.open(sp.getString("tankerkoenigKey", "") ?: "")
+        set(v) = sp.edit().putString("tankerkoenigKey", Secrets.seal(v.trim())).apply()
+    /** Suchradius für Spritpreise in km. */
+    var priceRadius: Int
+        get() = sp.getInt("priceRadius", 5)
+        set(v) = sp.edit().putInt("priceRadius", v).apply()
     /** Ende-zu-Ende-Verschlüsselung für den Sync. */
     var syncEncrypt: Boolean
         get() = sp.getBoolean("syncEncrypt", false)
