@@ -143,6 +143,7 @@ class DailyWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
     override suspend fun doWork(): Result {
         runCatching { ReminderChecker.checkAll(applicationContext) }
         runCatching { UpdateChecker.check(applicationContext) }
+        runCatching { FuelWidget.refresh(applicationContext) } // Monatswechsel, Fälligkeiten nach Datum
         return Result.success()
     }
 

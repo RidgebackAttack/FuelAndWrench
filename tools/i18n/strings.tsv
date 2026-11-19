@@ -140,13 +140,12 @@ no_consumption_yet	No consumption calculable yet	Noch kein Verbrauch berechenbar
 import_failed	Import failed: %1$s	Import fehlgeschlagen: %1$s	Import mislykkedes: %1$s
 import_title	Import	Import	Import
 import_missing_cols	The file could not be read. Missing columns: %1$s	Die Datei konnte nicht gelesen werden. Fehlende Spalten: %1$s	Filen kunne ikke læses. Manglende kolonner: %1$s
-import_found	%1$d refuels found (%2$s to %3$s)	%1$d Betankungen gefunden (%2$s bis %3$s)	%1$d tankninger fundet (%2$s til %3$s)
-import_skipped	, %1$d rows without refuel data skipped (e.g. costs, maintenance)	, %1$d Zeilen ohne Tankdaten übersprungen (z. B. Kosten, Wartung)	, %1$d rækker uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)
+import_found	%1$s found (%2$s to %3$s)	%1$s gefunden (%2$s bis %3$s)	%1$s fundet (%2$s til %3$s)
+import_skipped	, %1$s without refuel data skipped (e.g. costs, maintenance)	, %1$s ohne Tankdaten übersprungen (z. B. Kosten, Wartung)	, %1$s uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)
 import_confirm	Import into “%1$s”? Existing entries are not created twice.	In „%1$s“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt.	Importér til „%1$s“? Eksisterende poster oprettes ikke to gange.
-import_hint_dups	%1$d duplicate row(s) in the file are only imported once	%1$d doppelte Zeile(n) in der Datei werden nur einmal übernommen	%1$d dobbelte række(r) i filen importeres kun én gang
 import_hint_derived	%1$d× missing odometer reading calculated from the trip distance	%1$d× fehlender Kilometerstand aus der Teilstrecke berechnet	%1$d× manglende kilometerstand beregnet ud fra turdistancen
 import_hint_corrected	%1$d× unit price instead of total detected and corrected	%1$d× Literpreis statt Gesamtbetrag erkannt und korrigiert	%1$d× literpris i stedet for samlet beløb fundet og rettet
-import_hint_noprice	%1$d refuels without price	%1$d Betankungen ohne Preis	%1$d tankninger uden pris
+import_hint_noprice	%1$s without price	%1$s ohne Preis	%1$s uden pris
 import_codes_info	Spritmonitor stores some details as numbers. Please check what each number means:	Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:	Spritmonitor gemmer nogle oplysninger som tal. Kontrollér venligst, hvad hvert tal betyder:
 not_specified	not specified	keine Angabe	ikke angivet
 import_code	Code %1$s (%2$d×)	Code %1$s (%2$d×)	Kode %1$s (%2$d×)
@@ -155,7 +154,7 @@ foreign_currency_info	The original amount is noted in the note. Without a rate t
 import_extras_all	Additional loads for all entries	Zusätzliche Verbraucher für alle Einträge	Ekstra forbrugere for alle poster
 import_extras_info	Spritmonitor does not export air conditioning, heating and trailer. Optionally set them here for all imported refuels:	Spritmonitor exportiert Klimaanlage, Heizung und Anhänger nicht. Hier optional für alle importierten Betankungen setzen:	Spritmonitor eksporterer ikke aircondition, varme og anhænger. Angiv dem eventuelt her for alle importerede tankninger:
 imported_n	%1$d imported	%1$d importiert	%1$d importeret
-dups_skipped	, %1$d duplicates skipped	, %1$d Duplikate übersprungen	, %1$d dubletter sprunget over
+dups_skipped	, %1$s skipped	, %1$s übersprungen	, %1$s sprunget over
 do_import	Import	Importieren	Importér
 current_reading	Current reading	Aktueller Stand	Aktuel stand
 obc_value	On-board computer: %1$s	Bordcomputer: %1$s	Kørecomputer: %1$s
@@ -184,11 +183,11 @@ archived_info	Archived vehicles keep all their data but appear in the archive at
 vehicle_delete_q	Delete vehicle?	Fahrzeug löschen?	Slet køretøj?
 vehicle_delete_info	All refuels and reminders of this vehicle will be deleted on all devices. To keep them, turn on “Archived” instead.	Alle Betankungen und Erinnerungen dieses Fahrzeugs werden auf allen Geräten gelöscht. Zum Aufbewahren stattdessen „Archiviert“ einschalten.	Alle tankninger og påmindelser for dette køretøj slettes på alle enheder. Slå „Arkiveret“ til i stedet for at beholde dem.
 service_import	Service import	Service-Import	Serviceimport
-svc_import_found	%1$d entries found	%1$d Einträge gefunden	%1$d poster fundet
-svc_import_skipped	, %1$d rows skipped	, %1$d Zeilen übersprungen	, %1$d rækker sprunget over
+svc_import_found	%1$s found	%1$s gefunden	%1$s fundet
+svc_import_skipped	, %1$s skipped	, %1$s übersprungen	, %1$s sprunget over
 svc_import_info	Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.	Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.	Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.
 already_present	, %1$d already present	, %1$d bereits vorhanden	, %1$d findes allerede
-chart_title	Consumption history (last %1$d full refuels)	Verbrauchsverlauf (letzte %1$d Volltankungen)	Forbrugshistorik (seneste %1$d fulde tankninger)
+chart_title	Consumption history (last %1$s)	Verbrauchsverlauf (letzte %1$s)	Forbrugshistorik (seneste %1$s)
 chart_min	min %1$s	min %1$s	min %1$s
 chart_max	max %1$s	max %1$s	maks %1$s
 tab_overview	Overview	Übersicht	Oversigt
@@ -198,8 +197,6 @@ cd_spritmonitor_import	Spritmonitor import	Spritmonitor-Import	Spritmonitor-impo
 cd_service_import	Import services	Service importieren	Importér service
 done_service_created	Done – service entry created	Erledigt – Service-Eintrag angelegt	Udført – servicepost oprettet
 vehicle_archived_banner	Vehicle is archived. Reminders are paused.	Fahrzeug ist archiviert. Erinnerungen sind pausiert.	Køretøjet er arkiveret. Påmindelser er sat på pause.
-n_refuels	%1$d refuels	%1$d Betankungen	%1$d tankninger
-n_services	%1$d services	%1$d Services	%1$d serviceposter
 stat_avg	Ø consumption	Ø Verbrauch	Ø forbrug
 stat_last	Last consumption	Letzter Verbrauch	Seneste forbrug
 stat_obc	On-board computer (%1$d×)	Bordcomputer (%1$d×)	Kørecomputer (%1$d×)
@@ -220,7 +217,7 @@ tire_sets_empty	Create e.g. summer and winter wheels as wheel sets. When changin
 service_history	Service history	Service-Historie	Servicehistorik
 empty_services_title	No service entries yet	Noch keine Service-Einträge	Ingen serviceposter endnu
 empty_services_text	Add one via “Service” or import a CSV at the top.	Über „Service“ anlegen oder oben eine CSV importieren.	Opret via „Service“ eller importér en CSV øverst.
-services_summary	%1$d entries · %2$s total	%1$d Einträge · %2$s gesamt	%1$d poster · %2$s i alt
+services_summary	%1$s · %2$s total	%1$s · %2$s gesamt	%1$s · %2$s i alt
 tire_set	Wheel set	Radsatz	Hjulsæt
 sizes_front_rear	f %1$s · r %2$s	v %1$s · h %2$s	f %1$s · b %2$s
 chip_due	%1$s due	%1$s fällig	%1$s forfalden
@@ -314,7 +311,7 @@ http_507	Storage full (507)	Speicherplatz voll (507)	Lagerplads fuld (507)
 http_other	HTTP error %1$d	HTTP-Fehler %1$d	HTTP-fejl %1$d
 sync_not_configured	Sync not set up	Synchronisation nicht eingerichtet	Synkronisering ikke konfigureret
 error_prefix	Error: %1$s	Fehler: %1$s	Fejl: %1$s
-sync_ok	Synced (%1$d vehicles, %2$d refuels)	Synchronisiert (%1$d Fahrzeuge, %2$d Betankungen)	Synkroniseret (%1$d køretøjer, %2$d tankninger)
+sync_ok	Synced (%1$s, %2$s)	Synchronisiert (%1$s, %2$s)	Synkroniseret (%1$s, %2$s)
 sync_conflict	Too many simultaneous changes – please try again	Zu viele gleichzeitige Änderungen – bitte erneut versuchen	For mange samtidige ændringer – prøv igen
 folder_read_error	Folder could not be read	Ordner konnte nicht gelesen werden	Mappen kunne ikke læses
 parent_folder	Parent folder	Übergeordneter Ordner	Overordnet mappe
@@ -339,8 +336,6 @@ opt_exp_fees	Fees	Gebühren	Gebyrer
 rem_km_over	%1$s overdue (due at %2$s)	%1$s überfällig (fällig bei %2$s)	%1$s overskredet (forfalder ved %2$s)
 rem_km_left	%1$s left (due at %2$s)	Noch %1$s (fällig bei %2$s)	%1$s tilbage (forfalder ved %2$s)
 rem_date_over	overdue since %1$s	überfällig seit %1$s	forfalden siden %1$s
-rem_date_left	%1$d days left (%2$s)	noch %1$d Tage (%2$s)	%1$d dage tilbage (%2$s)
-n_days	%1$d days	%1$d Tagen	%1$d dage
 reminder_either_info	Due by distance, time or both – whichever comes first. Leave a field empty if not needed.	Fällig nach Strecke, Zeit oder beidem – je nachdem, was zuerst eintritt. Nicht benötigte Felder leer lassen.	Forfalder efter strækning, tid eller begge – det, der kommer først. Lad felter være tomme, hvis de ikke bruges.
 by_distance	By distance	Nach Strecke	Efter strækning
 by_time	By time	Nach Zeit	Efter tid
@@ -362,7 +357,6 @@ receipt_pdf	PDF document	PDF-Dokument	PDF-dokument
 receipt_photo	Photo	Foto	Foto
 take_photo	Take photo	Foto aufnehmen	Tag foto
 attach_file	Attach file	Datei anhängen	Vedhæft fil
-n_receipts	%1$d receipt(s)	%1$d Beleg(e)	%1$d kvittering(er)
 tab_costs	Costs	Kosten	Omkostninger
 statistics	Statistics	Statistik	Statistik
 expense	Cost	Kosten	Omkostning
@@ -390,7 +384,7 @@ backup_create	Create backup	Backup erstellen	Opret kopi
 backup_restore	Restore	Wiederherstellen	Gendan
 backup_done	Backup saved.	Backup gespeichert.	Sikkerhedskopi gemt.
 restore_done	Backup restored.	Backup wiederhergestellt.	Sikkerhedskopi gendannet.
-backup_summary	%1$d vehicles, %2$d refuels, %3$d services, %4$d costs, %5$d files.	%1$d Fahrzeuge, %2$d Betankungen, %3$d Services, %4$d Kosten, %5$d Dateien.	%1$d køretøjer, %2$d tankninger, %3$d serviceposter, %4$d omkostninger, %5$d filer.
+backup_summary	%1$s, %2$s, %3$s, %4$s, %5$s.	%1$s, %2$s, %3$s, %4$s, %5$s.	%1$s, %2$s, %3$s, %4$s, %5$s.
 backup_write_error	File could not be written	Datei konnte nicht geschrieben werden	Filen kunne ikke skrives
 backup_read_error	File could not be read	Datei konnte nicht gelesen werden	Filen kunne ikke læses
 backup_invalid	This is not a Fuel & Wrench backup	Das ist kein Fuel-&-Wrench-Backup	Dette er ikke en Fuel & Wrench-sikkerhedskopi
@@ -406,7 +400,7 @@ import_need_date_title	Columns “Date” and “Title” are required	Spalten �
 import_need_date_amount	Columns “Date” and “Amount” are required	Spalten „Datum“ und „Betrag“ werden benötigt	Kolonnerne „Dato“ og „Beløb“ er påkrævet
 import_repeat_note	repeats: %1$s	Wiederholung: %1$s	gentages: %1$s
 cost_import	Cost import	Kosten-Import	Import af omkostninger
-cost_import_found	%1$d costs and %2$d service entries found	%1$d Kosten und %2$d Service-Einträge gefunden	%1$d omkostninger og %2$d serviceposter fundet
+cost_import_found	%1$s and %2$s found	%1$s und %2$s gefunden	%1$s og %2$s fundet
 cost_import_info	Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.	Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.	Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.
 cd_cost_import	Import costs	Kosten importieren	Importér omkostninger
 archive_title	Archive (%1$d)	Archiv (%1$d)	Arkiv (%1$d)
@@ -469,3 +463,44 @@ debug_log_info	Only when switched on: records crashes and errors (e.g. during sy
 debug_log_share	Share log	Protokoll teilen	Del log
 debug_log_clear	Clear	Leeren	Ryd
 debug_log_empty	No entries yet.	Noch keine Einträge.	Ingen poster endnu.
+e2e_title	End-to-end encryption	Ende-zu-Ende-Verschlüsselung	End-to-end-kryptering
+e2e_info	Encrypts data, photos and receipts on the device before they go to the server. On the server they cannot be read, not even by its operator. Enter the same sync password on all devices; the other devices follow when encryption is switched on or off at their next sync. The password cannot be recovered, but the data on your devices stays intact.	Verschlüsselt Daten, Fotos und Belege auf dem Gerät, bevor sie auf den Server gehen. Dort sind sie dann nicht lesbar, auch nicht für den Betreiber. Auf allen Geräten dasselbe Sync-Passwort eintragen; die anderen Geräte übernehmen das Ein- und Ausschalten beim nächsten Sync. Das Passwort lässt sich nicht wiederherstellen, die Daten auf deinen Geräten bleiben aber erhalten.	Krypterer data, fotos og kvitteringer på enheden, før de sendes til serveren. Der kan de ikke læses, heller ikke af udbyderen. Indtast den samme synkroniseringsadgangskode på alle enheder; de andre enheder følger med, når krypteringen slås til eller fra, ved næste synkronisering. Adgangskoden kan ikke gendannes, men dataene på dine enheder bevares.
+e2e_password	Sync password	Sync-Passwort	Synkroniseringsadgangskode
+e2e_too_short	At least 8 characters	Mindestens 8 Zeichen	Mindst 8 tegn
+e2e_need_password	The data on the server is encrypted. Please enter the sync password under Settings → Sync.	Die Daten auf dem Server sind verschlüsselt. Bitte unter Einstellungen → Synchronisierung das Sync-Passwort eintragen.	Dataene på serveren er krypteret. Indtast synkroniseringsadgangskoden under Indstillinger → Synkronisering.
+e2e_wrong_password	The sync password does not match the data on the server.	Das Sync-Passwort passt nicht zu den Daten auf dem Server.	Synkroniseringsadgangskoden passer ikke til dataene på serveren.
+e2e_key_file_broken	The key file on the server is damaged.	Die Schlüsseldatei auf dem Server ist beschädigt.	Nøglefilen på serveren er beskadiget.
+pl_refuels#one	%d refuel	%d Betankung	%d tankning
+pl_refuels#other	%d refuels	%d Betankungen	%d tankninger
+pl_full_refuels#one	%d full refuel	%d Volltankung	%d fuld tankning
+pl_full_refuels#other	%d full refuels	%d Volltankungen	%d fulde tankninger
+pl_vehicles#one	%d vehicle	%d Fahrzeug	%d køretøj
+pl_vehicles#other	%d vehicles	%d Fahrzeuge	%d køretøjer
+pl_services#one	%d service	%d Service	%d servicepost
+pl_services#other	%d services	%d Services	%d serviceposter
+pl_service_entries#one	%d service entry	%d Service-Eintrag	%d servicepost
+pl_service_entries#other	%d service entries	%d Service-Einträge	%d serviceposter
+pl_costs#one	%d cost item	%d Kostenposten	%d omkostning
+pl_costs#other	%d cost items	%d Kostenposten	%d omkostninger
+pl_files#one	%d file	%d Datei	%d fil
+pl_files#other	%d files	%d Dateien	%d filer
+pl_rows#one	%d row	%d Zeile	%d række
+pl_rows#other	%d rows	%d Zeilen	%d rækker
+pl_entries#one	%d entry	%d Eintrag	%d post
+pl_entries#other	%d entries	%d Einträge	%d poster
+pl_duplicates#one	%d duplicate	%d Duplikat	%d dublet
+pl_duplicates#other	%d duplicates	%d Duplikate	%d dubletter
+pl_receipts#one	%d receipt	%d Beleg	%d kvittering
+pl_receipts#other	%d receipts	%d Belege	%d kvitteringer
+pl_days_in#one	%d day	%d Tag	%d dag
+pl_days_in#other	%d days	%d Tagen	%d dage
+pl_import_hint_dups#one	%d duplicate row in the file is only imported once	%d doppelte Zeile in der Datei wird nur einmal übernommen	%d dobbelt række i filen importeres kun én gang
+pl_import_hint_dups#other	%d duplicate rows in the file are only imported once	%d doppelte Zeilen in der Datei werden nur einmal übernommen	%d dobbelte rækker i filen importeres kun én gang
+pl_rem_date_left#one	%1$d day left (%2$s)	noch %1$d Tag (%2$s)	%1$d dag tilbage (%2$s)
+pl_rem_date_left#other	%1$d days left (%2$s)	noch %1$d Tage (%2$s)	%1$d dage tilbage (%2$s)
+widget_name	Fuel & Wrench	Fuel & Wrench	Fuel & Wrench
+widget_description	Consumption, costs this month and next due reminder	Verbrauch, Kosten im Monat und nächste fällige Erinnerung	Forbrug, omkostninger denne måned og næste påmindelse
+widget_month	This month: %1$s	Diesen Monat: %1$s	Denne måned: %1$s
+widget_no_vehicle	Tap to add a vehicle	Tippen, um ein Fahrzeug anzulegen	Tryk for at tilføje et køretøj
+widget_next_vehicle	Next vehicle	Nächstes Fahrzeug	Næste køretøj
+lan_permission_needed	Your server is in the local network. Please allow access to devices in the local network (Settings → Sync → Save and sync).	Dein Server liegt im lokalen Netzwerk. Bitte den Zugriff auf Geräte im lokalen Netzwerk erlauben (Einstellungen → Synchronisierung → Speichern und synchronisieren).	Din server er på det lokale netværk. Tillad adgang til enheder på det lokale netværk (Indstillinger → Synkronisering → Gem og synkroniser).

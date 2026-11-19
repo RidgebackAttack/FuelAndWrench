@@ -143,13 +143,12 @@
     <string name="import_failed">Import fehlgeschlagen: %1$s</string>
     <string name="import_title">Import</string>
     <string name="import_missing_cols">Die Datei konnte nicht gelesen werden. Fehlende Spalten: %1$s</string>
-    <string name="import_found">%1$d Betankungen gefunden (%2$s bis %3$s)</string>
-    <string name="import_skipped">, %1$d Zeilen ohne Tankdaten übersprungen (z. B. Kosten, Wartung)</string>
+    <string name="import_found">%1$s gefunden (%2$s bis %3$s)</string>
+    <string name="import_skipped">, %1$s ohne Tankdaten übersprungen (z. B. Kosten, Wartung)</string>
     <string name="import_confirm">In „%1$s“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt.</string>
-    <string name="import_hint_dups">%1$d doppelte Zeile(n) in der Datei werden nur einmal übernommen</string>
     <string name="import_hint_derived">%1$d× fehlender Kilometerstand aus der Teilstrecke berechnet</string>
     <string name="import_hint_corrected">%1$d× Literpreis statt Gesamtbetrag erkannt und korrigiert</string>
-    <string name="import_hint_noprice">%1$d Betankungen ohne Preis</string>
+    <string name="import_hint_noprice">%1$s ohne Preis</string>
     <string name="import_codes_info">Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:</string>
     <string name="not_specified">keine Angabe</string>
     <string name="import_code">Code %1$s (%2$d×)</string>
@@ -158,7 +157,7 @@
     <string name="import_extras_all">Zusätzliche Verbraucher für alle Einträge</string>
     <string name="import_extras_info">Spritmonitor exportiert Klimaanlage, Heizung und Anhänger nicht. Hier optional für alle importierten Betankungen setzen:</string>
     <string name="imported_n">%1$d importiert</string>
-    <string name="dups_skipped">, %1$d Duplikate übersprungen</string>
+    <string name="dups_skipped">, %1$s übersprungen</string>
     <string name="do_import">Importieren</string>
     <string name="current_reading">Aktueller Stand</string>
     <string name="obc_value">Bordcomputer: %1$s</string>
@@ -187,11 +186,11 @@
     <string name="vehicle_delete_q">Fahrzeug löschen?</string>
     <string name="vehicle_delete_info">Alle Betankungen und Erinnerungen dieses Fahrzeugs werden auf allen Geräten gelöscht. Zum Aufbewahren stattdessen „Archiviert“ einschalten.</string>
     <string name="service_import">Service-Import</string>
-    <string name="svc_import_found">%1$d Einträge gefunden</string>
-    <string name="svc_import_skipped">, %1$d Zeilen übersprungen</string>
+    <string name="svc_import_found">%1$s gefunden</string>
+    <string name="svc_import_skipped">, %1$s übersprungen</string>
     <string name="svc_import_info">Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.</string>
     <string name="already_present">, %1$d bereits vorhanden</string>
-    <string name="chart_title">Verbrauchsverlauf (letzte %1$d Volltankungen)</string>
+    <string name="chart_title">Verbrauchsverlauf (letzte %1$s)</string>
     <string name="chart_min">min %1$s</string>
     <string name="chart_max">max %1$s</string>
     <string name="tab_overview">Übersicht</string>
@@ -201,8 +200,6 @@
     <string name="cd_service_import">Service importieren</string>
     <string name="done_service_created">Erledigt – Service-Eintrag angelegt</string>
     <string name="vehicle_archived_banner">Fahrzeug ist archiviert. Erinnerungen sind pausiert.</string>
-    <string name="n_refuels">%1$d Betankungen</string>
-    <string name="n_services">%1$d Services</string>
     <string name="stat_avg">Ø Verbrauch</string>
     <string name="stat_last">Letzter Verbrauch</string>
     <string name="stat_obc">Bordcomputer (%1$d×)</string>
@@ -223,7 +220,7 @@
     <string name="service_history">Service-Historie</string>
     <string name="empty_services_title">Noch keine Service-Einträge</string>
     <string name="empty_services_text">Über „Service“ anlegen oder oben eine CSV importieren.</string>
-    <string name="services_summary">%1$d Einträge · %2$s gesamt</string>
+    <string name="services_summary">%1$s · %2$s gesamt</string>
     <string name="tire_set">Radsatz</string>
     <string name="sizes_front_rear">v %1$s · h %2$s</string>
     <string name="chip_due">%1$s fällig</string>
@@ -317,7 +314,7 @@
     <string name="http_other">HTTP-Fehler %1$d</string>
     <string name="sync_not_configured">Synchronisation nicht eingerichtet</string>
     <string name="error_prefix">Fehler: %1$s</string>
-    <string name="sync_ok">Synchronisiert (%1$d Fahrzeuge, %2$d Betankungen)</string>
+    <string name="sync_ok">Synchronisiert (%1$s, %2$s)</string>
     <string name="sync_conflict">Zu viele gleichzeitige Änderungen – bitte erneut versuchen</string>
     <string name="folder_read_error">Ordner konnte nicht gelesen werden</string>
     <string name="parent_folder">Übergeordneter Ordner</string>
@@ -342,8 +339,6 @@
     <string name="rem_km_over">%1$s überfällig (fällig bei %2$s)</string>
     <string name="rem_km_left">Noch %1$s (fällig bei %2$s)</string>
     <string name="rem_date_over">überfällig seit %1$s</string>
-    <string name="rem_date_left">noch %1$d Tage (%2$s)</string>
-    <string name="n_days">%1$d Tagen</string>
     <string name="reminder_either_info">Fällig nach Strecke, Zeit oder beidem – je nachdem, was zuerst eintritt. Nicht benötigte Felder leer lassen.</string>
     <string name="by_distance">Nach Strecke</string>
     <string name="by_time">Nach Zeit</string>
@@ -365,7 +360,6 @@
     <string name="receipt_photo">Foto</string>
     <string name="take_photo">Foto aufnehmen</string>
     <string name="attach_file">Datei anhängen</string>
-    <string name="n_receipts">%1$d Beleg(e)</string>
     <string name="tab_costs">Kosten</string>
     <string name="statistics">Statistik</string>
     <string name="expense">Kosten</string>
@@ -393,7 +387,7 @@
     <string name="backup_restore">Wiederherstellen</string>
     <string name="backup_done">Backup gespeichert.</string>
     <string name="restore_done">Backup wiederhergestellt.</string>
-    <string name="backup_summary">%1$d Fahrzeuge, %2$d Betankungen, %3$d Services, %4$d Kosten, %5$d Dateien.</string>
+    <string name="backup_summary">%1$s, %2$s, %3$s, %4$s, %5$s.</string>
     <string name="backup_write_error">Datei konnte nicht geschrieben werden</string>
     <string name="backup_read_error">Datei konnte nicht gelesen werden</string>
     <string name="backup_invalid">Das ist kein Fuel-&amp;-Wrench-Backup</string>
@@ -409,7 +403,7 @@
     <string name="import_need_date_amount">Spalten „Datum“ und „Betrag“ werden benötigt</string>
     <string name="import_repeat_note">Wiederholung: %1$s</string>
     <string name="cost_import">Kosten-Import</string>
-    <string name="cost_import_found">%1$d Kosten und %2$d Service-Einträge gefunden</string>
+    <string name="cost_import_found">%1$s und %2$s gefunden</string>
     <string name="cost_import_info">Werkstattkosten (Wartung, Reparatur, Reifen, HU) landen in der Service-Historie, alles andere bei den Kosten. Bereits vorhandene Einträge werden nicht doppelt angelegt.</string>
     <string name="cd_cost_import">Kosten importieren</string>
     <string name="archive_title">Archiv (%1$d)</string>
@@ -472,4 +466,73 @@
     <string name="debug_log_share">Protokoll teilen</string>
     <string name="debug_log_clear">Leeren</string>
     <string name="debug_log_empty">Noch keine Einträge.</string>
+    <string name="e2e_title">Ende-zu-Ende-Verschlüsselung</string>
+    <string name="e2e_info">Verschlüsselt Daten, Fotos und Belege auf dem Gerät, bevor sie auf den Server gehen. Dort sind sie dann nicht lesbar, auch nicht für den Betreiber. Auf allen Geräten dasselbe Sync-Passwort eintragen; die anderen Geräte übernehmen das Ein- und Ausschalten beim nächsten Sync. Das Passwort lässt sich nicht wiederherstellen, die Daten auf deinen Geräten bleiben aber erhalten.</string>
+    <string name="e2e_password">Sync-Passwort</string>
+    <string name="e2e_too_short">Mindestens 8 Zeichen</string>
+    <string name="e2e_need_password">Die Daten auf dem Server sind verschlüsselt. Bitte unter Einstellungen → Synchronisierung das Sync-Passwort eintragen.</string>
+    <string name="e2e_wrong_password">Das Sync-Passwort passt nicht zu den Daten auf dem Server.</string>
+    <string name="e2e_key_file_broken">Die Schlüsseldatei auf dem Server ist beschädigt.</string>
+    <string name="widget_name">Fuel &amp; Wrench</string>
+    <string name="widget_description">Verbrauch, Kosten im Monat und nächste fällige Erinnerung</string>
+    <string name="widget_month">Diesen Monat: %1$s</string>
+    <string name="widget_no_vehicle">Tippen, um ein Fahrzeug anzulegen</string>
+    <string name="widget_next_vehicle">Nächstes Fahrzeug</string>
+    <string name="lan_permission_needed">Dein Server liegt im lokalen Netzwerk. Bitte den Zugriff auf Geräte im lokalen Netzwerk erlauben (Einstellungen → Synchronisierung → Speichern und synchronisieren).</string>
+    <plurals name="pl_refuels">
+        <item quantity="one">%d Betankung</item>
+        <item quantity="other">%d Betankungen</item>
+    </plurals>
+    <plurals name="pl_full_refuels">
+        <item quantity="one">%d Volltankung</item>
+        <item quantity="other">%d Volltankungen</item>
+    </plurals>
+    <plurals name="pl_vehicles">
+        <item quantity="one">%d Fahrzeug</item>
+        <item quantity="other">%d Fahrzeuge</item>
+    </plurals>
+    <plurals name="pl_services">
+        <item quantity="one">%d Service</item>
+        <item quantity="other">%d Services</item>
+    </plurals>
+    <plurals name="pl_service_entries">
+        <item quantity="one">%d Service-Eintrag</item>
+        <item quantity="other">%d Service-Einträge</item>
+    </plurals>
+    <plurals name="pl_costs">
+        <item quantity="one">%d Kostenposten</item>
+        <item quantity="other">%d Kostenposten</item>
+    </plurals>
+    <plurals name="pl_files">
+        <item quantity="one">%d Datei</item>
+        <item quantity="other">%d Dateien</item>
+    </plurals>
+    <plurals name="pl_rows">
+        <item quantity="one">%d Zeile</item>
+        <item quantity="other">%d Zeilen</item>
+    </plurals>
+    <plurals name="pl_entries">
+        <item quantity="one">%d Eintrag</item>
+        <item quantity="other">%d Einträge</item>
+    </plurals>
+    <plurals name="pl_duplicates">
+        <item quantity="one">%d Duplikat</item>
+        <item quantity="other">%d Duplikate</item>
+    </plurals>
+    <plurals name="pl_receipts">
+        <item quantity="one">%d Beleg</item>
+        <item quantity="other">%d Belege</item>
+    </plurals>
+    <plurals name="pl_days_in">
+        <item quantity="one">%d Tag</item>
+        <item quantity="other">%d Tagen</item>
+    </plurals>
+    <plurals name="pl_import_hint_dups">
+        <item quantity="one">%d doppelte Zeile in der Datei wird nur einmal übernommen</item>
+        <item quantity="other">%d doppelte Zeilen in der Datei werden nur einmal übernommen</item>
+    </plurals>
+    <plurals name="pl_rem_date_left">
+        <item quantity="one">noch %1$d Tag (%2$s)</item>
+        <item quantity="other">noch %1$d Tage (%2$s)</item>
+    </plurals>
 </resources>

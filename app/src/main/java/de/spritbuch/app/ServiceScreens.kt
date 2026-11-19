@@ -124,7 +124,7 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                 }
                 if (s.note.isNotBlank()) Text(s.note, style = MaterialTheme.typography.bodySmall)
                 if (s.attachments.isNotBlank()) {
-                    Text("📎 " + str(R.string.n_receipts, s.attachmentList().size), style = MaterialTheme.typography.bodySmall,
+                    Text("📎 " + plural(R.plurals.pl_receipts, s.attachmentList().size), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary)
                 }
             }
@@ -176,7 +176,7 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
         ) {
             item {
                 Text(
-                    str(R.string.services_summary, services.size, services.sumOf { it.cost }.fmt() + " " + v.currency),
+                    str(R.string.services_summary, plural(R.plurals.pl_entries, services.size), services.sumOf { it.cost }.fmt() + " " + v.currency),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )

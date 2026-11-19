@@ -1,11 +1,16 @@
 package de.spritbuch.app
 
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import java.util.Locale
 
 /** Übersetzter Text; funktioniert überall (auch außerhalb von Compose). */
 fun str(@StringRes id: Int, vararg args: Any): String =
     if (args.isEmpty()) App.instance.getString(id) else App.instance.getString(id, *args)
+
+/** Text mit Einzahl/Mehrzahl („1 Betankung“, „3 Betankungen“); ohne weitere Werte wird die Anzahl eingesetzt. */
+fun plural(@PluralsRes id: Int, count: Int, vararg args: Any): String =
+    App.instance.resources.getQuantityString(id, count, *(if (args.isEmpty()) arrayOf<Any>(count) else args))
 
 /** Sprache der App (berücksichtigt die Sprachwahl pro App ab Android 13). */
 fun appLocale(): Locale = App.instance.resources.configuration.locales[0] ?: Locale.getDefault()

@@ -87,9 +87,23 @@ fun SettingsScreen(nav: NavController) {
     }
     var user by remember { mutableStateOf(prefs.user) }
     var password by remember { mutableStateOf(prefs.password) }
+    var e2e by remember { mutableStateOf(prefs.syncEncrypt) }
+    var e2ePass by remember { mutableStateOf(prefs.syncPassphrase) }
+    val e2eOk = !e2e || e2ePass.length >= 8
     var cloudInfo by remember { mutableStateOf<String?>(null) }
     var loggingIn by remember { mutableStateOf(false) }
     var pickerDav by remember { mutableStateOf<WebDavClient?>(null) }
+
+    // Android 17+: Zugriff aufs lokale Netz erst erfragen, wenn der Server wirklich dort liegt
+    var lanAnswer by remember { mutableStateOf<kotlinx.coroutines.CompletableDeferred<Boolean>?>(null) }
+    val lanLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { lanAnswer?.complete(it) }
+    suspend fun ensureLan() {
+        if (!LocalNet.missing(ctx, server)) return
+        val answer = kotlinx.coroutines.CompletableDeferred<Boolean>()
+        lanAnswer = answer
+        lanLauncher.launch(LocalNet.PERMISSION)
+        answer.await()
+    }
 
     /** WebDAV-Stamm ermitteln: bei Nextcloud automatisch, sonst die Adresse selbst. */
     suspend fun resolveRoot(): String {
@@ -161,6 +175,7 @@ fun SettingsScreen(nav: NavController) {
                 visible = v
                 prefs.visibleVehicles = v
                 scope.launch { Shortcuts.update(ctx) }
+                FuelWidget.refresh(ctx)
             }
             LabeledSwitch(str(R.string.device_all_vehicles), visible == null) { all ->
                 saveVisible(if (all) null else allVehicleList.filter { !it.archived }.map { it.id }.toSet())
@@ -203,6 +218,7 @@ fun SettingsScreen(nav: NavController) {
                     scope.launch {
                         val srv = Nextcloud.normalizeServer(server)
                         server = srv
+                        ensureLan()
                         loggingIn = true
                         try {
                             val start = Nextcloud.startLogin(srv)
@@ -244,6 +260,7 @@ fun SettingsScreen(nav: NavController) {
                     enabled = server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                     onClick = {
                         scope.launch {
+                            ensureLan()
                             cloudInfo = str(R.string.connecting)
                             val root = resolveRoot()
                             cloudInfo = null
@@ -252,9 +269,25 @@ fun SettingsScreen(nav: NavController) {
                     },
                 ) { Text(str(R.string.choose_folder)) }
             }
+            LabeledSwitch(str(R.string.e2e_title), e2e) { e2e = it }
+            Text(str(R.string.e2e_info), style = MaterialTheme.typography.bodySmall)
+            OutlinedTextField(
+                e2ePass, { e2ePass = it }, label = { Text(str(R.string.e2e_password)) }, singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = !e2eOk,
+                supportingText = if (!e2eOk) ({ Text(str(R.string.e2e_too_short)) }) else null,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Button(
                 onClick = {
                     scope.launch {
+                        if (e2e != prefs.syncEncrypt) {
+                            prefs.syncEncrypt = e2e
+                            prefs.syncEncryptChanged = true
+                        }
+                        prefs.syncPassphrase = e2ePass
+                        ensureLan()
                         val root = resolveRoot()
                         prefs.server = Nextcloud.normalizeServer(server)
                         prefs.folder = folder
@@ -267,7 +300,7 @@ fun SettingsScreen(nav: NavController) {
                         SyncManager.sync(ctx)
                     }
                 },
-                enabled = !running && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
+                enabled = !running && e2eOk && server.isNotBlank() && user.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(str(R.string.save_and_sync)) }
             if (running) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -281,7 +314,7 @@ fun SettingsScreen(nav: NavController) {
             SectionTitle(str(R.string.backup))
             var backupInfo by remember { mutableStateOf<String?>(null) }
             var backupBusy by remember { mutableStateOf(false) }
-            fun summaryText(s: Backup.Summary) = str(R.string.backup_summary, s.vehicles, s.refuels, s.services, s.expenses, s.files)
+            fun summaryText(s: Backup.Summary) = str(R.string.backup_summary, plural(R.plurals.pl_vehicles, s.vehicles), plural(R.plurals.pl_refuels, s.refuels), plural(R.plurals.pl_services, s.services), plural(R.plurals.pl_costs, s.expenses), plural(R.plurals.pl_files, s.files))
             val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
                 if (uri != null) scope.launch {
                     backupBusy = true

@@ -18,11 +18,22 @@ def esc(v):
 
 for col, folder in ((1, 'values'), (2, 'values-de'), (3, 'values-da')):
     out = ['<?xml version="1.0" encoding="utf-8"?>', '<!-- Erzeugt von tools/i18n/gen.py aus strings.tsv – nicht von Hand bearbeiten -->', '<resources>']
+    plurals = {}
     for r in rows:
         if len(r) != 4:
             raise SystemExit('bad row ' + repr(r))
         val = r[col] or r[1]
+        if '#' in r[0]:
+            # Mehrzahl: name#one / name#other
+            name, q = r[0].split('#')
+            plurals.setdefault(name, []).append((q, val))
+            continue
         out.append(f'    <string name="{r[0]}">{esc(val)}</string>')
+    for name, items in plurals.items():
+        out.append(f'    <plurals name="{name}">')
+        for q, val in items:
+            out.append(f'        <item quantity="{q}">{esc(val)}</item>')
+        out.append('    </plurals>')
     out.append('</resources>')
     d = f'{ROOT}/app/src/main/res/{folder}'
     os.makedirs(d, exist_ok=True)

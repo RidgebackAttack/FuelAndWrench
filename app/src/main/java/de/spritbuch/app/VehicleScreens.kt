@@ -309,16 +309,16 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                     } else {
                         val first = imp.refuels.minByOrNull { it.timestamp }?.timestamp?.date() ?: "–"
                         val last = imp.refuels.maxByOrNull { it.timestamp }?.timestamp?.date() ?: "–"
-                        str(R.string.import_found, imp.refuels.size, first, last) +
-                            (if (imp.skipped > 0) str(R.string.import_skipped, imp.skipped) else "") +
+                        str(R.string.import_found, plural(R.plurals.pl_refuels, imp.refuels.size), first, last) +
+                            (if (imp.skipped > 0) str(R.string.import_skipped, plural(R.plurals.pl_rows, imp.skipped)) else "") +
                             ".\n\n" + str(R.string.import_confirm, v?.name ?: "")
                     }
                 )
                 val hints = buildList {
-                    if (imp.fileDuplicates > 0) add(str(R.string.import_hint_dups, imp.fileDuplicates))
+                    if (imp.fileDuplicates > 0) add(plural(R.plurals.pl_import_hint_dups, imp.fileDuplicates))
                     if (imp.derivedOdometers > 0) add(str(R.string.import_hint_derived, imp.derivedOdometers))
                     if (imp.correctedPrices > 0) add(str(R.string.import_hint_corrected, imp.correctedPrices))
-                    if (imp.missingPrices > 0) add(str(R.string.import_hint_noprice, imp.missingPrices))
+                    if (imp.missingPrices > 0) add(str(R.string.import_hint_noprice, plural(R.plurals.pl_refuels, imp.missingPrices)))
                 }
                 if (hints.isNotEmpty()) {
                     Text(hints.joinToString("\n") { "• $it" }, style = MaterialTheme.typography.bodySmall)
@@ -375,7 +375,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
                         }
                         val rateValues = rates.mapValues { (_, txt) -> txt.toDoubleDe() }
                         val (added, dups) = repo.importRefuels(vehicleId, imp.finalize(map, rateValues, extrasForAll))
-                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.dups_skipped, dups) else "")
+                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.dups_skipped, plural(R.plurals.pl_duplicates, dups)) else "")
                     }
                 }) { Text(str(R.string.do_import)) }
             },

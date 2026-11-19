@@ -1,6 +1,9 @@
 plugins {
     id("com.android.application") version "9.5.1" apply false
     id("com.android.library") version "9.5.1" apply false
+    id("com.android.test") version "9.5.1" apply false
+    // Startprofil: nur im eigenen Workflow (baseline.yml) aktiv, siehe app/build.gradle.kts
+    id("androidx.baselineprofile") version "1.5.0" apply false
     // Kotlin ist ab AGP 9 eingebaut; diese Plug-ins legen die Kotlin-Version fest
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.21" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.21" apply false

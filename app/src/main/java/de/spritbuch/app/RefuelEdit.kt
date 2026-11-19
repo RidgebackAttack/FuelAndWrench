@@ -332,7 +332,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                                     socEnd = if (fuelType == ELECTRIC) socEnd.toIntKm()?.coerceIn(0, 100) else null,
                                 )
                             )
-                            nav.popBackStack()
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { nav.popBackStack() }
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },

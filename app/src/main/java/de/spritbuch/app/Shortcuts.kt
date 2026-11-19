@@ -45,6 +45,8 @@ object Shortcuts {
     const val EXTRA_VEHICLE = "fw_vehicle"
     const val REFUEL = "refuel"
     const val EXPENSE = "expense"
+    /** Fahrzeug öffnen (Tipp auf das Widget). */
+    const val VIEW = "view"
 
     private fun intent(ctx: Context, action: String, vehicleId: String?) =
         Intent(ctx, MainActivity::class.java)
@@ -98,10 +100,11 @@ object Shortcuts {
 
     /** Ziel-Route für einen Kontextmenü-Aufruf. */
     suspend fun route(ctx: Context, action: String, vehicleId: String?): String? {
-        if (action != REFUEL && action != EXPENSE) return null
+        if (action != REFUEL && action != EXPENSE && action != VIEW) return null
         val prefs = Prefs(ctx)
         val active = ctx.repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && prefs.shows(it.id) }
         val id = vehicleId?.takeIf { v -> active.any { it.id == v } } ?: active.singleOrNull()?.id
+        if (action == VIEW) return id?.let { "vehicle/$it" }
         return when {
             id != null && action == REFUEL -> "refuelEdit/$id/new"
             id != null -> "expenseEdit/$id/new"

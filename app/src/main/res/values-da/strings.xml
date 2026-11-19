@@ -143,13 +143,12 @@
     <string name="import_failed">Import mislykkedes: %1$s</string>
     <string name="import_title">Import</string>
     <string name="import_missing_cols">Filen kunne ikke læses. Manglende kolonner: %1$s</string>
-    <string name="import_found">%1$d tankninger fundet (%2$s til %3$s)</string>
-    <string name="import_skipped">, %1$d rækker uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)</string>
+    <string name="import_found">%1$s fundet (%2$s til %3$s)</string>
+    <string name="import_skipped">, %1$s uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)</string>
     <string name="import_confirm">Importér til „%1$s“? Eksisterende poster oprettes ikke to gange.</string>
-    <string name="import_hint_dups">%1$d dobbelte række(r) i filen importeres kun én gang</string>
     <string name="import_hint_derived">%1$d× manglende kilometerstand beregnet ud fra turdistancen</string>
     <string name="import_hint_corrected">%1$d× literpris i stedet for samlet beløb fundet og rettet</string>
-    <string name="import_hint_noprice">%1$d tankninger uden pris</string>
+    <string name="import_hint_noprice">%1$s uden pris</string>
     <string name="import_codes_info">Spritmonitor gemmer nogle oplysninger som tal. Kontrollér venligst, hvad hvert tal betyder:</string>
     <string name="not_specified">ikke angivet</string>
     <string name="import_code">Kode %1$s (%2$d×)</string>
@@ -158,7 +157,7 @@
     <string name="import_extras_all">Ekstra forbrugere for alle poster</string>
     <string name="import_extras_info">Spritmonitor eksporterer ikke aircondition, varme og anhænger. Angiv dem eventuelt her for alle importerede tankninger:</string>
     <string name="imported_n">%1$d importeret</string>
-    <string name="dups_skipped">, %1$d dubletter sprunget over</string>
+    <string name="dups_skipped">, %1$s sprunget over</string>
     <string name="do_import">Importér</string>
     <string name="current_reading">Aktuel stand</string>
     <string name="obc_value">Kørecomputer: %1$s</string>
@@ -187,11 +186,11 @@
     <string name="vehicle_delete_q">Slet køretøj?</string>
     <string name="vehicle_delete_info">Alle tankninger og påmindelser for dette køretøj slettes på alle enheder. Slå „Arkiveret“ til i stedet for at beholde dem.</string>
     <string name="service_import">Serviceimport</string>
-    <string name="svc_import_found">%1$d poster fundet</string>
-    <string name="svc_import_skipped">, %1$d rækker sprunget over</string>
+    <string name="svc_import_found">%1$s fundet</string>
+    <string name="svc_import_skipped">, %1$s sprunget over</string>
     <string name="svc_import_info">Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.</string>
     <string name="already_present">, %1$d findes allerede</string>
-    <string name="chart_title">Forbrugshistorik (seneste %1$d fulde tankninger)</string>
+    <string name="chart_title">Forbrugshistorik (seneste %1$s)</string>
     <string name="chart_min">min %1$s</string>
     <string name="chart_max">maks %1$s</string>
     <string name="tab_overview">Oversigt</string>
@@ -201,8 +200,6 @@
     <string name="cd_service_import">Importér service</string>
     <string name="done_service_created">Udført – servicepost oprettet</string>
     <string name="vehicle_archived_banner">Køretøjet er arkiveret. Påmindelser er sat på pause.</string>
-    <string name="n_refuels">%1$d tankninger</string>
-    <string name="n_services">%1$d serviceposter</string>
     <string name="stat_avg">Ø forbrug</string>
     <string name="stat_last">Seneste forbrug</string>
     <string name="stat_obc">Kørecomputer (%1$d×)</string>
@@ -223,7 +220,7 @@
     <string name="service_history">Servicehistorik</string>
     <string name="empty_services_title">Ingen serviceposter endnu</string>
     <string name="empty_services_text">Opret via „Service“ eller importér en CSV øverst.</string>
-    <string name="services_summary">%1$d poster · %2$s i alt</string>
+    <string name="services_summary">%1$s · %2$s i alt</string>
     <string name="tire_set">Hjulsæt</string>
     <string name="sizes_front_rear">f %1$s · b %2$s</string>
     <string name="chip_due">%1$s forfalden</string>
@@ -317,7 +314,7 @@
     <string name="http_other">HTTP-fejl %1$d</string>
     <string name="sync_not_configured">Synkronisering ikke konfigureret</string>
     <string name="error_prefix">Fejl: %1$s</string>
-    <string name="sync_ok">Synkroniseret (%1$d køretøjer, %2$d tankninger)</string>
+    <string name="sync_ok">Synkroniseret (%1$s, %2$s)</string>
     <string name="sync_conflict">For mange samtidige ændringer – prøv igen</string>
     <string name="folder_read_error">Mappen kunne ikke læses</string>
     <string name="parent_folder">Overordnet mappe</string>
@@ -342,8 +339,6 @@
     <string name="rem_km_over">%1$s overskredet (forfalder ved %2$s)</string>
     <string name="rem_km_left">%1$s tilbage (forfalder ved %2$s)</string>
     <string name="rem_date_over">forfalden siden %1$s</string>
-    <string name="rem_date_left">%1$d dage tilbage (%2$s)</string>
-    <string name="n_days">%1$d dage</string>
     <string name="reminder_either_info">Forfalder efter strækning, tid eller begge – det, der kommer først. Lad felter være tomme, hvis de ikke bruges.</string>
     <string name="by_distance">Efter strækning</string>
     <string name="by_time">Efter tid</string>
@@ -365,7 +360,6 @@
     <string name="receipt_photo">Foto</string>
     <string name="take_photo">Tag foto</string>
     <string name="attach_file">Vedhæft fil</string>
-    <string name="n_receipts">%1$d kvittering(er)</string>
     <string name="tab_costs">Omkostninger</string>
     <string name="statistics">Statistik</string>
     <string name="expense">Omkostning</string>
@@ -393,7 +387,7 @@
     <string name="backup_restore">Gendan</string>
     <string name="backup_done">Sikkerhedskopi gemt.</string>
     <string name="restore_done">Sikkerhedskopi gendannet.</string>
-    <string name="backup_summary">%1$d køretøjer, %2$d tankninger, %3$d serviceposter, %4$d omkostninger, %5$d filer.</string>
+    <string name="backup_summary">%1$s, %2$s, %3$s, %4$s, %5$s.</string>
     <string name="backup_write_error">Filen kunne ikke skrives</string>
     <string name="backup_read_error">Filen kunne ikke læses</string>
     <string name="backup_invalid">Dette er ikke en Fuel &amp; Wrench-sikkerhedskopi</string>
@@ -409,7 +403,7 @@
     <string name="import_need_date_amount">Kolonnerne „Dato“ og „Beløb“ er påkrævet</string>
     <string name="import_repeat_note">gentages: %1$s</string>
     <string name="cost_import">Import af omkostninger</string>
-    <string name="cost_import_found">%1$d omkostninger og %2$d serviceposter fundet</string>
+    <string name="cost_import_found">%1$s og %2$s fundet</string>
     <string name="cost_import_info">Værkstedsomkostninger (vedligeholdelse, reparation, dæk, syn) havner i servicehistorikken, alt andet under omkostninger. Eksisterende poster oprettes ikke to gange.</string>
     <string name="cd_cost_import">Importér omkostninger</string>
     <string name="archive_title">Arkiv (%1$d)</string>
@@ -472,4 +466,73 @@
     <string name="debug_log_share">Del log</string>
     <string name="debug_log_clear">Ryd</string>
     <string name="debug_log_empty">Ingen poster endnu.</string>
+    <string name="e2e_title">End-to-end-kryptering</string>
+    <string name="e2e_info">Krypterer data, fotos og kvitteringer på enheden, før de sendes til serveren. Der kan de ikke læses, heller ikke af udbyderen. Indtast den samme synkroniseringsadgangskode på alle enheder; de andre enheder følger med, når krypteringen slås til eller fra, ved næste synkronisering. Adgangskoden kan ikke gendannes, men dataene på dine enheder bevares.</string>
+    <string name="e2e_password">Synkroniseringsadgangskode</string>
+    <string name="e2e_too_short">Mindst 8 tegn</string>
+    <string name="e2e_need_password">Dataene på serveren er krypteret. Indtast synkroniseringsadgangskoden under Indstillinger → Synkronisering.</string>
+    <string name="e2e_wrong_password">Synkroniseringsadgangskoden passer ikke til dataene på serveren.</string>
+    <string name="e2e_key_file_broken">Nøglefilen på serveren er beskadiget.</string>
+    <string name="widget_name">Fuel &amp; Wrench</string>
+    <string name="widget_description">Forbrug, omkostninger denne måned og næste påmindelse</string>
+    <string name="widget_month">Denne måned: %1$s</string>
+    <string name="widget_no_vehicle">Tryk for at tilføje et køretøj</string>
+    <string name="widget_next_vehicle">Næste køretøj</string>
+    <string name="lan_permission_needed">Din server er på det lokale netværk. Tillad adgang til enheder på det lokale netværk (Indstillinger → Synkronisering → Gem og synkroniser).</string>
+    <plurals name="pl_refuels">
+        <item quantity="one">%d tankning</item>
+        <item quantity="other">%d tankninger</item>
+    </plurals>
+    <plurals name="pl_full_refuels">
+        <item quantity="one">%d fuld tankning</item>
+        <item quantity="other">%d fulde tankninger</item>
+    </plurals>
+    <plurals name="pl_vehicles">
+        <item quantity="one">%d køretøj</item>
+        <item quantity="other">%d køretøjer</item>
+    </plurals>
+    <plurals name="pl_services">
+        <item quantity="one">%d servicepost</item>
+        <item quantity="other">%d serviceposter</item>
+    </plurals>
+    <plurals name="pl_service_entries">
+        <item quantity="one">%d servicepost</item>
+        <item quantity="other">%d serviceposter</item>
+    </plurals>
+    <plurals name="pl_costs">
+        <item quantity="one">%d omkostning</item>
+        <item quantity="other">%d omkostninger</item>
+    </plurals>
+    <plurals name="pl_files">
+        <item quantity="one">%d fil</item>
+        <item quantity="other">%d filer</item>
+    </plurals>
+    <plurals name="pl_rows">
+        <item quantity="one">%d række</item>
+        <item quantity="other">%d rækker</item>
+    </plurals>
+    <plurals name="pl_entries">
+        <item quantity="one">%d post</item>
+        <item quantity="other">%d poster</item>
+    </plurals>
+    <plurals name="pl_duplicates">
+        <item quantity="one">%d dublet</item>
+        <item quantity="other">%d dubletter</item>
+    </plurals>
+    <plurals name="pl_receipts">
+        <item quantity="one">%d kvittering</item>
+        <item quantity="other">%d kvitteringer</item>
+    </plurals>
+    <plurals name="pl_days_in">
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dage</item>
+    </plurals>
+    <plurals name="pl_import_hint_dups">
+        <item quantity="one">%d dobbelt række i filen importeres kun én gang</item>
+        <item quantity="other">%d dobbelte rækker i filen importeres kun én gang</item>
+    </plurals>
+    <plurals name="pl_rem_date_left">
+        <item quantity="one">%1$d dag tilbage (%2$s)</item>
+        <item quantity="other">%1$d dage tilbage (%2$s)</item>
+    </plurals>
 </resources>

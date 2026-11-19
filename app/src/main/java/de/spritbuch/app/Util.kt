@@ -255,9 +255,30 @@ class Prefs(ctx: Context) {
     var user: String
         get() = sp.getString("user", "") ?: ""
         set(v) = sp.edit().putString("user", v.trim()).apply()
+    /** App-Passwort – verschlüsselt mit dem Android-Schlüsselspeicher; ältere Klartext-Werte werden beim Lesen umgestellt. */
     var password: String
-        get() = sp.getString("password", "") ?: ""
-        set(v) = sp.edit().putString("password", v).apply()
+        get() {
+            val stored = sp.getString("password", "") ?: ""
+            if (stored.isNotEmpty() && !stored.startsWith("ks1:")) password = stored
+            return Secrets.open(stored)
+        }
+        set(v) = sp.edit().putString("password", Secrets.seal(v)).apply()
+    /** Ende-zu-Ende-Verschlüsselung für den Sync. */
+    var syncEncrypt: Boolean
+        get() = sp.getBoolean("syncEncrypt", false)
+        set(v) = sp.edit().putBoolean("syncEncrypt", v).apply()
+    /** Sync-Passwort (nur auf den Geräten, nie auf dem Server). Bleibt auch nach dem Ausschalten, um alte Daten zu lesen. */
+    var syncPassphrase: String
+        get() = Secrets.open(sp.getString("syncPassphrase", "") ?: "")
+        set(v) = sp.edit().putString("syncPassphrase", Secrets.seal(v)).apply()
+    /** Auf diesem Gerät umgeschaltet, beim nächsten Sync auf dem Server umsetzen. */
+    var syncEncryptChanged: Boolean
+        get() = sp.getBoolean("syncEncryptChanged", false)
+        set(v) = sp.edit().putBoolean("syncEncryptChanged", v).apply()
+    /** Beim nächsten Sync Fotos und Belege neu hochladen (nach Ein-/Ausschalten der Verschlüsselung). */
+    var reuploadFiles: Boolean
+        get() = sp.getBoolean("reuploadFiles", false)
+        set(v) = sp.edit().putBoolean("reuploadFiles", v).apply()
     /** Basisadresse des Servers (z. B. https://cloud.example.de). */
     var server: String
         get() = sp.getString("server", "") ?: ""

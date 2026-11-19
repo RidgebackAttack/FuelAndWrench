@@ -101,7 +101,9 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
     LaunchedEffect(pending) {
         val (action, vehicleId) = pending ?: return@LaunchedEffect
         shortcut?.value = null
-        Shortcuts.route(ctx, action, vehicleId)?.let { nav.navigate(it) }
+        val target = Shortcuts.route(ctx, action, vehicleId) ?: return@LaunchedEffect
+        // Navigation immer auf dem Hauptthread
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { nav.navigate(target) }
     }
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) {

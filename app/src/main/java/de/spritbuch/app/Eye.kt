@@ -156,7 +156,7 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
                     when {
                         st.overdue -> str(R.string.chip_due, next.title)
                         kmFirst && st.remainingKm != null -> str(R.string.chip_due_in, next.title, st.remainingKm.dist(v.distanceUnit))
-                        else -> str(R.string.chip_due_in, next.title, str(R.string.n_days, st.remainingDays ?: 0))
+                        else -> str(R.string.chip_due_in, next.title, plural(R.plurals.pl_days_in, st.remainingDays ?: 0))
                     },
                     warn = warn,
                 )

@@ -17,7 +17,7 @@ android {
         missingDimensionStrategy("parallelization", "standard")
         applicationId = "io.github.ridgebackattack.fuelandwrench"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 37
         // Feste Version (F-Droid liest sie von hier). Für jedes Release um 10 erhöhen
         // und eine Änderungsnotiz unter fastlane/metadata/android/*/changelogs/<versionCode>.txt anlegen.
         // Die APKs je Prozessortyp bekommen +1 (armeabi-v7a) bzw. +2 (arm64-v8a), die Universal-APK +0.
@@ -120,6 +120,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.18.1")
     testImplementation("androidx.test:core:1.7.0")
+    // Oberflächentests (laufen ohne Emulator mit Robolectric)
+    testImplementation(composeBom)
+    testImplementation("androidx.compose.ui:ui-test-junit4")
 }
 
 // versionCode je APK: Basis + 0 (universal), +1 (armeabi-v7a), +2 (arm64-v8a)
@@ -140,4 +143,11 @@ tasks.withType<Test>().configureEach {
         events("passed", "skipped", "failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
+}
+
+// Startprofil erzeugen (Workflow baseline.yml): misst auf einem Emulator, welcher Code beim Start
+// gebraucht wird. Das Ergebnis landet in src/main/baseline-prof.txt; normale Builds brauchen das Plug-in nicht.
+if (providers.gradleProperty("baselineProfile").isPresent) {
+    apply(plugin = "androidx.baselineprofile")
+    dependencies { add("baselineProfile", project(":baselineprofile")) }
 }
