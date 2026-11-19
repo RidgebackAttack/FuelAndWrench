@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "de.spritbuch.app"
-    compileSdk = 36
+    compileSdk = 37
     // Gleiche NDK-Version wie Tesseract4Android: nötig, damit die nativen Bibliotheken ohne Debug-Infos verpackt werden
     ndkVersion = "27.2.12479018"
 
