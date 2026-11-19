@@ -50,7 +50,7 @@ class FuelPricesTest {
 
     @Test fun stationAtLocation() {
         val list = FuelPrices.parse(sample)
-        assertEquals("b", FuelPrices.at(list, 54.1005, 9.1202)?.id)
+        assertEquals("b", FuelPrices.at(list, 54.1103, 9.1201)?.id)
         assertNull(FuelPrices.at(list, 54.20, 9.30))
     }
 

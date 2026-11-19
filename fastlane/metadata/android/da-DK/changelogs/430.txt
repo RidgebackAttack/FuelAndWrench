@@ -1,6 +1,6 @@
-- Nyt: widget til startskærmen med forbrug, månedlige omkostninger, næste påmindelse og "+ Tankning"
-- Nyt: end-to-end-krypteret synkronisering (valgfri, med egen adgangskode)
-- Nextcloud-adgangskoden gemmes krypteret i Android Keystore
-- Korrekt ental/flertal ("1 tankning")
-- Hurtigere opstart takket være en målt opstartsprofil
-- Klar til Android 17; en server på hjemmenetværket beder én gang om adgang til det lokale netværk
+- Nyt: aktuelle brændstofpriser i nærheden (kort, køretøjskort, widget; egen Tankerkönig-nøgle kræves)
+- Nyt: widget med forbrug, månedlige omkostninger, påmindelse og "+ Tankning"
+- Nyt: end-to-end-krypteret synkronisering (valgfri)
+- Adgangskoder gemmes krypteret i Android Keystore
+- Korrekt ental/flertal
+- Hurtigere opstart; klar til Android 17

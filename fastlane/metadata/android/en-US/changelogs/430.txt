@@ -1,6 +1,6 @@
-- New: home screen widget with consumption, monthly costs, next reminder and "+ Refuel"
-- New: end-to-end encrypted sync (optional, with your own sync password)
-- Nextcloud password is stored encrypted in the Android Keystore
-- Correct singular/plural ("1 refuel")
-- Faster start thanks to a measured startup profile
-- Ready for Android 17; a server in your home network asks once for local network access
+- New: current fuel prices nearby (map, vehicle card, widget; your own Tankerkönig key required)
+- New: home screen widget with consumption, monthly costs, reminder and "+ Refuel"
+- New: end-to-end encrypted sync (optional)
+- Passwords stored encrypted in the Android Keystore
+- Correct singular/plural
+- Faster start; ready for Android 17

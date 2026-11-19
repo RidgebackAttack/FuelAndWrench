@@ -1,6 +1,6 @@
-- Neu: Homescreen-Widget mit Verbrauch, Monatskosten, nächster Erinnerung und „+ Betankung“
-- Neu: Ende-zu-Ende-verschlüsselter Sync (optional, mit eigenem Sync-Passwort)
-- Nextcloud-Passwort wird verschlüsselt im Android-Schlüsselspeicher abgelegt
-- Korrekte Einzahl/Mehrzahl („1 Betankung“)
-- Schnellerer Start durch gemessenes Startprofil
-- Für Android 17 angepasst; Server im Heimnetz fragt einmal nach Zugriff aufs lokale Netzwerk
+- Neu: aktuelle Spritpreise in der Nähe (Karte, Fahrzeugkarte, Widget; eigener Tankerkönig-Schlüssel nötig)
+- Neu: Homescreen-Widget mit Verbrauch, Monatskosten, Erinnerung und „+ Betankung“
+- Neu: Ende-zu-Ende-verschlüsselter Sync (optional)
+- Passwörter verschlüsselt im Android-Schlüsselspeicher
+- Korrekte Einzahl/Mehrzahl
+- Schnellerer Start; für Android 17 angepasst
