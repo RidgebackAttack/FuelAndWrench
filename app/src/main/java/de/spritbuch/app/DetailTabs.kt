@@ -286,6 +286,7 @@ fun VehicleDetailContent(
     val cur = Units.cur(v)
     val lineColor = MaterialTheme.colorScheme.outlineVariant
     val dotColor = MaterialTheme.colorScheme.primary
+    val refuelYears = remember(v, refuels, stats) { if (v == null) emptyList() else groupRefuelsByYear(v, refuels, stats) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -374,7 +375,7 @@ fun VehicleDetailContent(
                             },
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
                         )
-                        1 -> refuelItems(nav, v, refuels, stats)
+                        1 -> refuelItems(nav, v, refuelYears, stats)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)
                             serviceItems(nav, v, services, lineColor, dotColor)
@@ -512,8 +513,24 @@ private fun LazyListScope.overviewItems(
     }
 }
 
-private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: List<Refuel>, stats: Stats) {
-    if (refuels.isEmpty()) {
+/** Ein Jahr in der Betankungsliste mit fertiger Zusammenfassung (einmal berechnet, nicht bei jedem Neuzeichnen). */
+class RefuelYear(val year: Int, val list: List<Refuel>, val summary: String)
+
+fun groupRefuelsByYear(v: Vehicle, refuels: List<Refuel>, stats: Stats): List<RefuelYear> {
+    val unit = Units.amount(v, v.defaultFuelType)
+    return refuels.groupBy { yearOfTs(it.timestamp) }.toSortedMap(compareByDescending { it }).map { (year, list) ->
+        val per = list.mapNotNull { stats.perRefuel[it.id] }
+        val avg = if (per.isNotEmpty()) Units.consumption(v, v.defaultFuelType, per.average()) else "–"
+        RefuelYear(
+            year, list,
+            plural(R.plurals.pl_refuels, list.size) + " · ${list.sumOf { it.amount }.fmt(1)} $unit · " +
+                "${list.sumOf { it.totalPrice }.fmt()} ${v.currency} · Ø $avg",
+        )
+    }
+}
+
+private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: List<RefuelYear>, stats: Stats) {
+    if (years.isEmpty()) {
         item {
             EmptyState(
                 Icons.Default.LocalGasStation, str(R.string.empty_refuels_title),
@@ -522,21 +539,15 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, refuels: L
         }
         return
     }
-    val unit = Units.amount(v, v.defaultFuelType)
-    refuels.groupBy { yearOfTs(it.timestamp) }.toSortedMap(compareByDescending { it }).forEach { (year, list) ->
-        val per = list.mapNotNull { stats.perRefuel[it.id] }
-        val avg = if (per.isNotEmpty()) Units.consumption(v, v.defaultFuelType, per.average()) else "–"
-        item(key = "y-$year") {
+    years.forEach { y ->
+        item(key = "y-${y.year}", contentType = "year") {
             Column(Modifier.padding(top = 8.dp)) {
-                Text(year.toString(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                Text(
-                    plural(R.plurals.pl_refuels, list.size) + " · ${list.sumOf { it.amount }.fmt(1)} $unit · " +
-                        "${list.sumOf { it.totalPrice }.fmt()} ${v.currency} · Ø $avg",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                Text(y.year.toString(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                Text(y.summary, style = MaterialTheme.typography.bodySmall)
             }
         }
-        items(list, key = { it.id }) { r ->
+        // Nur die sichtbaren Karten werden gezeichnet; gleiche Art (contentType) wird beim Scrollen wiederverwendet
+        items(y.list, key = { it.id }, contentType = { "refuel" }) { r ->
             RefuelCard(v, r, stats.perRefuel[r.id], if (r.isCharge && stats.avgElectric != null) stats.avgElectric else stats.avg) {
                 nav.navigate("refuelEdit/${v.id}/${r.id}")
             }

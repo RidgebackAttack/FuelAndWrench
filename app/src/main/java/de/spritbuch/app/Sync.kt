@@ -37,7 +37,16 @@ fun httpMessage(code: Int): String = when (code) {
     else -> str(R.string.http_other, code)
 }
 
-class WebDavClient(baseUrl: String, user: String, password: String) {
+/** Was der Sync vom Server braucht (in Tests durch einen Speicher-Server ersetzbar). */
+interface Dav {
+    fun get(path: String): WebDavClient.Result
+    fun head(path: String): Int
+    fun delete(path: String): Int
+    fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int
+    fun ensureDir(path: String)
+}
+
+class WebDavClient(baseUrl: String, user: String, password: String) : Dav {
     private val base = baseUrl.trim().trimEnd('/')
     private val auth = Credentials.basic(user.trim(), password)
     private val client = OkHttpClient.Builder()
@@ -59,7 +68,7 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
         Result(it.code, if (it.isSuccessful) it.body?.bytes() else null, it.header("ETag"))
     }
 
-    fun get(path: String) = exec(req(path).get().build())
+    override fun get(path: String) = exec(req(path).get().build())
 
     fun propfind(path: String, xml: String): Result {
         val url = if (path.isEmpty()) "$base/" else "$base/${encodePath(path)}/"
@@ -69,10 +78,10 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
                 .build()
         )
     }
-    fun head(path: String): Int = exec(req(path).head().build()).code
-    fun delete(path: String): Int = exec(req(path).delete().build()).code
+    override fun head(path: String): Int = exec(req(path).head().build()).code
+    override fun delete(path: String): Int = exec(req(path).delete().build()).code
 
-    fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int {
+    override fun put(path: String, data: ByteArray, type: String, ifMatch: String?, ifNoneMatch: Boolean): Int {
         val b = req(path).put(data.toRequestBody(type.toMediaType()))
         if (ifMatch != null) b.header("If-Match", ifMatch.removePrefix("W/"))
         if (ifNoneMatch) b.header("If-None-Match", "*")
@@ -80,7 +89,7 @@ class WebDavClient(baseUrl: String, user: String, password: String) {
     }
 
     /** Legt einen Ordner an; "existiert schon" (405) ist ok. */
-    fun ensureDir(path: String) {
+    override fun ensureDir(path: String) {
         val code = exec(req(path).method("MKCOL", null).build()).code
         if (code != 405 && code !in 200..299) throw IOException(httpMessage(code))
     }
@@ -118,6 +127,8 @@ object SyncManager {
     private val mutex = Mutex()
     val running = MutableStateFlow(false)
     val status = MutableStateFlow("")
+    /** Verbindung zum Server; Tests setzen hier einen Speicher-Server ein. */
+    internal var connect: (Prefs) -> Dav = { WebDavClient(it.url, it.user, it.password) }
 
     suspend fun sync(ctx: Context): SyncResult = mutex.withLock {
         val app = ctx.applicationContext
@@ -146,7 +157,7 @@ object SyncManager {
     }
 
     private suspend fun doSync(ctx: Context, prefs: Prefs): String {
-        val dav = WebDavClient(prefs.url, prefs.user, prefs.password)
+        val dav = connect(prefs)
         dav.ensureDir("")
         dav.ensureDir("photos")
         dav.ensureDir(AttachmentStore.DIR)
@@ -243,7 +254,7 @@ object SyncManager {
     }
 
     /** Belege: fehlende hochladen bzw. herunterladen (Dateinamen sind eindeutig, Inhalte ändern sich nie). */
-    private fun syncAttachments(ctx: Context, dav: WebDavClient, prefs: Prefs, crypt: Crypt, reupload: Boolean, names: List<String>) {
+    private fun syncAttachments(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, names: List<String>) {
         val uploaded = prefs.uploadedAttachments.toMutableSet()
         for (name in names.distinct()) {
             val file = AttachmentStore.file(ctx, name)
@@ -267,7 +278,7 @@ object SyncManager {
         prefs.uploadedAttachments = uploaded
     }
 
-    private fun syncPhotos(ctx: Context, dav: WebDavClient, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>) {
+    private fun syncPhotos(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>) {
         val uploaded = prefs.uploadedPhotos.toMutableSet()
         for (v in vehicles) {
             if (v.deleted || v.photoVersion == 0L || !prefs.shows(v.id)) continue
@@ -299,7 +310,7 @@ object SyncManager {
  * Liegt dort [SyncCrypto.KEY_FILE], verschlüsseln alle Geräte. Ein- und ausgeschaltet wird auf einem Gerät;
  * die anderen ziehen beim nächsten Sync nach (und brauchen dafür dasselbe Sync-Passwort).
  */
-private class Crypt(private val dav: WebDavClient, private val prefs: Prefs) {
+private class Crypt(private val dav: Dav, private val prefs: Prefs) {
     private var salt: ByteArray? = null
     private var key: javax.crypto.SecretKey? = null
     /** Wird beim Hochladen verschlüsselt? */
