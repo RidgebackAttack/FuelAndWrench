@@ -1,10 +1,10 @@
 plugins {
-    id("com.android.application") version "8.7.3" apply false
-    id("com.android.library") version "8.7.3" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" apply false
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28" apply false
+    id("com.android.application") version "9.5.1" apply false
+    id("com.android.library") version "9.5.1" apply false
+    // Kotlin ist ab AGP 9 eingebaut; diese Plug-ins legen die Kotlin-Version fest
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.21" apply false
+    id("com.google.devtools.ksp") version "2.3.14" apply false
 }
 
 // Wird vom Build-Skript des Tesseract4Android-Submoduls erwartet
@@ -14,7 +14,7 @@ extra["tesseract4AndroidVersion"] = "4.9.0"
 // heraushalten, damit F-Droid die APK Byte für Byte nachbauen kann (Reproducible Builds).
 project(":tesseract4android") {
     pluginManager.withPlugin("com.android.library") {
-        extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+        extensions.configure<com.android.build.api.dsl.LibraryExtension>("android") {
             defaultConfig {
                 ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
                 externalNativeBuild {
