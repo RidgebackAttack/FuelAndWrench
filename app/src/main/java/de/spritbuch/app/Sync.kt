@@ -225,7 +225,7 @@ object SyncManager {
             ReminderChecker.checkAll(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }
-            return str(R.string.sync_ok, v, t)
+            return str(R.string.sync_ok, plural(R.plurals.pl_vehicles, v), plural(R.plurals.pl_refuels, t))
         }
         throw IOException(str(R.string.sync_conflict))
     }

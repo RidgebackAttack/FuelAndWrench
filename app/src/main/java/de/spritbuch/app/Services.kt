@@ -101,7 +101,7 @@ object ReminderChecker {
         },
         st.remainingDays?.let { d ->
             val date = r.dueDate?.date() ?: ""
-            if (d < 0) str(R.string.rem_date_over, date) else str(R.string.rem_date_left, d, date)
+            if (d < 0) str(R.string.rem_date_over, date) else plural(R.plurals.pl_rem_date_left, d.toInt(), d, date)
         },
     ).joinToString(" · ")
 

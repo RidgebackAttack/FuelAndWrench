@@ -299,7 +299,7 @@ fun SettingsScreen(nav: NavController) {
             SectionTitle(str(R.string.backup))
             var backupInfo by remember { mutableStateOf<String?>(null) }
             var backupBusy by remember { mutableStateOf(false) }
-            fun summaryText(s: Backup.Summary) = str(R.string.backup_summary, s.vehicles, s.refuels, s.services, s.expenses, s.files)
+            fun summaryText(s: Backup.Summary) = str(R.string.backup_summary, plural(R.plurals.pl_vehicles, s.vehicles), plural(R.plurals.pl_refuels, s.refuels), plural(R.plurals.pl_services, s.services), plural(R.plurals.pl_costs, s.expenses), plural(R.plurals.pl_files, s.files))
             val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
                 if (uri != null) scope.launch {
                     backupBusy = true

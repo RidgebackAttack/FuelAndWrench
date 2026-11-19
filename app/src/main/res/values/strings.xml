@@ -143,13 +143,12 @@
     <string name="import_failed">Import failed: %1$s</string>
     <string name="import_title">Import</string>
     <string name="import_missing_cols">The file could not be read. Missing columns: %1$s</string>
-    <string name="import_found">%1$d refuels found (%2$s to %3$s)</string>
-    <string name="import_skipped">, %1$d rows without refuel data skipped (e.g. costs, maintenance)</string>
+    <string name="import_found">%1$s found (%2$s to %3$s)</string>
+    <string name="import_skipped">, %1$s without refuel data skipped (e.g. costs, maintenance)</string>
     <string name="import_confirm">Import into “%1$s”? Existing entries are not created twice.</string>
-    <string name="import_hint_dups">%1$d duplicate row(s) in the file are only imported once</string>
     <string name="import_hint_derived">%1$d× missing odometer reading calculated from the trip distance</string>
     <string name="import_hint_corrected">%1$d× unit price instead of total detected and corrected</string>
-    <string name="import_hint_noprice">%1$d refuels without price</string>
+    <string name="import_hint_noprice">%1$s without price</string>
     <string name="import_codes_info">Spritmonitor stores some details as numbers. Please check what each number means:</string>
     <string name="not_specified">not specified</string>
     <string name="import_code">Code %1$s (%2$d×)</string>
@@ -158,7 +157,7 @@
     <string name="import_extras_all">Additional loads for all entries</string>
     <string name="import_extras_info">Spritmonitor does not export air conditioning, heating and trailer. Optionally set them here for all imported refuels:</string>
     <string name="imported_n">%1$d imported</string>
-    <string name="dups_skipped">, %1$d duplicates skipped</string>
+    <string name="dups_skipped">, %1$s skipped</string>
     <string name="do_import">Import</string>
     <string name="current_reading">Current reading</string>
     <string name="obc_value">On-board computer: %1$s</string>
@@ -187,11 +186,11 @@
     <string name="vehicle_delete_q">Delete vehicle?</string>
     <string name="vehicle_delete_info">All refuels and reminders of this vehicle will be deleted on all devices. To keep them, turn on “Archived” instead.</string>
     <string name="service_import">Service import</string>
-    <string name="svc_import_found">%1$d entries found</string>
-    <string name="svc_import_skipped">, %1$d rows skipped</string>
+    <string name="svc_import_found">%1$s found</string>
+    <string name="svc_import_skipped">, %1$s skipped</string>
     <string name="svc_import_info">Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.</string>
     <string name="already_present">, %1$d already present</string>
-    <string name="chart_title">Consumption history (last %1$d full refuels)</string>
+    <string name="chart_title">Consumption history (last %1$s)</string>
     <string name="chart_min">min %1$s</string>
     <string name="chart_max">max %1$s</string>
     <string name="tab_overview">Overview</string>
@@ -201,8 +200,6 @@
     <string name="cd_service_import">Import services</string>
     <string name="done_service_created">Done – service entry created</string>
     <string name="vehicle_archived_banner">Vehicle is archived. Reminders are paused.</string>
-    <string name="n_refuels">%1$d refuels</string>
-    <string name="n_services">%1$d services</string>
     <string name="stat_avg">Ø consumption</string>
     <string name="stat_last">Last consumption</string>
     <string name="stat_obc">On-board computer (%1$d×)</string>
@@ -223,7 +220,7 @@
     <string name="service_history">Service history</string>
     <string name="empty_services_title">No service entries yet</string>
     <string name="empty_services_text">Add one via “Service” or import a CSV at the top.</string>
-    <string name="services_summary">%1$d entries · %2$s total</string>
+    <string name="services_summary">%1$s · %2$s total</string>
     <string name="tire_set">Wheel set</string>
     <string name="sizes_front_rear">f %1$s · r %2$s</string>
     <string name="chip_due">%1$s due</string>
@@ -317,7 +314,7 @@
     <string name="http_other">HTTP error %1$d</string>
     <string name="sync_not_configured">Sync not set up</string>
     <string name="error_prefix">Error: %1$s</string>
-    <string name="sync_ok">Synced (%1$d vehicles, %2$d refuels)</string>
+    <string name="sync_ok">Synced (%1$s, %2$s)</string>
     <string name="sync_conflict">Too many simultaneous changes – please try again</string>
     <string name="folder_read_error">Folder could not be read</string>
     <string name="parent_folder">Parent folder</string>
@@ -342,8 +339,6 @@
     <string name="rem_km_over">%1$s overdue (due at %2$s)</string>
     <string name="rem_km_left">%1$s left (due at %2$s)</string>
     <string name="rem_date_over">overdue since %1$s</string>
-    <string name="rem_date_left">%1$d days left (%2$s)</string>
-    <string name="n_days">%1$d days</string>
     <string name="reminder_either_info">Due by distance, time or both – whichever comes first. Leave a field empty if not needed.</string>
     <string name="by_distance">By distance</string>
     <string name="by_time">By time</string>
@@ -365,7 +360,6 @@
     <string name="receipt_photo">Photo</string>
     <string name="take_photo">Take photo</string>
     <string name="attach_file">Attach file</string>
-    <string name="n_receipts">%1$d receipt(s)</string>
     <string name="tab_costs">Costs</string>
     <string name="statistics">Statistics</string>
     <string name="expense">Cost</string>
@@ -393,7 +387,7 @@
     <string name="backup_restore">Restore</string>
     <string name="backup_done">Backup saved.</string>
     <string name="restore_done">Backup restored.</string>
-    <string name="backup_summary">%1$d vehicles, %2$d refuels, %3$d services, %4$d costs, %5$d files.</string>
+    <string name="backup_summary">%1$s, %2$s, %3$s, %4$s, %5$s.</string>
     <string name="backup_write_error">File could not be written</string>
     <string name="backup_read_error">File could not be read</string>
     <string name="backup_invalid">This is not a Fuel &amp; Wrench backup</string>
@@ -409,7 +403,7 @@
     <string name="import_need_date_amount">Columns “Date” and “Amount” are required</string>
     <string name="import_repeat_note">repeats: %1$s</string>
     <string name="cost_import">Cost import</string>
-    <string name="cost_import_found">%1$d costs and %2$d service entries found</string>
+    <string name="cost_import_found">%1$s and %2$s found</string>
     <string name="cost_import_info">Workshop costs (maintenance, repair, tires, inspection) go to the service history, everything else to costs. Existing entries are not created twice.</string>
     <string name="cd_cost_import">Import costs</string>
     <string name="archive_title">Archive (%1$d)</string>
@@ -479,4 +473,60 @@
     <string name="e2e_need_password">The data on the server is encrypted. Please enter the sync password under Settings → Sync.</string>
     <string name="e2e_wrong_password">The sync password does not match the data on the server.</string>
     <string name="e2e_key_file_broken">The key file on the server is damaged.</string>
+    <plurals name="pl_refuels">
+        <item quantity="one">%d refuel</item>
+        <item quantity="other">%d refuels</item>
+    </plurals>
+    <plurals name="pl_full_refuels">
+        <item quantity="one">%d full refuel</item>
+        <item quantity="other">%d full refuels</item>
+    </plurals>
+    <plurals name="pl_vehicles">
+        <item quantity="one">%d vehicle</item>
+        <item quantity="other">%d vehicles</item>
+    </plurals>
+    <plurals name="pl_services">
+        <item quantity="one">%d service</item>
+        <item quantity="other">%d services</item>
+    </plurals>
+    <plurals name="pl_service_entries">
+        <item quantity="one">%d service entry</item>
+        <item quantity="other">%d service entries</item>
+    </plurals>
+    <plurals name="pl_costs">
+        <item quantity="one">%d cost item</item>
+        <item quantity="other">%d cost items</item>
+    </plurals>
+    <plurals name="pl_files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <plurals name="pl_rows">
+        <item quantity="one">%d row</item>
+        <item quantity="other">%d rows</item>
+    </plurals>
+    <plurals name="pl_entries">
+        <item quantity="one">%d entry</item>
+        <item quantity="other">%d entries</item>
+    </plurals>
+    <plurals name="pl_duplicates">
+        <item quantity="one">%d duplicate</item>
+        <item quantity="other">%d duplicates</item>
+    </plurals>
+    <plurals name="pl_receipts">
+        <item quantity="one">%d receipt</item>
+        <item quantity="other">%d receipts</item>
+    </plurals>
+    <plurals name="pl_days_in">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="pl_import_hint_dups">
+        <item quantity="one">%d duplicate row in the file is only imported once</item>
+        <item quantity="other">%d duplicate rows in the file are only imported once</item>
+    </plurals>
+    <plurals name="pl_rem_date_left">
+        <item quantity="one">%1$d day left (%2$s)</item>
+        <item quantity="other">%1$d days left (%2$s)</item>
+    </plurals>
 </resources>

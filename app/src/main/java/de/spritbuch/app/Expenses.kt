@@ -78,7 +78,7 @@ fun LazyListScope.expenseItems(nav: NavController, v: Vehicle, expenses: List<Ex
     }
     item {
         Text(
-            str(R.string.services_summary, expenses.size, expenses.sumOf { it.amount }.fmt() + " " + v.currency),
+            str(R.string.services_summary, plural(R.plurals.pl_entries, expenses.size), expenses.sumOf { it.amount }.fmt() + " " + v.currency),
             style = MaterialTheme.typography.bodyMedium,
         )
     }
@@ -110,7 +110,7 @@ fun ExpenseCard(v: Vehicle, e: Expense, onClick: () -> Unit) {
                 Text(listOf(e.timestamp.date(), lbl(e.category)).joinToString(" · "), style = MaterialTheme.typography.bodySmall)
                 if (e.note.isNotBlank()) Text(e.note, style = MaterialTheme.typography.bodySmall)
                 if (e.attachments.isNotBlank()) {
-                    Text("📎 " + str(R.string.n_receipts, e.attachmentList().size), style = MaterialTheme.typography.bodySmall,
+                    Text("📎 " + plural(R.plurals.pl_receipts, e.attachmentList().size), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary)
                 }
             }
