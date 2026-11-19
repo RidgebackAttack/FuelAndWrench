@@ -414,6 +414,13 @@ interface RefuelDao {
     @Query("SELECT * FROM refuels")
     suspend fun getAllRaw(): List<Refuel>
 
+    /** Eigene Betreiber, häufigste zuerst – ohne alle Betankungen zu laden. */
+    @Query("SELECT stationBrand FROM refuels WHERE deleted = 0 AND stationBrand != '' GROUP BY stationBrand ORDER BY COUNT(*) DESC")
+    suspend fun usedBrands(): List<String>
+
+    @Query("SELECT vehicleId, MAX(timestamp) AS last FROM refuels WHERE deleted = 0 GROUP BY vehicleId")
+    suspend fun lastUse(): List<VehicleLastUse>
+
     @Upsert
     suspend fun upsert(item: Refuel)
 }
@@ -441,6 +448,9 @@ interface ReminderDao {
     @Upsert
     suspend fun upsert(item: Reminder)
 }
+
+/** Letzte Betankung je Fahrzeug (für die Sortierung im App-Icon-Menü). */
+data class VehicleLastUse(val vehicleId: String, val last: Long)
 
 @Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 9, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {

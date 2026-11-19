@@ -475,4 +475,9 @@
     <string name="device_vehicles_info">E.g. on the car\'s navigation unit only show the car. Hidden vehicles are still synchronized, only not shown, offered or notified here.</string>
     <string name="device_all_vehicles">Show all vehicles</string>
     <string name="scan_crop_retry">Not right? Narrow down the area</string>
+    <string name="debug_log">Error log</string>
+    <string name="debug_log_info">Only when switched on: records crashes and errors (e.g. during sync) in a file on this device. Nothing is sent automatically; you decide whether to share it. Switching off deletes the log.</string>
+    <string name="debug_log_share">Share log</string>
+    <string name="debug_log_clear">Clear</string>
+    <string name="debug_log_empty">No entries yet.</string>
 </resources>

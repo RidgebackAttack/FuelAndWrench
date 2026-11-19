@@ -338,6 +338,9 @@ class Prefs(ctx: Context) {
         set(v) = sp.edit().putString("shortcutMode", v).apply()
 
     /** Update-Hinweis (nur bei direkt installierter APK): fragt GitHub nach der neuesten Version. */
+    var debugLog: Boolean
+        get() = sp.getBoolean("debugLog", false)
+        set(v) = sp.edit().putBoolean("debugLog", v).apply()
     var updateCheck: Boolean
         get() = sp.getBoolean("updateCheck", true)
         set(v) = sp.edit().putBoolean("updateCheck", v).apply()
@@ -380,3 +383,9 @@ object TreadCodec {
         }
     }
 }
+
+/** Speichert eine Compose-Map im Bundle, damit Eingaben das Neuerstellen der Activity überstehen. */
+val StringMapSaver = androidx.compose.runtime.saveable.Saver<androidx.compose.runtime.snapshots.SnapshotStateMap<String, String>, HashMap<String, String>>(
+    save = { HashMap(it) },
+    restore = { androidx.compose.runtime.mutableStateMapOf<String, String>().apply { putAll(it) } },
+)

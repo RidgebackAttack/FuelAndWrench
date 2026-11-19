@@ -475,4 +475,9 @@
     <string name="device_vehicles_info">Z. B. im Navi des Autos nur das Auto zeigen. Ausgeblendete Fahrzeuge werden weiter synchronisiert, hier aber nicht angezeigt, angeboten oder gemeldet.</string>
     <string name="device_all_vehicles">Alle Fahrzeuge anzeigen</string>
     <string name="scan_crop_retry">Nicht richtig? Bereich eingrenzen</string>
+    <string name="debug_log">Fehlerprotokoll</string>
+    <string name="debug_log_info">Nur wenn eingeschaltet: zeichnet Abstürze und Fehler (z. B. beim Synchronisieren) in einer Datei auf diesem Gerät auf. Es wird nichts automatisch gesendet; ob du es teilst, entscheidest du. Ausschalten löscht das Protokoll.</string>
+    <string name="debug_log_share">Protokoll teilen</string>
+    <string name="debug_log_clear">Leeren</string>
+    <string name="debug_log_empty">Noch keine Einträge.</string>
 </resources>

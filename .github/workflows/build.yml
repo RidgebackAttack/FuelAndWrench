@@ -51,6 +51,18 @@ jobs:
       - name: Build
         run: gradle testReleaseUnitTest assembleRelease --no-daemon --stacktrace
 
+      # Android Lint: findet typische Fehler (z. B. fehlende Übersetzungen, API-Level); bricht den Build nicht ab
+      - name: Lint
+        continue-on-error: true
+        run: gradle :app:lintRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-release.html
+          if-no-files-found: ignore
+
       - name: Schlüssel entfernen
         if: always()
         run: rm -f app/release.jks

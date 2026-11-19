@@ -475,4 +475,9 @@
     <string name="device_vehicles_info">F.eks. kun vise bilen på bilens navigation. Skjulte køretøjer synkroniseres stadig, men vises, tilbydes eller meldes ikke her.</string>
     <string name="device_all_vehicles">Vis alle køretøjer</string>
     <string name="scan_crop_retry">Ikke korrekt? Afgræns området</string>
+    <string name="debug_log">Fejllog</string>
+    <string name="debug_log_info">Kun når den er slået til: registrerer nedbrud og fejl (f.eks. under synkronisering) i en fil på denne enhed. Intet sendes automatisk; du bestemmer, om du vil dele den. Når den slås fra, slettes loggen.</string>
+    <string name="debug_log_share">Del log</string>
+    <string name="debug_log_clear">Ryd</string>
+    <string name="debug_log_empty">Ingen poster endnu.</string>
 </resources>

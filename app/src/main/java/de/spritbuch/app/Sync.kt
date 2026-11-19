@@ -130,6 +130,7 @@ object SyncManager {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            DebugLog.error("Synchronisierung fehlgeschlagen", e)
             SyncResult(false, str(R.string.error_prefix, e.message ?: e.javaClass.simpleName))
         } finally {
             running.value = false

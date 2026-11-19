@@ -64,8 +64,7 @@ object Shortcuts {
             }
             val list = mutableListOf<ShortcutInfoCompat>()
             if (Prefs(ctx).shortcutMode == "perVehicle") {
-                val lastUse = repo.db.refuels().getAllRaw().filter { !it.deleted }
-                    .groupBy { it.vehicleId }.mapValues { (_, l) -> l.maxOf { it.timestamp } }
+                val lastUse = repo.db.refuels().lastUse().associate { it.vehicleId to it.last }
                 vehicles.sortedByDescending { lastUse[it.id] ?: it.updatedAt }.take(3).forEachIndexed { i, v ->
                     val label = str(if (v.isElectric) R.string.charge else R.string.refuel)
                     list += ShortcutInfoCompat.Builder(ctx, "refuel-${v.id}")
@@ -120,8 +119,7 @@ fun VehiclePickScreen(nav: NavController, action: String) {
     val repo = ctx.repo
     var vehicles by remember { mutableStateOf<List<Vehicle>>(emptyList()) }
     LaunchedEffect(Unit) {
-        val lastUse = repo.db.refuels().getAllRaw().filter { !it.deleted }
-            .groupBy { it.vehicleId }.mapValues { (_, l) -> l.maxOf { it.timestamp } }
+        val lastUse = repo.db.refuels().lastUse().associate { it.vehicleId to it.last }
         val prefs = Prefs(ctx)
         vehicles = repo.db.vehicles().getAllRaw().filter { !it.deleted && !it.archived && prefs.shows(it.id) }
             .sortedByDescending { lastUse[it.id] ?: it.updatedAt }

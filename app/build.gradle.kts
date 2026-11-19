@@ -75,6 +75,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     lint {
         abortOnError = false
@@ -124,5 +125,13 @@ androidComponents {
             val offset = when (abi) { "armeabi-v7a" -> 1; "arm64-v8a" -> 2; else -> 0 }
             output.versionCode.set(output.versionCode.get() + offset)
         }
+    }
+}
+
+// Testergebnisse im CI-Log sichtbar machen
+tasks.withType<Test>().configureEach {
+    testLogging {
+        events("passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }

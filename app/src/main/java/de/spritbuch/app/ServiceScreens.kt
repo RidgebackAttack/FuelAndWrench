@@ -61,6 +61,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -140,57 +141,16 @@ fun ServiceTimelineScreen(nav: NavController, vehicleId: String) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
-    var pending by remember { mutableStateOf<ServiceImport.Result?>(null) }
-    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        val veh = vehicle
-        if (uri != null && veh != null) scope.launch {
-            val res = withContext(Dispatchers.IO) {
-                runCatching {
-                    val bytes = ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
-                    ServiceImport.parse(CsvImport.decode(bytes), veh)
-                }
-            }
-            res.onSuccess { pending = it }.onFailure { snackbar.showSnackbar(str(R.string.import_failed, it.message ?: "")) }
-        }
-    }
+    val startImport = rememberServiceImporter(vehicleId, vehicle, snackbar)
     val lineColor = MaterialTheme.colorScheme.outlineVariant
     val dotColor = MaterialTheme.colorScheme.primary
-    pending?.let { imp ->
-        AlertDialog(
-            onDismissRequest = { pending = null },
-            title = { Text(str(R.string.service_import)) },
-            text = {
-                Text(
-                    imp.error ?: (
-                        str(R.string.svc_import_found, imp.entries.size) +
-                            (if (imp.skipped > 0) str(R.string.svc_import_skipped, imp.skipped) else "") +
-                            " (${imp.entries.sumOf { it.cost }.fmt()} ${vehicle?.currency ?: "€"}).\n\n" +
-                            str(R.string.svc_import_info)
-                        )
-                )
-            },
-            confirmButton = {
-                if (imp.entries.isNotEmpty()) TextButton(onClick = {
-                    pending = null
-                    scope.launch {
-                        val (added, dups) = repo.importServices(vehicleId, imp.entries)
-                        snackbar.showSnackbar(str(R.string.imported_n, added) + if (dups > 0) str(R.string.already_present, dups) else "")
-                    }
-                }) { Text(str(R.string.do_import)) }
-            },
-            dismissButton = { TextButton(onClick = { pending = null }) { Text(str(R.string.cancel)) } },
-        )
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(str(R.string.service_title, vehicle?.name ?: "")) },
                 navigationIcon = { BackButton(nav) },
                 actions = {
-                    IconButton(onClick = {
-                        importLauncher.launch(arrayOf("text/*", "application/csv", "application/vnd.ms-excel", "application/octet-stream"))
-                    }) { Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_service_import)) }
+                    IconButton(onClick = startImport) { Icon(Icons.Default.FileUpload, contentDescription = str(R.string.cd_service_import)) }
                 },
             )
         },
@@ -262,25 +222,27 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     val scope = rememberCoroutineScope()
     val isNew = serviceId.startsWith("new")
     val isWheelChange = serviceId == "new-wheel"
+    // Eingaben überstehen das Neuerstellen der Activity (z. B. während Kamera/Dateiauswahl)
+    var loaded by rememberSaveable { mutableStateOf(false) }
     var base by remember { mutableStateOf<ServiceEntry?>(null) }
     var veh by remember { mutableStateOf<Vehicle?>(null) }
-    var timestamp by remember { mutableLongStateOf(now()) }
-    var odometer by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Wartung") }
-    var cost by remember { mutableStateOf("") }
-    var workshop by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var attachments by remember { mutableStateOf(listOf<String>()) }
-    var tireSeason by remember { mutableStateOf("") }
-    var tireBrand by remember { mutableStateOf("") }
-    var tireModel by remember { mutableStateOf("") }
-    var tireSize by remember { mutableStateOf("") }
+    var timestamp by rememberSaveable { mutableLongStateOf(now()) }
+    var odometer by rememberSaveable { mutableStateOf("") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("Wartung") }
+    var cost by rememberSaveable { mutableStateOf("") }
+    var workshop by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
+    var attachments by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var tireSeason by rememberSaveable { mutableStateOf("") }
+    var tireBrand by rememberSaveable { mutableStateOf("") }
+    var tireModel by rememberSaveable { mutableStateOf("") }
+    var tireSize by rememberSaveable { mutableStateOf("") }
     val tireSets by repo.tireSets(vehicleId).collectAsStateWithLifecycle(emptyList())
-    var mountedSetId by remember { mutableStateOf("") }
-    var removedSetId by remember { mutableStateOf("") }
-    val treadOld = remember { mutableStateMapOf<String, String>() }
-    val treadNew = remember { mutableStateMapOf<String, String>() }
+    var mountedSetId by rememberSaveable { mutableStateOf("") }
+    var removedSetId by rememberSaveable { mutableStateOf("") }
+    val treadOld = rememberSaveable(saver = StringMapSaver) { mutableStateMapOf<String, String>() }
+    val treadNew = rememberSaveable(saver = StringMapSaver) { mutableStateMapOf<String, String>() }
     var error by remember { mutableStateOf<String?>(null) }
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -290,6 +252,8 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         val s = if (isNew) ServiceEntry(vehicleId = vehicleId, odometer = repo.currentOdometer(vehicleId))
         else repo.getService(serviceId) ?: return@LaunchedEffect
         base = s
+        if (loaded) return@LaunchedEffect
+        loaded = true
         timestamp = s.timestamp
         odometer = if (s.odometer > 0) s.odometer.toString() else ""
         title = s.title
