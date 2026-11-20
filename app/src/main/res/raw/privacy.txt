@@ -13,12 +13,12 @@ All data is stored locally on your device. Text recognition of receipts and odom
 Where is data sent?
 
 • Your own WebDAV/Nextcloud server: all app data and vehicle photos – when syncing (can be disabled: yes – do not set up sync)
-• overpass-api.de (OpenStreetMap): coordinates, IP address – “Current position” – station search (can be disabled: yes – Settings → Privacy)
+• overpass-api.de (OpenStreetMap): coordinates, IP address – “Current position” – station search (can be disabled: yes – Settings → Location & privacy)
 • creativecommons.tankerkoenig.de (Tankerkönig): location rounded to about 1 km, fuel type, your own key, IP address – only with a key entered, when prices are shown – current fuel prices (can be disabled: yes – remove the key in Settings → Fuel prices)
 • nominatim.openstreetmap.org (OpenStreetMap): coordinates, IP address – “Current position” / “Address” – address search (can be disabled: yes – same switch)
 • Android geocoder (on devices with Google services: Google): coordinates – address lookup (can be disabled: yes – off by default)
 • System network location (on devices with Google services: Google): Wi-Fi/mobile data – positioning (can be disabled: yes – off by default, GPS only)
-• api.github.com (GitHub): IP address – once a day check for the newest version, only for APKs installed directly (can be disabled: yes – Settings → Privacy)
+• api.github.com (GitHub): IP address – once a day check for the newest version, only for APKs installed directly (can be disabled: yes – Settings → Location & privacy)
 • tile.openstreetmap.org: displayed map area, IP address – when opening the map (can be disabled: only by not using the map)
 
 The privacy policies of these services apply (OpenStreetMap Foundation, FOSSGIS e. V. or Google).

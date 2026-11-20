@@ -96,12 +96,15 @@ class UiFlowTest {
         assertEquals(70.0, r.totalPrice, 0.001)
     }
 
-    /** Einstellungen öffnen; die Verschlüsselung ist erreichbar. */
+    /** Einstellungen öffnen; über die Übersicht ist die Verschlüsselung erreichbar. */
     @Test fun settingsOpen() {
         seed(withHistory = false)
         launch()
         waitForText("Testwagen")
         rule.onNodeWithContentDescription(s(R.string.settings)).performClick()
+        // Übersicht → Synchronisierung
+        waitForText(s(R.string.set_sync_sub))
+        rule.onNodeWithText(s(R.string.sync)).performClick()
         rule.waitUntil(10_000) {
             rule.onAllNodesWithText(s(R.string.e2e_title)).fetchSemanticsNodes().isNotEmpty()
         }

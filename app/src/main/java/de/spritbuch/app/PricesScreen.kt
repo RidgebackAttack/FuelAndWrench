@@ -112,7 +112,7 @@ fun PricesScreen(nav: NavController, vehicleId: String) {
             when {
                 !FuelPrices.enabled(ctx) -> Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(str(R.string.prices_need_key))
-                    Button(onClick = { nav.navigate("settings") }) { Text(str(R.string.settings)) }
+                    Button(onClick = { nav.navigate("settings/prices") }) { Text(str(R.string.settings)) }
                 }
                 type == null -> Text(str(R.string.prices_unsupported, lbl(fuel)), Modifier.padding(16.dp))
                 else -> {

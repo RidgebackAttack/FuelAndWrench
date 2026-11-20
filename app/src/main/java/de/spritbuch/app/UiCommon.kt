@@ -141,6 +141,7 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
             ReminderEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
         composable("settings") { SettingsScreen(nav) }
+        composable("settings/{section}") { SettingsScreen(nav, it.arguments?.getString("section")) }
         composable("about") { AboutScreen(nav) }
         composable("map/{vehicleId}") { MapScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("prices/{vehicleId}") { PricesScreen(nav, it.arguments?.getString("vehicleId") ?: "") }

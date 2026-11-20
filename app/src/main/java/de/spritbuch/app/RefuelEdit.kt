@@ -119,8 +119,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var review by remember { mutableStateOf<ScanReview?>(null) }
     var scanStation by rememberSaveable { mutableStateOf<String?>(null) }
     var scanAddress by rememberSaveable { mutableStateOf<String?>(null) }
-    // Tankstelle per GPS eindeutig gefunden? Dann hat sie Vorrang vor Betreiber/Adresse vom Bon
-    var stationMatched by rememberSaveable { mutableStateOf(false) }
+
 
     fun runScan(bitmap: android.graphics.Bitmap, crop: android.graphics.RectF, mode: String) {
         scope.launch {
@@ -208,19 +207,12 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     lon = loc.longitude
                     val p = Prefs(ctx)
                     val st = if (p.useOverpass) LocationHelper.nearbyStation(loc.latitude, loc.longitude, charging = fuelType == ELECTRIC) else null
-                    stationMatched = st != null
-                    if (st != null) {
-                        st.brand?.let { brand = it }
-                        val addr = st.address
+                    // Der Bon steht für die tatsächliche Tankstelle (Kartendaten können veraltet sein):
+                    // Betreiber und Adresse vom Bon haben Vorrang, GPS füllt nur, was dort fehlt
+                    if (scanStation == null) st?.brand?.let { brand = it }
+                    if (scanAddress == null) {
+                        val addr = st?.address
                             ?: (if (p.useOverpass) LocationHelper.osmAddress(loc.latitude, loc.longitude) else null)
-                            ?: (if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null)
-                        if (addr != null) address = addr
-                    } else if (scanAddress != null || scanStation != null) {
-                        // Keine Tankstelle am Standort zugeordnet → Angaben vom Bon verwenden
-                        scanStation?.let { brand = it }
-                        scanAddress?.let { address = it }
-                    } else {
-                        val addr = (if (p.useOverpass) LocationHelper.osmAddress(loc.latitude, loc.longitude) else null)
                             ?: (if (p.useGeocoder) LocationHelper.address(ctx, loc.latitude, loc.longitude) else null)
                         if (addr != null) address = addr
                     }
@@ -584,11 +576,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty() && !rv.forOdometer) total = (a * p).fmt(2)
             if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0 && !rv.forOdometer) ppu = (t / a).fmt(3)
             if (!rv.forOdometer) {
-                // Betreiber und Adresse vom Bon nur, wenn per GPS keine Tankstelle zugeordnet wurde
-                if (!stationMatched && !locating) {
-                    scanStation?.let { brand = it }
-                    scanAddress?.let { address = it }
-                }
+                // Betreiber und Adresse vom Bon haben Vorrang vor den Kartendaten
+                scanStation?.let { brand = it }
+                scanAddress?.let { address = it }
                 rv.fuelType?.let { fuelType = it }
                 rv.date?.let { (y, m, d) ->
                     val cal = java.util.Calendar.getInstance().apply { timeInMillis = timestamp; set(y, m - 1, d) }

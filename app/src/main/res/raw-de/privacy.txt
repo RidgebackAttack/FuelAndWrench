@@ -13,12 +13,12 @@ Alle Daten werden lokal auf deinem Gerät gespeichert. Die Texterkennung von Bel
 Wohin werden Daten übertragen?
 
 • Dein eigener WebDAV-/Nextcloud-Server: alle App-Daten und Fahrzeugfotos – bei der Synchronisation (abschaltbar: ja – Synchronisation nicht einrichten)
-• overpass-api.de (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ – Tankstellensuche (abschaltbar: ja – Einstellungen → Datenschutz)
+• overpass-api.de (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ – Tankstellensuche (abschaltbar: ja – Einstellungen → Standort & Datenschutz)
 • creativecommons.tankerkoenig.de (Tankerkönig): Standort auf ca. 1 km gerundet, Kraftstoffart, eigener Schlüssel, IP-Adresse – nur mit eingetragenem Schlüssel, wenn Preise angezeigt werden – aktuelle Spritpreise (abschaltbar: ja – Schlüssel unter Einstellungen → Spritpreise entfernen)
 • nominatim.openstreetmap.org (OpenStreetMap): Koordinaten, IP-Adresse – „Aktuelle Position“ / „Adresse“ – Adresssuche (abschaltbar: ja – gleicher Schalter)
 • Android-Geocoder (auf Geräten mit Google-Diensten: Google): Koordinaten – Adressermittlung (abschaltbar: ja – standardmäßig aus)
 • Netzwerk-Ortung des Systems (auf Geräten mit Google-Diensten: Google): WLAN-/Mobilfunkdaten – Ortung (abschaltbar: ja – standardmäßig aus, dann nur GPS)
-• api.github.com (GitHub): IP-Adresse – einmal täglich Abfrage der neuesten Version, nur bei direkt installierter APK (abschaltbar: ja – Einstellungen → Datenschutz)
+• api.github.com (GitHub): IP-Adresse – einmal täglich Abfrage der neuesten Version, nur bei direkt installierter APK (abschaltbar: ja – Einstellungen → Standort & Datenschutz)
 • tile.openstreetmap.org: angezeigter Kartenausschnitt, IP-Adresse – beim Öffnen der Karte (abschaltbar: nur durch Nicht-Nutzung der Karte)
 
 Für die genannten Dienste gelten deren eigene Datenschutzbestimmungen (OpenStreetMap Foundation, FOSSGIS e. V. bzw. Google).

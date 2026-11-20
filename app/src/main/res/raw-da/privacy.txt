@@ -13,12 +13,12 @@ Alle data gemmes lokalt på din enhed. Tekstgenkendelse af kvitteringer og fotos
 Hvor sendes data hen?
 
 • Din egen WebDAV-/Nextcloud-server: alle appdata og fotos af køretøjer – ved synkronisering (kan slås fra: ja – opsæt ikke synkronisering)
-• overpass-api.de (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ – søgning efter tankstation (kan slås fra: ja – Indstillinger → Privatliv)
+• overpass-api.de (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ – søgning efter tankstation (kan slås fra: ja – Indstillinger → Placering & privatliv)
 • creativecommons.tankerkoenig.de (Tankerkönig): position afrundet til ca. 1 km, brændstoftype, din egen nøgle, IP-adresse – kun med indtastet nøgle, når priser vises – aktuelle brændstofpriser (kan slås fra: ja – fjern nøglen under Indstillinger → Brændstofpriser)
 • nominatim.openstreetmap.org (OpenStreetMap): koordinater, IP-adresse – „Aktuel position“ / „Adresse“ – adressesøgning (kan slås fra: ja – samme kontakt)
 • Android-geocoder (på enheder med Google-tjenester: Google): koordinater – adressesøgning (kan slås fra: ja – slået fra som standard)
 • Systemets netværksplacering (på enheder med Google-tjenester: Google): Wi-Fi-/mobildata – positionering (kan slås fra: ja – slået fra som standard, så kun GPS)
-• api.github.com (GitHub): IP-adresse – én gang dagligt forespørgsel om nyeste version, kun for direkte installerede APK'er (kan slås fra: ja – Indstillinger → Privatliv)
+• api.github.com (GitHub): IP-adresse – én gang dagligt forespørgsel om nyeste version, kun for direkte installerede APK'er (kan slås fra: ja – Indstillinger → Placering & privatliv)
 • tile.openstreetmap.org: vist kortudsnit, IP-adresse – når kortet åbnes (kan slås fra: kun ved ikke at bruge kortet)
 
 For disse tjenester gælder deres egne privatlivspolitikker (OpenStreetMap Foundation, FOSSGIS e. V. eller Google).
