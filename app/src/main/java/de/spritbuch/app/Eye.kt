@@ -169,8 +169,8 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
             if (v.archived) return@LaunchedEffect
             val type = FuelPrices.typeFor(v.defaultFuelType) ?: return@LaunchedEffect
             if (!FuelPrices.enabled(ctx)) return@LaunchedEffect
-            val loc = LocationHelper.lastKnown(ctx) ?: return@LaunchedEffect
-            cheapest = runCatching { FuelPrices.nearby(ctx, loc.latitude, loc.longitude, type) }.getOrNull()
+            val (la, lo) = FuelPrices.position(ctx, v.id) ?: return@LaunchedEffect
+            cheapest = runCatching { FuelPrices.nearby(ctx, la, lo, type) }.getOrNull()
                 ?.firstOrNull { it.isOpen && it.price != null }?.let { FuelPrices.summary(v.defaultFuelType, it) }
         }
         cheapest?.let {

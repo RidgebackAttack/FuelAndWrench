@@ -143,8 +143,8 @@ class FuelWidget : AppWidgetProvider() {
             views.setViewVisibility(R.id.widget_reminder, if (reminderText.isEmpty()) View.GONE else View.VISIBLE)
             // Günstigste Tankstelle in der Nähe (mit Tankerkönig-Schlüssel und bekanntem Standort)
             val cheapest = FuelPrices.typeFor(v.defaultFuelType)?.takeIf { FuelPrices.enabled(ctx) }?.let { type ->
-                val loc = LocationHelper.lastKnown(ctx) ?: return@let null
-                runCatching { FuelPrices.nearby(ctx, loc.latitude, loc.longitude, type) }.getOrNull()
+                val (la, lo) = FuelPrices.position(ctx, v.id) ?: return@let null
+                runCatching { FuelPrices.nearby(ctx, la, lo, type) }.getOrNull()
                     ?.firstOrNull { it.isOpen && it.price != null }
             }
             if (cheapest != null) {

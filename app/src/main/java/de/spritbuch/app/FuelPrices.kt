@@ -145,6 +145,18 @@ object FuelPrices {
         return 2 * r * Math.asin(Math.sqrt(a))
     }
 
+    /**
+     * Standort für die Preisanzeige: zuletzt bekannte Position des Geräts, sonst der Ort der letzten
+     * Betankung dieses Fahrzeugs (z. B. auf Tablet oder Navi ohne eigene Ortung).
+     */
+    suspend fun position(ctx: Context, vehicleId: String): Pair<Double, Double>? {
+        LocationHelper.lastKnown(ctx)?.let { return it.latitude to it.longitude }
+        return ctx.repo.db.refuels().forVehicle(vehicleId)
+            .filter { it.latitude != null && it.longitude != null }
+            .maxByOrNull { it.timestamp }
+            ?.let { it.latitude!! to it.longitude!! }
+    }
+
     /** „1,659 €“ */
     fun price(p: Double) = p.fmt(3) + " €"
 
