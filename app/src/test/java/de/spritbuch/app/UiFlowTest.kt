@@ -103,7 +103,7 @@ class UiFlowTest {
         waitForText("Testwagen")
         rule.onNodeWithContentDescription(s(R.string.settings)).performClick()
         // Übersicht → Synchronisierung
-        waitForText(s(R.string.set_sync_sub))
+        waitForText(s(R.string.set_not_configured))
         rule.onNodeWithText(s(R.string.sync)).performClick()
         rule.waitUntil(10_000) {
             rule.onAllNodesWithText(s(R.string.e2e_title)).fetchSemanticsNodes().isNotEmpty()
