@@ -229,9 +229,25 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                     }
                 }
             }
-            // Zeitraum für die Preisverläufe (derselbe wie beim Verbrauchsverlauf in der Übersicht)
+            // Zeitraum für Verbrauchs- und Preisverläufe (derselbe wie in der Übersicht)
             item { ChartRangeChips() }
-            if (prices.size < 2 && kwhPrices.size < 2) item {
+            // Verbrauchsverlauf (bei Plug-in-Hybriden getrennt für Kraftstoff und Strom), chronologisch nach Kilometerstand
+            val consumption = listOf(false, true).map { charge ->
+                charge to range.apply(
+                    refuels.filter { it.isCharge == charge && stats.perRefuel[it.id] != null }
+                        .sortedWith(compareBy({ it.odometer }, { it.timestamp })),
+                ) { it.timestamp }.mapNotNull { stats.perRefuel[it.id] }
+            }.filter { it.second.size >= 2 }
+            consumption.forEach { (charge, values) ->
+                item {
+                    val fuel = if (charge) ELECTRIC else v.defaultFuelType.takeIf { it != ELECTRIC } ?: "Super E10"
+                    ConsumptionChart(
+                        values,
+                        str(R.string.chart_title, plural(R.plurals.pl_full_refuels, values.size)) + " · " + range.label(),
+                    ) { Units.consumption(v, fuel, it) }
+                }
+            }
+            if (consumption.isEmpty() && prices.size < 2 && kwhPrices.size < 2) item {
                 Text(str(R.string.range_too_few), style = MaterialTheme.typography.bodySmall)
             }
             if (prices.size >= 2) item {
