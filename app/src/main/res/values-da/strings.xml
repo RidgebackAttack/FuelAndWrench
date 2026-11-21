@@ -538,7 +538,7 @@
     <string name="stats_other_by_category">Øvrige omkostninger efter kategori</string>
     <string name="photo_add">Tilføj billede</string>
     <string name="photo_make_main">Som hovedbillede</string>
-    <string name="photo_order">Flere billeder</string>
+    <string name="photo_order">Billedskift</string>
     <string name="photo_order_random">Tilfældigt</string>
     <string name="photo_order_sequence">Efter hinanden</string>
     <string name="photo_order_info">Hver gang appen åbnes, vises et andet billede – altid med de udsnit, der er valgt her.</string>
@@ -546,6 +546,11 @@
     <string name="fuel_unknown_replace">Erstat med</string>
     <string name="fuel_unknown_apply">Erstat i alle poster</string>
     <string name="fuel_unknown_default">Standardtypen „%1$s“ er ukendt – vælg venligst en type ovenfor.</string>
+    <string name="photo_tap_to_crop">Tryk på en visning for at justere udsnittet i fuld skærm.</string>
+    <string name="photo_mode_open">Hver gang appen åbnes</string>
+    <string name="photo_mode_return">Ved tilbagevenden til listen</string>
+    <string name="photo_mode_timed">Diasshow</string>
+    <string name="photo_mode_daily">En gang om dagen</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

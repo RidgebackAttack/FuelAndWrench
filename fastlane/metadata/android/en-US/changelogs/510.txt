@@ -1,0 +1,3 @@
+- Set picture crops in full screen (tap the preview)
+- Picture change per vehicle: each time the app opens, on return to the list, as a slideshow or once a day – with crossfade
+- Fixed: some pictures flickered or disappeared while adjusting

@@ -91,6 +91,8 @@ fun VehicleListScreen(nav: NavController) {
     // Auf diesem Gerät ausgeblendete Fahrzeuge (z. B. Navi) nicht zeigen
     val visiblePrefs = remember { Prefs(ctx) }
     val vehicles = allVehicles.filter { visiblePrefs.shows(it.id) }
+    // Jede (Rückkehr zur) Liste: Fahrzeuge mit „bei Rückkehr zur Liste“ bekommen ein neues Bild
+    remember(allVehicles.isNotEmpty()) { if (allVehicles.isNotEmpty()) PhotoRotation.listShown(allVehicles); 0 }
     val refuels by repo.allRefuels.collectAsStateWithLifecycle(emptyList())
     val allReminders by repo.allReminders.collectAsStateWithLifecycle(emptyList())
     val syncing by SyncManager.running.collectAsStateWithLifecycle()
@@ -600,12 +602,28 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                 }
             }
             if (images.size > 1) {
+                // Wann und in welcher Reihenfolge die Bilder wechseln
+                val show = PhotoShow.parse(photoOrder)
                 Text(str(R.string.photo_order), style = MaterialTheme.typography.labelLarge)
-                val orders = linkedMapOf("random" to str(R.string.photo_order_random), "sequence" to str(R.string.photo_order_sequence))
-                SingleChips(orders.values.toList(), orders[photoOrder] ?: "") { s ->
-                    photoOrder = orders.entries.firstOrNull { it.value == s }?.key ?: photoOrder
+                val modes = linkedMapOf(
+                    PhotoShow.OPEN to str(R.string.photo_mode_open),
+                    PhotoShow.RETURN to str(R.string.photo_mode_return),
+                    PhotoShow.TIMED to str(R.string.photo_mode_timed),
+                    PhotoShow.DAILY to str(R.string.photo_mode_daily),
+                )
+                SingleChips(modes.values.toList(), modes[show.mode] ?: "") { s ->
+                    modes.entries.firstOrNull { it.value == s }?.key?.let { photoOrder = show.copy(mode = it).encode() }
                 }
-                Text(str(R.string.photo_order_info), style = MaterialTheme.typography.bodySmall)
+                if (show.mode == PhotoShow.TIMED) {
+                    val labels = PhotoShow.intervals.associateWith { if (it < 60) "$it s" else "${it / 60} min" }
+                    SingleChips(labels.values.toList(), labels[show.seconds] ?: "") { s ->
+                        labels.entries.firstOrNull { it.value == s }?.key?.let { photoOrder = show.copy(seconds = it).encode() }
+                    }
+                }
+                val orders = linkedMapOf("random" to str(R.string.photo_order_random), "sequence" to str(R.string.photo_order_sequence))
+                SingleChips(orders.values.toList(), orders[show.order] ?: "") { s ->
+                    orders.entries.firstOrNull { it.value == s }?.key?.let { photoOrder = show.copy(order = it).encode() }
+                }
             }
             OutlinedTextField(name, { name = it }, label = { Text(str(R.string.vehicle_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text(str(R.string.plate)) }, singleLine = true, modifier = Modifier.fillMaxWidth())

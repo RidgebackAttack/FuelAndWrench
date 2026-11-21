@@ -1,0 +1,3 @@
+- Bildausschnitte jetzt bildschirmfüllend ausrichten (Antippen der Vorschau)
+- Bildwechsel pro Fahrzeug: bei jedem Öffnen, bei Rückkehr zur Liste, als Diashow oder einmal am Tag – mit Überblendung
+- Behoben: manche Bilder flackerten oder verschwanden beim Ausrichten

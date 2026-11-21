@@ -538,7 +538,7 @@
     <string name="stats_other_by_category">Sonstige Kosten nach Kategorie</string>
     <string name="photo_add">Bild hinzufügen</string>
     <string name="photo_make_main">Als Hauptbild</string>
-    <string name="photo_order">Mehrere Bilder</string>
+    <string name="photo_order">Bildwechsel</string>
     <string name="photo_order_random">Zufällig</string>
     <string name="photo_order_sequence">Nacheinander</string>
     <string name="photo_order_info">Bei jedem Öffnen der App wird ein anderes Bild gezeigt, immer mit den hier festgelegten Ausschnitten.</string>
@@ -546,6 +546,11 @@
     <string name="fuel_unknown_replace">Ersetzen durch</string>
     <string name="fuel_unknown_apply">In allen Einträgen ersetzen</string>
     <string name="fuel_unknown_default">Die Standard-Sorte „%1$s“ ist unbekannt – bitte oben eine Sorte wählen.</string>
+    <string name="photo_tap_to_crop">Zum Ausrichten auf eine Ansicht tippen – sie öffnet sich bildschirmfüllend.</string>
+    <string name="photo_mode_open">Bei jedem Öffnen</string>
+    <string name="photo_mode_return">Bei Rückkehr zur Liste</string>
+    <string name="photo_mode_timed">Diashow</string>
+    <string name="photo_mode_daily">Einmal am Tag</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

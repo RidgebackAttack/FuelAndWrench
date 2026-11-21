@@ -538,7 +538,7 @@
     <string name="stats_other_by_category">Other costs by category</string>
     <string name="photo_add">Add picture</string>
     <string name="photo_make_main">Main picture</string>
-    <string name="photo_order">Several pictures</string>
+    <string name="photo_order">Change picture</string>
     <string name="photo_order_random">Random</string>
     <string name="photo_order_sequence">One after another</string>
     <string name="photo_order_info">Each time the app is opened, another picture is shown – always with the crops set here.</string>
@@ -546,6 +546,11 @@
     <string name="fuel_unknown_replace">Replace with</string>
     <string name="fuel_unknown_apply">Replace in all entries</string>
     <string name="fuel_unknown_default">The default fuel “%1$s” is unknown – please choose a fuel above.</string>
+    <string name="photo_tap_to_crop">Tap a view to set its crop in full screen.</string>
+    <string name="photo_mode_open">Each time the app opens</string>
+    <string name="photo_mode_return">On return to the list</string>
+    <string name="photo_mode_timed">Slideshow</string>
+    <string name="photo_mode_daily">Once a day</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

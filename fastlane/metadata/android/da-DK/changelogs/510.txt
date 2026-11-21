@@ -1,0 +1,3 @@
+- Juster billedudsnit i fuld skærm (tryk på forhåndsvisningen)
+- Billedskift pr. køretøj: hver gang appen åbnes, ved tilbagevenden til listen, som diasshow eller én gang om dagen – med overtoning
+- Rettet: nogle billeder flimrede eller forsvandt under justering
