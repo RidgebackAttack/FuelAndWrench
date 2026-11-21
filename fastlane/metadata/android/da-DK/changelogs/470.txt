@@ -1,0 +1,3 @@
+- Statistik: år kan foldes ud med månedstabel, priser, service og omkostninger efter kategori
+- Kørt strækning siden forrige tankning vises i listen
+- Valgfri periode for forbrugs- og prisgrafer (30 tankninger, måned, år, alt, fra–til)

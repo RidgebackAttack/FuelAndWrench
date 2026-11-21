@@ -1,0 +1,3 @@
+- Statistik: Jahre zum Aufklappen mit Monatstabelle, Preisen, Service und Kosten nach Kategorie
+- Gefahrene Strecke seit der vorherigen Betankung in der Liste
+- Zeitraum für Verbrauchs- und Preisverläufe wählbar (30 Betankungen, Monat, Jahr, alles, von–bis)

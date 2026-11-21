@@ -1,0 +1,3 @@
+- Statistics: expandable years with monthly table, prices, service and costs by category
+- Distance since the previous refuel shown in the list
+- Selectable period for consumption and price charts (30 refuels, month, year, all, from–to)
