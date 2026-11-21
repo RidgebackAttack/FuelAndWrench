@@ -23,10 +23,11 @@ fun now(): Long = System.currentTimeMillis()
 /** Auswahllisten für die Eingabemasken. */
 object Options {
     val fuelTypes = listOf(
-        "Super E5", "Super E10", "Super Plus", "Diesel", "Premium-Diesel",
+        "Super E5", "Super E10", "Super Plus", "Premium", "Diesel", "Premium-Diesel",
         "HVO100", "LPG", "CNG", "Strom"
     )
-    private val petrol = listOf("Super E5", "Super E10", "Super Plus")
+    /** „Premium“ = Markenkraftstoffe mit 100+ Oktan wie Shell V-Power oder Aral Ultimate. */
+    private val petrol = listOf("Super E5", "Super E10", "Super Plus", "Premium")
     private val diesel = listOf("Diesel", "Premium-Diesel", "HVO100")
 
     /**

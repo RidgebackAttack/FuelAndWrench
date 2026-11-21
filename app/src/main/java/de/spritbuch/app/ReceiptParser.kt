@@ -143,10 +143,13 @@ object ReceiptParser {
         val t = text.lowercase()
         return when {
             Regex("""\bhvo""").containsMatchIn(t) -> "HVO100"
+            Regex("""diesel""").containsMatchIn(t) && Regex("""ultimate|v-power|premium|excellium""").containsMatchIn(t) -> "Premium-Diesel"
             Regex("""diesel""").containsMatchIn(t) -> "Diesel"
             Regex("""\b(lpg|autogas)\b""").containsMatchIn(t) -> "LPG"
             Regex("""\bcng\b|erdgas""").containsMatchIn(t) -> "CNG"
-            Regex("""super\s*plus|ultimate|v-power|\b100\s*oktan|blyfri\s*100""").containsMatchIn(t) -> "Super Plus"
+            // Markenkraftstoffe mit 100+ Oktan (V-Power, Ultimate, Excellium …)
+            Regex("""ultimate|v-power|excellium|\b10[02]\s*oktan|super\s*10[02]\b|blyfri\s*100""").containsMatchIn(t) -> "Premium"
+            Regex("""super\s*plus|super\s*98\b""").containsMatchIn(t) -> "Super Plus"
             Regex("""\be\s?10\b|blyfri\s*95""").containsMatchIn(t) -> "Super E10"
             Regex("""\be\s?5\b|super\s*95|super\b""").containsMatchIn(t) -> "Super E5"
             else -> null

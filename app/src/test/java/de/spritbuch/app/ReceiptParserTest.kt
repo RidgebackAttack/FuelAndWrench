@@ -121,4 +121,12 @@ class ReceiptParserTest {
         assertEquals("Wiking", ReceiptParser.parse(text, nowYear = 2026, ownStations = listOf("Wiking", "Tankstelle")).station)
         assertEquals("Hauptstr. 5, 25899 Niebüll", ReceiptParser.parse(text, nowYear = 2026).address)
     }
+
+    @Test fun premiumFuels() {
+        assertEquals("Premium", ReceiptParser.fuelType("Shell V-Power 100"))
+        assertEquals("Premium", ReceiptParser.fuelType("Aral Ultimate 102"))
+        assertEquals("Super Plus", ReceiptParser.fuelType("Super Plus 98"))
+        assertEquals("Premium-Diesel", ReceiptParser.fuelType("V-Power Diesel"))
+        assertEquals("Diesel", ReceiptParser.fuelType("Diesel"))
+    }
 }

@@ -9,7 +9,7 @@ class FuelOptionsTest {
     @Test
     fun petrolCarShowsOnlyPetrol() {
         val l = Options.fuelsFor(Vehicle(defaultFuelType = "Super E10"))
-        assertEquals(listOf("Super E5", "Super E10", "Super Plus"), l)
+        assertEquals(listOf("Super E5", "Super E10", "Super Plus", "Premium"), l)
     }
 
     @Test
@@ -21,7 +21,7 @@ class FuelOptionsTest {
 
     @Test
     fun gasCarIsBivalent() {
-        assertEquals(listOf("LPG", "Super E5", "Super E10", "Super Plus"), Options.fuelsFor(Vehicle(defaultFuelType = "LPG")))
+        assertEquals(listOf("LPG", "Super E5", "Super E10", "Super Plus", "Premium"), Options.fuelsFor(Vehicle(defaultFuelType = "LPG")))
     }
 
     @Test
