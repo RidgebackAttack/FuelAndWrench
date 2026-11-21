@@ -1,0 +1,3 @@
+- Mere overskuelige indstillinger: oversigt med separate afsnit
+- Operatør og adresse fra kvitteringen har forrang for kortdata
+- Brændstofpriser også uden aktuel position (sted for seneste tankning), f.eks. på tablet eller navigation

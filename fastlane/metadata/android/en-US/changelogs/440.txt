@@ -1,0 +1,3 @@
+- Clearer settings: overview with separate sections
+- Operator and address from the receipt take priority over map data
+- Fuel prices also without a current location (place of the last refuel), e.g. on a tablet or car navigation

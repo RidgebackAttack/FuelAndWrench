@@ -1,0 +1,3 @@
+- Einstellungen übersichtlicher: Übersicht mit einzelnen Bereichen
+- Betreiber und Adresse vom Bon haben Vorrang vor den Kartendaten
+- Spritpreise auch ohne aktuellen Standort (Ort der letzten Betankung), z. B. auf Tablet oder Navi
