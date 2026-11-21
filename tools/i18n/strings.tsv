@@ -187,7 +187,7 @@ svc_import_found	%1$s found	%1$s gefunden	%1$s fundet
 svc_import_skipped	, %1$s skipped	, %1$s übersprungen	, %1$s sprunget over
 svc_import_info	Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.	Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.	Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.
 already_present	, %1$d already present	, %1$d bereits vorhanden	, %1$d findes allerede
-chart_title	Consumption history (last %1$s)	Verbrauchsverlauf (letzte %1$s)	Forbrugshistorik (seneste %1$s)
+chart_title	Consumption history (%1$s)	Verbrauchsverlauf (%1$s)	Forbrugshistorik (%1$s)
 chart_min	min %1$s	min %1$s	min %1$s
 chart_max	max %1$s	max %1$s	maks %1$s
 tab_overview	Overview	Übersicht	Oversigt
@@ -540,3 +540,24 @@ set_not_configured	Not set up yet	Noch nicht eingerichtet	Endnu ikke sat op
 vibe_short	⚠️ This app is 100% vibe-coded! It was written entirely by AI (Claude) based on my wishes – I could not program anything like it myself. Use at your own risk and make regular backups. The story behind it is further down.	⚠️ Diese App ist zu 100 % vibecoded! Geschrieben hat sie komplett eine KI (Claude) nach meinen Wünschen – ich selbst könnte so etwas nicht programmieren. Nutzung auf eigene Gefahr, regelmäßige Sicherungen sind eine gute Idee. Die Geschichte dazu steht weiter unten.	⚠️ Denne app er 100 % vibe-kodet! Den er skrevet helt af en AI (Claude) efter mine ønsker – jeg kunne ikke selv programmere noget lignende. Brug på eget ansvar, og tag jævnligt sikkerhedskopier. Historien bag står længere nede.
 vibe_title	The story behind the app	Die Geschichte hinter der App	Historien bag appen
 vibe_long	The app I wanted – no tracking, no ads, sync to my own WebDAV server – did not exist. After an accident, I, an athlete, spent some time in a wheelchair, with a lot of time and even more boredom on my hands – I needed a distraction. And how hard can it be to code an app?!\n\nThe deeply shattering answer: pretty hard.\n\nOnce I had escaped the wheelchair, the project fell asleep. Years later I found the remains of my experiment. By then AI had arrived, so I had it inspect my idea and my requirements and wishes. That is how my pitiful attempts turned into this app.\n\nA professional would probably need at least a year of full-time work for it. I merely bombarded Claude with confused wishes – and I would not even remotely be able to write anything that looks even a little like this app.	Die App, die ich haben wollte – kein Tracking, keine Werbung, Sync auf den eigenen WebDAV-Server –, gab es nicht. Als Sportler saß ich nach einem Unfall eine Zeit lang im Rollstuhl, hatte viel Zeit und noch mehr Langeweile – ich brauchte Ablenkung! Und wie schwer kann es schon sein, eine App zu programmieren?!\n\nDie äußerst erschütternde Antwort: ziemlich schwer.\n\nNachdem ich dem Rollstuhl entflohen war, schlief das Projekt ein. Jahre später fand ich die Reste meines Experiments wieder. Inzwischen gibt es KI, und ich ließ meine Idee und meine Anforderungen und Wünsche von einer KI begutachten. So wurde aus meinen kläglichen Versuchen diese App.\n\nEin Profi bräuchte dafür wahrscheinlich mindestens ein Jahr in Vollzeit. Ich habe nur leicht verwirrt Claude mit Wünschen bombardiert – und wäre nicht im Ansatz in der Lage, etwas zu schreiben, das auch nur ein wenig so aussieht wie diese App.	Den app, jeg ønskede mig – ingen sporing, ingen reklamer, synkronisering til min egen WebDAV-server – fandtes ikke. Efter en ulykke sad jeg som sportsudøver i kørestol i en periode, med masser af tid og endnu mere kedsomhed – jeg havde brug for adspredelse! Og hvor svært kan det være at kode en app?!\n\nDet dybt rystende svar: ret svært.\n\nDa jeg var sluppet fri af kørestolen, gik projektet i dvale. År senere fandt jeg resterne af mit eksperiment. I mellemtiden var AI kommet til, og jeg lod en AI gennemgå min idé og mine krav og ønsker. Sådan blev mine ynkelige forsøg til denne app.\n\nEn professionel ville nok bruge mindst et år på fuld tid. Jeg har blot bombarderet Claude med lettere forvirrede ønsker – og ville ikke på nogen måde være i stand til at skrive noget, der bare minder en smule om denne app.
+range_last30	Last 30 refuels	Letzte 30 Betankungen	Seneste 30 tankninger
+range_month	Last month	Letzter Monat	Seneste måned
+range_this_year	This year	Dieses Jahr	I år
+range_last_year	Last year	Letztes Jahr	Sidste år
+range_all	All	Alles	Alt
+range_custom	Period …	Zeitraum …	Periode …
+range_too_few	Too few values in this period for a chart.	Zu wenige Werte in diesem Zeitraum für ein Diagramm.	For få værdier i denne periode til et diagram.
+stats_tap_details	Tap a year for details	Für Details auf ein Jahr tippen	Tryk på et år for detaljer
+stat_refuel_count	Refuels	Betankungen	Tankninger
+stat_price_avg	Ø price per %1$s	Ø Preis pro %1$s	Ø pris pr. %1$s
+stat_price_min	Cheapest	Günstigster	Billigste
+stat_price_max	Most expensive	Teuerster	Dyreste
+stat_cost_month	Ø costs per month	Ø Kosten pro Monat	Ø omkostninger pr. måned
+stat_year_distance	Distance driven	Gefahrene Strecke	Kørt strækning
+stats_by_month	Months	Monate	Måneder
+col_month	Month	Monat	Måned
+col_distance	Distance	Strecke	Strækning
+col_amount	Amount	Menge	Mængde
+col_cost	Costs	Kosten	Omkostninger
+col_consumption	Ø	Ø	Ø
+stats_other_by_category	Other costs by category	Sonstige Kosten nach Kategorie	Øvrige omkostninger efter kategori

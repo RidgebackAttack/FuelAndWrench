@@ -287,7 +287,8 @@ fun VehicleDetailContent(
     val cur = Units.cur(v)
     val lineColor = MaterialTheme.colorScheme.outlineVariant
     val dotColor = MaterialTheme.colorScheme.primary
-    val refuelYears = remember(v, refuels, stats) { if (v == null) emptyList() else groupRefuelsByYear(v, refuels, stats) }
+    val distances = remember(refuels) { distancesSincePrevious(refuels) }
+    val refuelYears = remember(v, refuels, stats, distances) { if (v == null) emptyList() else groupRefuelsByYear(v, refuels, stats, distances) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -383,7 +384,7 @@ fun VehicleDetailContent(
                             },
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
                         )
-                        1 -> refuelItems(nav, v, refuelYears, stats)
+                        1 -> refuelItems(nav, v, refuelYears, stats, distances)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)
                             serviceItems(nav, v, services, lineColor, dotColor)
@@ -467,12 +468,22 @@ private fun LazyListScope.overviewItems(
             }
         }
     }
-    // Verbrauchsverlauf: letzte 30 Werte chronologisch
-    val chartValues = refuels.filter { it.isCharge == (fuel == ELECTRIC) }
+    // Verbrauchsverlauf im gewählten Zeitraum, chronologisch
+    val withValue = refuels.filter { it.isCharge == (fuel == ELECTRIC) && stats.perRefuel[it.id] != null }
         .sortedWith(compareBy({ it.odometer }, { it.timestamp }))
-        .mapNotNull { stats.perRefuel[it.id] }.takeLast(30)
-    if (chartValues.size >= 2) item {
-        ConsumptionChart(chartValues) { Units.consumption(v, fuel, it) }
+    if (withValue.size >= 2) item {
+        val range by ChartRange.state.collectAsStateWithLifecycle()
+        val chartValues = range.apply(withValue) { it.timestamp }.mapNotNull { stats.perRefuel[it.id] }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ChartRangeChips()
+            if (chartValues.size >= 2) {
+                ConsumptionChart(chartValues, str(R.string.chart_title, plural(R.plurals.pl_full_refuels, chartValues.size)) + " · " + range.label()) {
+                    Units.consumption(v, fuel, it)
+                }
+            } else {
+                Text(str(R.string.range_too_few), style = MaterialTheme.typography.bodySmall)
+            }
+        }
     }
     item {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -524,20 +535,22 @@ private fun LazyListScope.overviewItems(
 /** Ein Jahr in der Betankungsliste mit fertiger Zusammenfassung (einmal berechnet, nicht bei jedem Neuzeichnen). */
 class RefuelYear(val year: Int, val list: List<Refuel>, val summary: String)
 
-fun groupRefuelsByYear(v: Vehicle, refuels: List<Refuel>, stats: Stats): List<RefuelYear> {
+fun groupRefuelsByYear(v: Vehicle, refuels: List<Refuel>, stats: Stats, distances: Map<String, Int> = emptyMap()): List<RefuelYear> {
     val unit = Units.amount(v, v.defaultFuelType)
     return refuels.groupBy { yearOfTs(it.timestamp) }.toSortedMap(compareByDescending { it }).map { (year, list) ->
         val per = list.mapNotNull { stats.perRefuel[it.id] }
         val avg = if (per.isNotEmpty()) Units.consumption(v, v.defaultFuelType, per.average()) else "–"
         RefuelYear(
             year, list,
-            plural(R.plurals.pl_refuels, list.size) + " · ${list.sumOf { it.amount }.fmt(1)} $unit · " +
+            plural(R.plurals.pl_refuels, list.size) + " · " +
+                (list.sumOf { distances[it.id] ?: 0 }.takeIf { it > 0 }?.let { it.dist(v.distanceUnit) + " · " } ?: "") +
+                "${list.sumOf { it.amount }.fmt(1)} $unit · " +
                 "${list.sumOf { it.totalPrice }.fmt()} ${v.currency} · Ø $avg",
         )
     }
 }
 
-private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: List<RefuelYear>, stats: Stats) {
+private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: List<RefuelYear>, stats: Stats, distances: Map<String, Int>) {
     if (years.isEmpty()) {
         item {
             EmptyState(
@@ -556,7 +569,7 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: Lis
         }
         // Nur die sichtbaren Karten werden gezeichnet; gleiche Art (contentType) wird beim Scrollen wiederverwendet
         items(y.list, key = { it.id }, contentType = { "refuel" }) { r ->
-            RefuelCard(v, r, stats.perRefuel[r.id], if (r.isCharge && stats.avgElectric != null) stats.avgElectric else stats.avg) {
+            RefuelCard(v, r, stats.perRefuel[r.id], if (r.isCharge && stats.avgElectric != null) stats.avgElectric else stats.avg, distances[r.id]) {
                 nav.navigate("refuelEdit/${v.id}/${r.id}")
             }
         }

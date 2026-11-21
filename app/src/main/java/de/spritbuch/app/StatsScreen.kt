@@ -1,5 +1,13 @@
 package de.spritbuch.app
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +48,16 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 
-private data class YearRow(val year: Int, val fuel: Double, val service: Double, val other: Double, val distance: Int) {
+private data class YearRow(
+    val year: Int,
+    val fuel: Double,
+    val service: Double,
+    val other: Double,
+    val distance: Int,
+    val refuels: List<Refuel>,
+    val services: List<ServiceEntry>,
+    val expenses: List<Expense>,
+) {
     val total get() = fuel + service + other
 }
 
@@ -72,23 +89,25 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
         val cur = v.currency
         val du = v.distanceUnit
 
-        // Kosten je Jahr; Strecke = Spanne der Kilometerstände der Betankungen im Jahr
-        val years = remember(refuels, services, expenses) {
+        // Gefahrene Strecke seit der jeweils vorherigen Betankung (zählt auch über den Jahreswechsel)
+        val distances = remember(refuels) { distancesSincePrevious(refuels) }
+        // Kosten je Jahr mit allen Einträgen für die aufklappbaren Details
+        val years = remember(refuels, services, expenses, distances) {
             val ys = (refuels.map { cal(it.timestamp).get(Calendar.YEAR) } +
                 services.map { cal(it.timestamp).get(Calendar.YEAR) } +
                 expenses.map { cal(it.timestamp).get(Calendar.YEAR) }).distinct().sortedDescending()
             ys.map { y ->
                 val r = refuels.filter { cal(it.timestamp).get(Calendar.YEAR) == y }
-                val dist = if (r.size >= 2) r.maxOf { it.odometer } - r.minOf { it.odometer } else 0
+                val sv = services.filter { cal(it.timestamp).get(Calendar.YEAR) == y }
+                val ex = expenses.filter { cal(it.timestamp).get(Calendar.YEAR) == y }
                 YearRow(
-                    y,
-                    r.sumOf { it.totalPrice },
-                    services.filter { cal(it.timestamp).get(Calendar.YEAR) == y }.sumOf { it.cost },
-                    expenses.filter { cal(it.timestamp).get(Calendar.YEAR) == y }.sumOf { it.amount },
-                    dist,
+                    y, r.sumOf { it.totalPrice }, sv.sumOf { it.cost }, ex.sumOf { it.amount },
+                    r.sumOf { distances[it.id] ?: 0 }, r, sv, ex,
                 )
             }
         }
+        var openYears by remember { mutableStateOf(setOf<Int>()) }
+        val range by ChartRange.state.collectAsStateWithLifecycle()
         // Letzte 12 Monate
         val months = remember(refuels, services, expenses) {
             val nowKey = monthKey(now())
@@ -104,17 +123,18 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                 )
             }
         }
-        val prices = remember(refuels) {
-            refuels.filter { it.amount > 0 && it.totalPrice > 0 && Units.isLiquid(it.fuelType) }
-                .sortedBy { it.timestamp }.map { it.pricePerUnit }.takeLast(40)
+        val prices = remember(refuels, range) {
+            range.apply(refuels.filter { it.amount > 0 && it.totalPrice > 0 && Units.isLiquid(it.fuelType) }.sortedBy { it.timestamp }) { it.timestamp }
+                .map { it.pricePerUnit }
         }
         fun groupAvg(key: (Refuel) -> String) = refuels.filter { it.isCharge == (v.defaultFuelType == ELECTRIC) }.mapNotNull { r -> stats.perRefuel[r.id]?.let { key(r) to it } }
             .filter { it.first.isNotBlank() }
             .groupBy({ it.first }, { it.second })
             .map { (k, list) -> Triple(k, list.average(), list.size) }
             .sortedBy { it.second }
-        val kwhPrices = remember(refuels) {
-            refuels.filter { it.isCharge && it.amount > 0 && it.totalPrice > 0 }.sortedBy { it.timestamp }.map { it.pricePerUnit }.takeLast(40)
+        val kwhPrices = remember(refuels, range) {
+            range.apply(refuels.filter { it.isCharge && it.amount > 0 && it.totalPrice > 0 }.sortedBy { it.timestamp }) { it.timestamp }
+                .map { it.pricePerUnit }
         }
         // Anteil der geladenen Energie je Ladeort
         val chargeShare = remember(refuels) {
@@ -175,31 +195,44 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(str(R.string.stats_years), style = MaterialTheme.typography.titleSmall)
-                        if (years.isEmpty()) Text("–")
+                        if (years.isEmpty()) Text("–") else Text(str(R.string.stats_tap_details), style = MaterialTheme.typography.bodySmall)
                         years.forEachIndexed { i, y ->
                             if (i > 0) HorizontalDivider()
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(y.year.toString(), fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                                Text("${y.total.fmt(0)} $cur", fontWeight = FontWeight.SemiBold)
-                            }
-                            Text(
-                                listOfNotNull(
-                                    str(R.string.legend_fuel) + " " + y.fuel.fmt(0),
-                                    str(R.string.tab_service) + " " + y.service.fmt(0),
-                                    if (y.other > 0) str(R.string.legend_other) + " " + y.other.fmt(0) else null,
-                                ).joinToString(" · "),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            if (y.distance > 0) {
+                            val open = y.year in openYears
+                            Column(
+                                Modifier.fillMaxWidth().clickable { openYears = if (open) openYears - y.year else openYears + y.year },
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(y.year.toString(), fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                                    Text("${y.total.fmt(0)} $cur", fontWeight = FontWeight.SemiBold)
+                                    Icon(if (open) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = null)
+                                }
                                 Text(
-                                    y.distance.dist(du) + " · " + str(R.string.stat_total_per100, du) + ": " +
-                                        (y.total / y.distance * 100).fmt() + " " + cur,
+                                    listOfNotNull(
+                                        str(R.string.legend_fuel) + " " + y.fuel.fmt(0),
+                                        str(R.string.tab_service) + " " + y.service.fmt(0),
+                                        if (y.other > 0) str(R.string.legend_other) + " " + y.other.fmt(0) else null,
+                                    ).joinToString(" · "),
                                     style = MaterialTheme.typography.bodySmall,
                                 )
+                                if (y.distance > 0) {
+                                    Text(
+                                        y.distance.dist(du) + " · " + str(R.string.stat_total_per100, du) + ": " +
+                                            (y.total / y.distance * 100).fmt() + " " + cur,
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
                             }
+                            AnimatedVisibility(open) { YearDetails(v, y, stats, distances) }
                         }
                     }
                 }
+            }
+            // Zeitraum für die Preisverläufe (derselbe wie beim Verbrauchsverlauf in der Übersicht)
+            item { ChartRangeChips() }
+            if (prices.size < 2 && kwhPrices.size < 2) item {
+                Text(str(R.string.range_too_few), style = MaterialTheme.typography.bodySmall)
             }
             if (prices.size >= 2) item {
                 val unit = Units.amount(v, if (v.defaultFuelType == ELECTRIC) "Super E10" else v.defaultFuelType)
@@ -255,5 +288,96 @@ private fun Legend(color: Color, text: String) {
         Box(Modifier.size(10.dp).background(color, CircleShape))
         Spacer(Modifier.width(4.dp))
         Text(text, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+/** Eine Zeile „Bezeichnung … Wert“ in den Jahresdetails. */
+@Composable
+private fun DetailLine(label: String, value: String) {
+    Row(Modifier.fillMaxWidth()) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/** Aufgeklapptes Jahr: Kennzahlen, Monate, Service-Einträge und sonstige Kosten nach Kategorie. */
+@Composable
+private fun YearDetails(v: Vehicle, y: YearRow, stats: Stats, distances: Map<String, Int>) {
+    val cur = v.currency
+    val du = v.distanceUnit
+    val ev = v.defaultFuelType == ELECTRIC
+    val unit = Units.amount(v, v.defaultFuelType)
+    val main = y.refuels.filter { it.isCharge == ev }
+    val priced = main.filter { it.amount > 0 && it.totalPrice > 0 }
+    val per = main.mapNotNull { stats.perRefuel[it.id] }
+    val nowCal = Calendar.getInstance()
+    val monthsInYear = if (y.year == nowCal.get(Calendar.YEAR)) nowCal.get(Calendar.MONTH) + 1 else 12
+
+    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (y.distance > 0) DetailLine(str(R.string.stat_year_distance), y.distance.dist(du))
+        DetailLine(str(R.string.stat_refuel_count), y.refuels.size.toString())
+        if (main.isNotEmpty()) DetailLine(str(if (ev) R.string.stat_total_charged else R.string.stat_total_amount), "${main.sumOf { it.amount }.fmt(1)} $unit")
+        if (per.isNotEmpty()) DetailLine(str(R.string.stat_avg), Units.consumption(v, v.defaultFuelType, per.average()))
+        if (priced.isNotEmpty()) {
+            DetailLine(str(R.string.stat_price_avg, unit), "${(priced.sumOf { it.totalPrice } / priced.sumOf { it.amount }).fmt(3)} $cur")
+            val min = priced.minBy { it.pricePerUnit }
+            val max = priced.maxBy { it.pricePerUnit }
+            DetailLine(str(R.string.stat_price_min), "${min.pricePerUnit.fmt(3)} $cur · ${min.timestamp.date()}")
+            DetailLine(str(R.string.stat_price_max), "${max.pricePerUnit.fmt(3)} $cur · ${max.timestamp.date()}")
+        }
+        DetailLine(str(R.string.stat_cost_month), "${(y.total / monthsInYear).fmt(0)} $cur")
+
+        // Monate mit Einträgen
+        val fmt = SimpleDateFormat("MMMM", appLocale())
+        val months = (0..11).mapNotNull { m ->
+            fun inMonth(ts: Long) = cal(ts).get(Calendar.MONTH) == m
+            val r = y.refuels.filter { inMonth(it.timestamp) }
+            val cost = r.sumOf { it.totalPrice } + y.services.filter { inMonth(it.timestamp) }.sumOf { it.cost } +
+                y.expenses.filter { inMonth(it.timestamp) }.sumOf { it.amount }
+            if (r.isEmpty() && cost == 0.0) return@mapNotNull null
+            val c = Calendar.getInstance().apply { clear(); set(y.year, m, 1) }
+            val pm = r.filter { it.isCharge == ev }.mapNotNull { stats.perRefuel[it.id] }
+            listOf(
+                fmt.format(Date(c.timeInMillis)),
+                r.sumOf { distances[it.id] ?: 0 }.takeIf { it > 0 }?.let { "$it" } ?: "–",
+                r.filter { it.isCharge == ev }.sumOf { it.amount }.takeIf { it > 0 }?.fmt(0) ?: "–",
+                cost.fmt(0),
+                if (pm.isNotEmpty()) pm.average().let { Units.consumption(v, v.defaultFuelType, it).substringBefore(' ') } else "–",
+            )
+        }
+        if (months.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(str(R.string.stats_by_month), style = MaterialTheme.typography.titleSmall)
+            val weights = listOf(1.6f, 1f, 1f, 1f, 0.9f)
+            Row(Modifier.fillMaxWidth()) {
+                listOf(
+                    str(R.string.col_month), "${str(R.string.col_distance)} ($du)", "${str(R.string.col_amount)} ($unit)",
+                    "${str(R.string.col_cost)} ($cur)", str(R.string.col_consumption),
+                ).forEachIndexed { i, h ->
+                    Text(h, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(weights[i]), maxLines = 2)
+                }
+            }
+            months.forEach { row ->
+                Row(Modifier.fillMaxWidth()) {
+                    row.forEachIndexed { i, c ->
+                        Text(c, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(weights[i]), maxLines = 1)
+                    }
+                }
+            }
+        }
+
+        if (y.services.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(str(R.string.tab_service), style = MaterialTheme.typography.titleSmall)
+            y.services.sortedBy { it.timestamp }.forEach { s ->
+                DetailLine("${s.timestamp.date()} · ${s.title}", "${s.cost.fmt(2)} $cur")
+            }
+        }
+        if (y.expenses.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(str(R.string.stats_other_by_category), style = MaterialTheme.typography.titleSmall)
+            y.expenses.groupBy { it.category }.map { (k, l) -> k to l.sumOf { it.amount } }.sortedByDescending { it.second }
+                .forEach { (k, sum) -> DetailLine(lbl(k).ifBlank { str(R.string.legend_other) }, "${sum.fmt(2)} $cur") }
+        }
     }
 }

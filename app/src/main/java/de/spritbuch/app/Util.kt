@@ -374,6 +374,16 @@ class Prefs(ctx: Context) {
     var updateCheck: Boolean
         get() = sp.getBoolean("updateCheck", true)
         set(v) = sp.edit().putBoolean("updateCheck", v).apply()
+    /** Zeitraum der Verlaufsdiagramme (siehe ChartRange). */
+    var chartRange: String
+        get() = sp.getString("chartRange", ChartRange.LAST30) ?: ChartRange.LAST30
+        set(v) = sp.edit().putString("chartRange", v).apply()
+    var chartFrom: Long
+        get() = sp.getLong("chartFrom", 0)
+        set(v) = sp.edit().putLong("chartFrom", v).apply()
+    var chartTo: Long
+        get() = sp.getLong("chartTo", 0)
+        set(v) = sp.edit().putLong("chartTo", v).apply()
     var lastUpdateCheck: Long
         get() = sp.getLong("lastUpdateCheck", 0L)
         set(v) = sp.edit().putLong("lastUpdateCheck", v).apply()
@@ -419,3 +429,12 @@ val StringMapSaver = androidx.compose.runtime.saveable.Saver<androidx.compose.ru
     save = { HashMap(it) },
     restore = { androidx.compose.runtime.mutableStateMapOf<String, String>().apply { putAll(it) } },
 )
+
+/**
+ * Gefahrene Strecke seit der vorherigen Betankung bzw. Ladung (nach Kilometerstand sortiert).
+ * Die erste Betankung hat keinen Vorgänger und fehlt in der Liste.
+ */
+fun distancesSincePrevious(refuels: List<Refuel>): Map<String, Int> {
+    val sorted = refuels.filter { !it.deleted }.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
+    return sorted.zipWithNext().mapNotNull { (a, b) -> (b.odometer - a.odometer).takeIf { it > 0 }?.let { b.id to it } }.toMap()
+}

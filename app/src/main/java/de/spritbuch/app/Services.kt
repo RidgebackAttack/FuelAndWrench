@@ -50,6 +50,7 @@ class App : Application() {
         super.onCreate()
         instance = this
         DebugLog.install(this)
+        ChartRange.load(Prefs(this))
         repo = Repository(this, AppDatabase.create(this))
         // Alles, was nicht für das erste Bild nötig ist, im Hintergrund (schnellerer Start)
         repo.launch {

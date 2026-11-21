@@ -409,7 +409,7 @@ private fun StatRow(label: String, value: String) {
 }
 
 @Composable
-fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null, onClick: () -> Unit) {
+fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null, distance: Int? = null, onClick: () -> Unit) {
     val unit = Units.amount(v, r.fuelType)
     val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
@@ -418,7 +418,9 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                 Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
             }
-            Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
+            // Kilometerstand und (in Klammern) gefahrene Strecke seit der vorherigen Betankung
+            val driven = distance?.let { " (+" + it.dist(v.distanceUnit) + ")" } ?: ""
+            Text("${r.odometer.dist(v.distanceUnit)}$driven · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
             r.obcConsumption?.let { o ->
                 val diff = consumption?.takeIf { it > 0 }?.let { c ->
                     val d = (o / c - 1.0) * 100
