@@ -53,7 +53,9 @@ object Backup {
             put("backup.json", json.encodeToString(data).toByteArray())
             val vehicles = data.vehicles.filter { !it.deleted }
             for (v in vehicles) {
-                if (v.photoVersion > 0) putFile("photos/" + PhotoStore.name(v.id, v.photoVersion), PhotoStore.file(ctx, v.id, v.photoVersion))
+                v.images().forEach { img ->
+                    putFile("photos/" + PhotoStore.name(v.id, img.version), PhotoStore.file(ctx, v.id, img.version))
+                }
             }
             val names = data.services.filter { !it.deleted }.flatMap { it.attachmentList() } +
                 data.expenses.filter { !it.deleted }.flatMap { it.attachmentList() }

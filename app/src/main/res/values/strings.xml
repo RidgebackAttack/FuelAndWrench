@@ -536,6 +536,12 @@
     <string name="col_cost">Costs</string>
     <string name="col_consumption">Ø</string>
     <string name="stats_other_by_category">Other costs by category</string>
+    <string name="photo_add">Add picture</string>
+    <string name="photo_make_main">Main picture</string>
+    <string name="photo_order">Several pictures</string>
+    <string name="photo_order_random">Random</string>
+    <string name="photo_order_sequence">One after another</string>
+    <string name="photo_order_info">Each time the app is opened, another picture is shown – always with the crops set here.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

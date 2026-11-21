@@ -127,7 +127,16 @@ data class Vehicle(
     @ColumnInfo(defaultValue = "Verbrenner") val driveType: String = "Verbrenner",
     /** Nutzbare Akkukapazität in kWh (Elektro/Plug-in-Hybrid), für den Verbrauch ab Akku. */
     val batteryCapacity: Double? = null,
+    /** Weitere Bilder: „Version|Ausschnitt klein|Ausschnitt groß“, getrennt durch „;“ (das erste Bild steht in photoVersion). */
+    val extraPhotos: String = "",
+    /** Reihenfolge der Bilder beim Öffnen: „random“ (zufällig) oder „sequence“ (nacheinander). */
+    val photoOrder: String = "random",
 ) {
+    /** Alle Bilder mit ihren festgelegten Ausschnitten (erstes = Hauptbild). */
+    fun images(): List<VehicleImage> =
+        (if (photoVersion > 0) listOf(VehicleImage(photoVersion, photoThumbPos, photoLargePos)) else emptyList()) +
+            VehicleImage.parseList(extraPhotos)
+
     val isElectric: Boolean get() = driveType == "Elektro" || (driveType == "Verbrenner" && defaultFuelType == "Strom")
     val isPlugInHybrid: Boolean get() = driveType == "Plug-in-Hybrid"
     /** Fahrzeug wird (auch) geladen. */
@@ -452,7 +461,22 @@ interface ReminderDao {
 /** Letzte Betankung je Fahrzeug (für die Sortierung im App-Icon-Menü). */
 data class VehicleLastUse(val vehicleId: String, val lastTime: Long)
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 9, exportSchema = false)
+/** Ein Fahrzeugbild mit festem Ausschnitt für Miniatur und große Ansicht. */
+data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val largePos: String = "0,0,1") {
+    fun encode() = "$version|$thumbPos|$largePos"
+
+    companion object {
+        fun parse(s: String): VehicleImage? {
+            val p = s.split('|')
+            val v = p.getOrNull(0)?.toLongOrNull()?.takeIf { it > 0 } ?: return null
+            return VehicleImage(v, p.getOrNull(1) ?: "0,0,1", p.getOrNull(2) ?: "0,0,1")
+        }
+        fun parseList(s: String): List<VehicleImage> = s.split(';').filter { it.isNotBlank() }.mapNotNull { parse(it) }
+        fun encodeList(l: List<VehicleImage>) = l.joinToString(";") { it.encode() }
+    }
+}
+
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 10, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -500,6 +524,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 1.9: mehrere Bilder pro Fahrzeug. */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN extraPhotos TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN photoOrder TEXT NOT NULL DEFAULT 'random'")
+            }
+        }
         private val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE vehicles ADD COLUMN driveType TEXT NOT NULL DEFAULT 'Verbrenner'")
@@ -543,7 +574,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

@@ -536,6 +536,12 @@
     <string name="col_cost">Omkostninger</string>
     <string name="col_consumption">Ø</string>
     <string name="stats_other_by_category">Øvrige omkostninger efter kategori</string>
+    <string name="photo_add">Tilføj billede</string>
+    <string name="photo_make_main">Som hovedbillede</string>
+    <string name="photo_order">Flere billeder</string>
+    <string name="photo_order_random">Tilfældigt</string>
+    <string name="photo_order_sequence">Efter hinanden</string>
+    <string name="photo_order_info">Hver gang appen åbnes, vises et andet billede – altid med de udsnit, der er valgt her.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

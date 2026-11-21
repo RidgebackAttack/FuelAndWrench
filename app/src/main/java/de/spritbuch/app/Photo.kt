@@ -22,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -117,13 +118,53 @@ fun PositionedPhoto(file: File, pos: PhotoPos, modifier: Modifier, onChange: ((P
     }
 }
 
+/**
+ * Welches Bild eines Fahrzeugs gerade gezeigt wird. Bei jedem Öffnen der App ([next]) kommt ein anderes –
+ * je nach Einstellung des Fahrzeugs zufällig oder der Reihe nach. Innerhalb einer Sitzung bleibt es gleich,
+ * damit Liste, Übersicht und Auswahl dasselbe Bild zeigen.
+ */
+object PhotoRotation {
+    private val generation = kotlinx.coroutines.flow.MutableStateFlow(0)
+    private val chosen = mutableMapOf<String, Int>()
+
+    /** Neues Öffnen der App: beim nächsten Anzeigen neu wählen. */
+    fun next() {
+        synchronized(chosen) { chosen.clear() }
+        generation.value++
+    }
+
+    fun pick(ctx: android.content.Context, v: Vehicle): VehicleImage? {
+        val imgs = v.images()
+        if (imgs.size <= 1) return imgs.firstOrNull()
+        val idx = synchronized(chosen) {
+            chosen.getOrPut(v.id) {
+                val sp = ctx.getSharedPreferences("photo_rotation", android.content.Context.MODE_PRIVATE)
+                val last = sp.getInt(v.id, -1)
+                val n = if (v.photoOrder == "sequence") (last + 1) % imgs.size
+                else (imgs.indices - last).random()
+                sp.edit().putInt(v.id, n).apply()
+                n
+            }
+        }
+        return imgs[idx.coerceIn(0, imgs.lastIndex)]
+    }
+
+    @Composable
+    fun current(v: Vehicle): VehicleImage? {
+        val ctx = LocalContext.current
+        val gen by generation.collectAsState()
+        return androidx.compose.runtime.remember(v.id, v.photoVersion, v.extraPhotos, v.photoOrder, gen) { pick(ctx, v) }
+    }
+}
+
 @Composable
 fun VehiclePhoto(v: Vehicle, modifier: Modifier, large: Boolean = false) {
     val ctx = LocalContext.current
-    val file = if (v.photoVersion > 0) PhotoStore.file(ctx, v.id, v.photoVersion) else null
+    val img = PhotoRotation.current(v)
+    val file = img?.let { PhotoStore.file(ctx, v.id, it.version) }
     val shaped = modifier.clip(RoundedCornerShape(12.dp))
     if (file != null && file.exists()) {
-        PositionedPhoto(file, PhotoPos.parse(if (large) v.photoLargePos else v.photoThumbPos), shaped)
+        PositionedPhoto(file, PhotoPos.parse(if (large) img.largePos else img.thumbPos), shaped)
     } else {
         Box(shaped.background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
             Icon(Icons.Default.DirectionsCar, contentDescription = null, modifier = Modifier.size(40.dp))

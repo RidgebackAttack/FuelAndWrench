@@ -280,10 +280,11 @@ object SyncManager {
 
     private fun syncPhotos(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>) {
         val uploaded = prefs.uploadedPhotos.toMutableSet()
-        for (v in vehicles) {
-            if (v.deleted || v.photoVersion == 0L || !prefs.shows(v.id)) continue
-            val name = PhotoStore.name(v.id, v.photoVersion)
-            val file = PhotoStore.file(ctx, v.id, v.photoVersion)
+        // Alle Bilder aller (auf diesem Gerät sichtbaren) Fahrzeuge
+        val all = vehicles.filter { !it.deleted && prefs.shows(it.id) }.flatMap { v -> v.images().map { v.id to it.version } }
+        for ((vehicleId, version) in all) {
+            val name = PhotoStore.name(vehicleId, version)
+            val file = PhotoStore.file(ctx, vehicleId, version)
             if (file.exists()) {
                 if (name in uploaded && !reupload) continue
                 if (reupload || dav.head("photos/$name") == 404) {

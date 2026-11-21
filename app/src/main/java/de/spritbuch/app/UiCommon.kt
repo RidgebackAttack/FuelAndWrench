@@ -87,6 +87,12 @@ class MainActivity : ComponentActivity() {
         shortcut.value = action to i.getStringExtra(Shortcuts.EXTRA_VEHICLE)
     }
 
+    override fun onStart() {
+        super.onStart()
+        // Bei jedem Öffnen ein anderes Fahrzeugbild (wenn mehrere hinterlegt sind)
+        PhotoRotation.next()
+    }
+
     override fun onResume() {
         super.onResume()
         SyncScheduler.syncSoon(this, delaySeconds = 0)

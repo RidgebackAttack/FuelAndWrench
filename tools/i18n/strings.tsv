@@ -561,3 +561,9 @@ col_amount	Amount	Menge	Mængde
 col_cost	Costs	Kosten	Omkostninger
 col_consumption	Ø	Ø	Ø
 stats_other_by_category	Other costs by category	Sonstige Kosten nach Kategorie	Øvrige omkostninger efter kategori
+photo_add	Add picture	Bild hinzufügen	Tilføj billede
+photo_make_main	Main picture	Als Hauptbild	Som hovedbillede
+photo_order	Several pictures	Mehrere Bilder	Flere billeder
+photo_order_random	Random	Zufällig	Tilfældigt
+photo_order_sequence	One after another	Nacheinander	Efter hinanden
+photo_order_info	Each time the app is opened, another picture is shown – always with the crops set here.	Bei jedem Öffnen der App wird ein anderes Bild gezeigt, immer mit den hier festgelegten Ausschnitten.	Hver gang appen åbnes, vises et andet billede – altid med de udsnit, der er valgt her.

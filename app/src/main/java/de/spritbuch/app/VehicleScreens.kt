@@ -1,5 +1,11 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.BlendMode
@@ -459,10 +465,13 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var fuel by rememberSaveable { mutableStateOf("Super E10") }
     var tank by rememberSaveable { mutableStateOf("") }
     var initialOdo by rememberSaveable { mutableStateOf("") }
-    var photoVersion by rememberSaveable { mutableLongStateOf(0L) }
+    // Alle Bilder mit festen Ausschnitten (erstes = Hauptbild), als Text gespeichert, damit sie das Neuerstellen überstehen
+    var imagesRaw by rememberSaveable { mutableStateOf("") }
+    var selectedImage by rememberSaveable { mutableIntStateOf(0) }
+    var photoOrder by rememberSaveable { mutableStateOf("random") }
+    val images = VehicleImage.parseList(imagesRaw)
+    fun setImages(l: List<VehicleImage>) { imagesRaw = VehicleImage.encodeList(l) }
     var archived by rememberSaveable { mutableStateOf(false) }
-    var thumbPosRaw by rememberSaveable { mutableStateOf(PhotoPos().encode()) }
-    var largePosRaw by rememberSaveable { mutableStateOf(PhotoPos().encode()) }
     var distU by rememberSaveable { mutableStateOf("km") }
     var vType by rememberSaveable { mutableStateOf("Auto") }
     var drive by rememberSaveable { mutableStateOf("Verbrenner") }
@@ -481,9 +490,9 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         name = v.name; plate = v.plate; fuel = v.defaultFuelType
         tank = v.tankCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.fmt(1) } ?: ""
         initialOdo = if (v.initialOdometer > 0) v.initialOdometer.toString() else ""
-        photoVersion = v.photoVersion
+        imagesRaw = VehicleImage.encodeList(v.images())
+        photoOrder = v.photoOrder
         archived = v.archived
-        thumbPosRaw = PhotoPos.parse(v.photoThumbPos).encode(); largePosRaw = PhotoPos.parse(v.photoLargePos).encode()
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
         vType = v.vehicleType
         drive = if (v.driveType == "Verbrenner" && v.defaultFuelType == ELECTRIC) "Elektro" else v.driveType
@@ -494,7 +503,11 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         val b = base
         if (uri != null && b != null) scope.launch {
             runCatching { PhotoStore.import(ctx, uri, b.id) }
-                .onSuccess { photoVersion = it; thumbPosRaw = PhotoPos().encode(); largePosRaw = PhotoPos().encode() }
+                .onSuccess {
+                    val l = VehicleImage.parseList(imagesRaw) + VehicleImage(it)
+                    setImages(l)
+                    selectedImage = l.lastIndex
+                }
                 .onFailure { error = it.message }
         }
     }
@@ -516,8 +529,12 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                 b.copy(
                                     name = name.trim(), plate = plate.trim(), defaultFuelType = fuel,
                                     tankCapacity = tank.toDoubleDe(), initialOdometer = initialOdo.toIntKm() ?: 0,
-                                    photoVersion = photoVersion, archived = archived,
-                                    photoThumbPos = thumbPosRaw, photoLargePos = largePosRaw,
+                                    archived = archived,
+                                    photoVersion = images.firstOrNull()?.version ?: 0,
+                                    photoThumbPos = images.firstOrNull()?.thumbPos ?: "0,0,1",
+                                    photoLargePos = images.firstOrNull()?.largePos ?: "0,0,1",
+                                    extraPhotos = VehicleImage.encodeList(images.drop(1)),
+                                    photoOrder = photoOrder,
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                     vehicleType = vType,
                                     driveType = drive,
@@ -536,20 +553,59 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            val photoFile = if (photoVersion > 0) PhotoStore.file(ctx, b.id, photoVersion) else null
+            val sel = selectedImage.coerceIn(0, (images.size - 1).coerceAtLeast(0))
+            val current = images.getOrNull(sel)
+            val photoFile = current?.let { PhotoStore.file(ctx, b.id, it.version) }
             if (photoFile != null && photoFile.exists()) {
+                // Ausschnitte werden je Bild festgelegt und immer so angezeigt
                 PhotoPositionEditor(
-                    photoFile, PhotoPos.parse(thumbPosRaw), PhotoPos.parse(largePosRaw),
-                    { thumbPosRaw = it.encode() }, { largePosRaw = it.encode() },
+                    photoFile, PhotoPos.parse(current.thumbPos), PhotoPos.parse(current.largePos),
+                    { p -> setImages(images.toMutableList().also { it[sel] = current.copy(thumbPos = p.encode()) }) },
+                    { p -> setImages(images.toMutableList().also { it[sel] = current.copy(largePos = p.encode()) }) },
                 )
             } else {
                 // Ohne Foto nur ein kleiner Platzhalter (der Bildeditor bleibt groß)
-                VehiclePhoto(b, Modifier.size(96.dp).align(Alignment.CenterHorizontally))
+                VehiclePhoto(b.copy(photoVersion = 0, extraPhotos = ""), Modifier.size(96.dp).align(Alignment.CenterHorizontally))
             }
-            OutlinedButton(
-                onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text(str(if (photoVersion > 0) R.string.photo_change else R.string.photo_choose)) }
+            if (images.size > 1) {
+                // Alle Bilder als Miniaturen; Tippen wählt das Bild zum Bearbeiten
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    images.forEachIndexed { i, img ->
+                        val f = PhotoStore.file(ctx, b.id, img.version)
+                        Box(
+                            Modifier.size(64.dp).clip(RoundedCornerShape(10.dp))
+                                .border(if (i == sel) 3.dp else 0.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
+                                .clickable { selectedImage = i },
+                        ) {
+                            if (f.exists()) PositionedPhoto(f, PhotoPos.parse(img.thumbPos), Modifier.fillMaxSize())
+                        }
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                    modifier = Modifier.weight(1f),
+                ) { Text(str(if (images.isEmpty()) R.string.photo_choose else R.string.photo_add)) }
+                if (current != null) {
+                    if (sel > 0) OutlinedButton(onClick = {
+                        setImages(listOf(current) + images.filterIndexed { i, _ -> i != sel })
+                        selectedImage = 0
+                    }) { Text(str(R.string.photo_make_main)) }
+                    OutlinedButton(onClick = {
+                        setImages(images.filterIndexed { i, _ -> i != sel })
+                        selectedImage = (sel - 1).coerceAtLeast(0)
+                    }) { Text(str(R.string.remove)) }
+                }
+            }
+            if (images.size > 1) {
+                Text(str(R.string.photo_order), style = MaterialTheme.typography.labelLarge)
+                val orders = linkedMapOf("random" to str(R.string.photo_order_random), "sequence" to str(R.string.photo_order_sequence))
+                SingleChips(orders.values.toList(), orders[photoOrder] ?: "") { s ->
+                    photoOrder = orders.entries.firstOrNull { it.value == s }?.key ?: photoOrder
+                }
+                Text(str(R.string.photo_order_info), style = MaterialTheme.typography.bodySmall)
+            }
             OutlinedTextField(name, { name = it }, label = { Text(str(R.string.vehicle_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text(str(R.string.plate)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             ChoiceField(str(R.string.vehicle_type), vType, Options.vehicleTypes) { vType = it }
