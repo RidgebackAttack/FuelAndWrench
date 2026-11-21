@@ -512,6 +512,9 @@
     <string name="set_updates">Opdateringer &amp; fejllog</string>
     <string name="set_updates_sub">Opdateringsbesked, lokal fejllog</string>
     <string name="set_not_configured">Endnu ikke sat op</string>
+    <string name="vibe_short">⚠️ Denne app er 100 % vibe-kodet! Den er skrevet helt af en AI (Claude) efter mine ønsker – jeg kunne ikke selv programmere noget lignende. Brug på eget ansvar, og tag jævnligt sikkerhedskopier. Historien bag står længere nede.</string>
+    <string name="vibe_title">Historien bag appen</string>
+    <string name="vibe_long">Den app, jeg ønskede mig – ingen sporing, ingen reklamer, synkronisering til min egen WebDAV-server – fandtes ikke. Efter en ulykke sad jeg som sportsudøver i kørestol i en periode, med masser af tid og endnu mere kedsomhed – jeg havde brug for adspredelse! Og hvor svært kan det være at kode en app?!\n\nDet dybt rystende svar: ret svært.\n\nDa jeg var sluppet fri af kørestolen, gik projektet i dvale. År senere fandt jeg resterne af mit eksperiment. I mellemtiden var AI kommet til, og jeg lod en AI gennemgå min idé og mine krav og ønsker. Sådan blev mine ynkelige forsøg til denne app.\n\nEn professionel ville nok bruge mindst et år på fuld tid. Jeg har blot bombarderet Claude med lettere forvirrede ønsker – og ville ikke på nogen måde være i stand til at skrive noget, der bare minder en smule om denne app.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

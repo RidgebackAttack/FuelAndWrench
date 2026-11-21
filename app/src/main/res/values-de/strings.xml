@@ -512,6 +512,9 @@
     <string name="set_updates">Updates &amp; Fehlerprotokoll</string>
     <string name="set_updates_sub">Update-Hinweis, lokales Fehlerprotokoll</string>
     <string name="set_not_configured">Noch nicht eingerichtet</string>
+    <string name="vibe_short">⚠️ Diese App ist zu 100 % vibecoded! Geschrieben hat sie komplett eine KI (Claude) nach meinen Wünschen – ich selbst könnte so etwas nicht programmieren. Nutzung auf eigene Gefahr, regelmäßige Sicherungen sind eine gute Idee. Die Geschichte dazu steht weiter unten.</string>
+    <string name="vibe_title">Die Geschichte hinter der App</string>
+    <string name="vibe_long">Die App, die ich haben wollte – kein Tracking, keine Werbung, Sync auf den eigenen WebDAV-Server –, gab es nicht. Als Sportler saß ich nach einem Unfall eine Zeit lang im Rollstuhl, hatte viel Zeit und noch mehr Langeweile – ich brauchte Ablenkung! Und wie schwer kann es schon sein, eine App zu programmieren?!\n\nDie äußerst erschütternde Antwort: ziemlich schwer.\n\nNachdem ich dem Rollstuhl entflohen war, schlief das Projekt ein. Jahre später fand ich die Reste meines Experiments wieder. Inzwischen gibt es KI, und ich ließ meine Idee und meine Anforderungen und Wünsche von einer KI begutachten. So wurde aus meinen kläglichen Versuchen diese App.\n\nEin Profi bräuchte dafür wahrscheinlich mindestens ein Jahr in Vollzeit. Ich habe nur leicht verwirrt Claude mit Wünschen bombardiert – und wäre nicht im Ansatz in der Lage, etwas zu schreiben, das auch nur ein wenig so aussieht wie diese App.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

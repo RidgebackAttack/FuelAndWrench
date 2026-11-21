@@ -2,6 +2,11 @@
 
 Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronisation über WebDAV/Nextcloud.
 
+> [!WARNING]
+> **Diese App ist zu 100 % vibecoded!** Geschrieben hat sie komplett eine KI (Claude) nach meinen Wünschen – ich selbst
+> könnte so etwas nicht programmieren. Nutzung auf eigene Gefahr, regelmäßige Sicherungen sind eine gute Idee.
+> [Die Geschichte dahinter](#die-geschichte-dahinter) steht weiter unten.
+
 ## Funktionen
 - Mehrere Fahrzeuge mit Foto, Kennzeichen, Standard-Kraftstoff, Tankinhalt
 - Betankungen: Datum, Kilometerstand, Menge, Preis (€/l und gesamt, rechnet gegenseitig), voll/teil, Kraftstoffart
@@ -50,3 +55,24 @@ F-Droid/Play-Metadaten im fastlane-Format unter `fastlane/metadata/android/`.
 4. F-Droid erkennt den neuen Tag automatisch (UpdateCheckMode: Tags).
 
 Die Vorlage für den F-Droid-Eintrag (fdroiddata) liegt unter `fdroid/`.
+
+## Die Geschichte dahinter
+
+<details>
+<summary>Warum es diese App gibt (aufklappen)</summary>
+
+Die App, die ich haben wollte – kein Tracking, keine Werbung, Sync auf den eigenen WebDAV-Server –, gab es nicht.
+Als Sportler saß ich nach einem Unfall eine Zeit lang im Rollstuhl, hatte viel Zeit und noch mehr Langeweile – ich
+brauchte Ablenkung! Und wie schwer kann es schon sein, eine App zu programmieren?!
+
+Die äußerst erschütternde Antwort: ziemlich schwer.
+
+Nachdem ich dem Rollstuhl entflohen war, schlief das Projekt ein. Jahre später fand ich die Reste meines Experiments
+wieder. Inzwischen gibt es KI, und ich ließ meine Idee und meine Anforderungen und Wünsche von einer KI begutachten.
+So wurde aus meinen kläglichen Versuchen diese App.
+
+Ein Profi bräuchte dafür wahrscheinlich mindestens ein Jahr in Vollzeit. Ich habe nur leicht verwirrt Claude mit
+Wünschen bombardiert – und wäre nicht im Ansatz in der Lage, etwas zu schreiben, das auch nur ein wenig so aussieht
+wie diese App.
+
+</details>

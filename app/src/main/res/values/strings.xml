@@ -512,6 +512,9 @@
     <string name="set_updates">Updates &amp; error log</string>
     <string name="set_updates_sub">Update notice, local error log</string>
     <string name="set_not_configured">Not set up yet</string>
+    <string name="vibe_short">⚠️ This app is 100% vibe-coded! It was written entirely by AI (Claude) based on my wishes – I could not program anything like it myself. Use at your own risk and make regular backups. The story behind it is further down.</string>
+    <string name="vibe_title">The story behind the app</string>
+    <string name="vibe_long">The app I wanted – no tracking, no ads, sync to my own WebDAV server – did not exist. After an accident, I, an athlete, spent some time in a wheelchair, with a lot of time and even more boredom on my hands – I needed a distraction. And how hard can it be to code an app?!\n\nThe deeply shattering answer: pretty hard.\n\nOnce I had escaped the wheelchair, the project fell asleep. Years later I found the remains of my experiment. By then AI had arrived, so I had it inspect my idea and my requirements and wishes. That is how my pitiful attempts turned into this app.\n\nA professional would probably need at least a year of full-time work for it. I merely bombarded Claude with confused wishes – and I would not even remotely be able to write anything that looks even a little like this app.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

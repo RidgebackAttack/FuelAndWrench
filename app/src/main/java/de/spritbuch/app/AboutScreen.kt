@@ -95,12 +95,25 @@ fun AboutScreen(nav: NavController) {
                 str(R.string.about_text),
                 style = MaterialTheme.typography.bodyMedium,
             )
+            // Hinweis: komplett mit KI entstanden (die Geschichte dazu weiter unten zum Aufklappen)
+            Card(
+                Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                ),
+            ) {
+                Text(str(R.string.vibe_short), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+            }
             Text(
                 str(R.string.about_license),
                 style = MaterialTheme.typography.bodySmall,
             )
             TextButton(onClick = { open(SOURCE_URL) }) { Text(str(R.string.source_code)) }
 
+            Expandable(str(R.string.vibe_title)) {
+                Text(str(R.string.vibe_long), style = MaterialTheme.typography.bodyMedium)
+            }
             Expandable(str(R.string.privacy_policy)) {
                 Text(privacyText, style = MaterialTheme.typography.bodySmall)
             }
