@@ -1,0 +1,2 @@
+- Neu: Kraftstoffsorte „Premium“ für V-Power, Ultimate & Co. (auch beim Bon-Scan und Import)
+- Unbekannte Sorten aus Importen (z. B. „22“) lassen sich im Fahrzeug-Editor einer echten Sorte zuordnen

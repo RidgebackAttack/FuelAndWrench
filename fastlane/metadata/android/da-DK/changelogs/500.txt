@@ -1,0 +1,2 @@
+- Nyt: brændstoftype "Premium" til V-Power, Ultimate m.fl. (også ved scanning af kvitteringer og import)
+- Ukendte brændstoftyper fra import (f.eks. "22") kan tildeles en rigtig type i køretøjseditoren

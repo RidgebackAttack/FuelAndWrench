@@ -1,0 +1,2 @@
+- New: fuel type "Premium" for V-Power, Ultimate & co. (also on receipt scans and imports)
+- Unknown fuel types from imports (e.g. "22") can be mapped to a real fuel in the vehicle editor
