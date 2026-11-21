@@ -542,6 +542,10 @@
     <string name="photo_order_random">Random</string>
     <string name="photo_order_sequence">One after another</string>
     <string name="photo_order_info">Each time the app is opened, another picture is shown – always with the crops set here.</string>
+    <string name="fuel_unknown_title">Unknown fuel type “%1$s” in %2$s (e.g. a code from an import). Which fuel is it?</string>
+    <string name="fuel_unknown_replace">Replace with</string>
+    <string name="fuel_unknown_apply">Replace in all entries</string>
+    <string name="fuel_unknown_default">The default fuel “%1$s” is unknown – please choose a fuel above.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

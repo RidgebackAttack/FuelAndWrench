@@ -199,6 +199,12 @@ class Repository(
      * Speichert ein Fahrzeug. Wurden Entfernungs- oder Volumeneinheit geändert, werden alle
      * vorhandenen Tankvorgänge, Erinnerungen und Kilometerstände umgerechnet.
      */
+    /** Unbekannte Kraftstoffsorte (z. B. Zahlencode aus einem Import) in allen Einträgen eines Fahrzeugs ersetzen. */
+    suspend fun replaceFuelType(vehicleId: String, from: String, to: String) {
+        db.refuels().replaceFuelType(vehicleId, from, to, now())
+        changed()
+    }
+
     suspend fun saveVehicle(v: Vehicle) {
         val t = now()
         Prefs(ctx).visibleVehicles?.let { if (v.id !in it) Prefs(ctx).visibleVehicles = it + v.id }

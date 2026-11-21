@@ -567,3 +567,7 @@ photo_order	Several pictures	Mehrere Bilder	Flere billeder
 photo_order_random	Random	Zufällig	Tilfældigt
 photo_order_sequence	One after another	Nacheinander	Efter hinanden
 photo_order_info	Each time the app is opened, another picture is shown – always with the crops set here.	Bei jedem Öffnen der App wird ein anderes Bild gezeigt, immer mit den hier festgelegten Ausschnitten.	Hver gang appen åbnes, vises et andet billede – altid med de udsnit, der er valgt her.
+fuel_unknown_title	Unknown fuel type “%1$s” in %2$s (e.g. a code from an import). Which fuel is it?	Unbekannte Kraftstoffsorte „%1$s“ in %2$s (z. B. ein Code aus einem Import). Welche Sorte ist das?	Ukendt brændstoftype „%1$s“ i %2$s (f.eks. en kode fra en import). Hvilken type er det?
+fuel_unknown_replace	Replace with	Ersetzen durch	Erstat med
+fuel_unknown_apply	Replace in all entries	In allen Einträgen ersetzen	Erstat i alle poster
+fuel_unknown_default	The default fuel “%1$s” is unknown – please choose a fuel above.	Die Standard-Sorte „%1$s“ ist unbekannt – bitte oben eine Sorte wählen.	Standardtypen „%1$s“ er ukendt – vælg venligst en type ovenfor.

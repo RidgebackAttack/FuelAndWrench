@@ -428,6 +428,13 @@ interface RefuelDao {
     @Query("SELECT stationBrand FROM refuels WHERE deleted = 0 AND stationBrand != '' GROUP BY stationBrand ORDER BY COUNT(*) DESC")
     suspend fun usedBrands(): List<String>
 
+    /** Kraftstoffsorten eines Fahrzeugs mit Anzahl (z. B. um unbekannte Import-Codes zu finden). */
+    @Query("SELECT fuelType AS name, COUNT(*) AS count FROM refuels WHERE deleted = 0 AND vehicleId = :vehicleId GROUP BY fuelType")
+    suspend fun fuelTypeCounts(vehicleId: String): List<NameCount>
+
+    @Query("UPDATE refuels SET fuelType = :to, updatedAt = :now WHERE vehicleId = :vehicleId AND fuelType = :from")
+    suspend fun replaceFuelType(vehicleId: String, from: String, to: String, now: Long)
+
     @Query("SELECT vehicleId, MAX(timestamp) AS lastTime FROM refuels WHERE deleted = 0 GROUP BY vehicleId")
     suspend fun lastUse(): List<VehicleLastUse>
 
@@ -458,6 +465,8 @@ interface ReminderDao {
     @Upsert
     suspend fun upsert(item: Reminder)
 }
+
+data class NameCount(val name: String, val count: Int)
 
 /** Letzte Betankung je Fahrzeug (für die Sortierung im App-Icon-Menü). */
 data class VehicleLastUse(val vehicleId: String, val lastTime: Long)

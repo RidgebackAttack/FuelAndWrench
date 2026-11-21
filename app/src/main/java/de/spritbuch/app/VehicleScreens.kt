@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -618,6 +619,32 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             }
             if (drive != "Elektro") {
                 ChoiceField(str(R.string.default_fuel), fuel, Options.fuelTypes.filter { it != ELECTRIC }) { fuel = it }
+            }
+            // Unbekannte Kraftstoffsorten (z. B. Zahlencodes aus dem Spritmonitor-Import) einer echten Sorte zuordnen
+            var unknownFuels by remember { mutableStateOf<List<NameCount>>(emptyList()) }
+            var fixVersion by remember { mutableIntStateOf(0) }
+            LaunchedEffect(b.id, fixVersion) {
+                unknownFuels = if (isNew) emptyList()
+                else repo.db.refuels().fuelTypeCounts(b.id).filter { it.name.isNotBlank() && it.name !in Options.fuelTypes }
+            }
+            if (fuel !in Options.fuelTypes) {
+                Text(str(R.string.fuel_unknown_default, fuel), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            unknownFuels.forEach { u ->
+                var target by remember(u.name) { mutableStateOf(fuel.takeIf { it in Options.fuelTypes } ?: "Super E5") }
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(str(R.string.fuel_unknown_title, u.name, plural(R.plurals.pl_refuels, u.count)), style = MaterialTheme.typography.bodyMedium)
+                        ChoiceField(str(R.string.fuel_unknown_replace), target, Options.fuelTypes) { target = it }
+                        Button(onClick = {
+                            scope.launch {
+                                repo.replaceFuelType(b.id, u.name, target)
+                                if (fuel == u.name) fuel = target
+                                fixVersion++
+                            }
+                        }) { Text(str(R.string.fuel_unknown_apply)) }
+                    }
+                }
             }
             val previewVehicle = b.copy(volumeUnit = volU, distanceUnit = distU)
             if (drive != "Elektro") {

@@ -542,6 +542,10 @@
     <string name="photo_order_random">Tilfældigt</string>
     <string name="photo_order_sequence">Efter hinanden</string>
     <string name="photo_order_info">Hver gang appen åbnes, vises et andet billede – altid med de udsnit, der er valgt her.</string>
+    <string name="fuel_unknown_title">Ukendt brændstoftype „%1$s“ i %2$s (f.eks. en kode fra en import). Hvilken type er det?</string>
+    <string name="fuel_unknown_replace">Erstat med</string>
+    <string name="fuel_unknown_apply">Erstat i alle poster</string>
+    <string name="fuel_unknown_default">Standardtypen „%1$s“ er ukendt – vælg venligst en type ovenfor.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

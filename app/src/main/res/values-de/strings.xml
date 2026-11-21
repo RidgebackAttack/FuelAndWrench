@@ -542,6 +542,10 @@
     <string name="photo_order_random">Zufällig</string>
     <string name="photo_order_sequence">Nacheinander</string>
     <string name="photo_order_info">Bei jedem Öffnen der App wird ein anderes Bild gezeigt, immer mit den hier festgelegten Ausschnitten.</string>
+    <string name="fuel_unknown_title">Unbekannte Kraftstoffsorte „%1$s“ in %2$s (z. B. ein Code aus einem Import). Welche Sorte ist das?</string>
+    <string name="fuel_unknown_replace">Ersetzen durch</string>
+    <string name="fuel_unknown_apply">In allen Einträgen ersetzen</string>
+    <string name="fuel_unknown_default">Die Standard-Sorte „%1$s“ ist unbekannt – bitte oben eine Sorte wählen.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>
