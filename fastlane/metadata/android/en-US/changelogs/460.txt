@@ -1,0 +1,1 @@
+- Fixed: app icon menu entries and "+ Refuel" in the widget only opened the start screen instead of the entry form

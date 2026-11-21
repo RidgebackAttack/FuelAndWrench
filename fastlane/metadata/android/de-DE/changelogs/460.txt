@@ -1,0 +1,1 @@
+- Behoben: Einträge im App-Icon-Menü und „+ Betankung“ im Widget öffneten nur die Startseite statt der Eingabe

@@ -1,0 +1,1 @@
+- Rettet: punkter i app-ikonmenuen og "+ Tankning" i widgetten åbnede kun startskærmen i stedet for indtastningen
