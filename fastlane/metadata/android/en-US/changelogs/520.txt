@@ -1,0 +1,1 @@
+- "Tap to adjust" hint directly on the picture previews in the vehicle editor
