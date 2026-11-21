@@ -106,10 +106,12 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
     val pending = shortcut?.collectAsStateWithLifecycle()?.value
     LaunchedEffect(pending) {
         val (action, vehicleId) = pending ?: return@LaunchedEffect
-        shortcut?.value = null
-        val target = Shortcuts.route(ctx, action, vehicleId) ?: return@LaunchedEffect
+        val target = Shortcuts.route(ctx, action, vehicleId)
         // Navigation immer auf dem Hauptthread
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { nav.navigate(target) }
+        if (target != null) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { nav.navigate(target) }
+        // Erst danach zurücksetzen: Ein früheres Zurücksetzen änderte den Schlüssel dieses Effekts und brach
+        // ihn ab, während das Fahrzeug noch aus der Datenbank geladen wurde – dann blieb man auf der Startseite.
+        shortcut?.value = null
     }
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) {
