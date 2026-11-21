@@ -1,0 +1,1 @@
+- Neu: Verbrauchsverlauf in der Statistik, mit wählbarem Zeitraum
