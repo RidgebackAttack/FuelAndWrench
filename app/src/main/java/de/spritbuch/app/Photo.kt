@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -326,6 +327,19 @@ fun VehiclePhoto(v: Vehicle, modifier: Modifier, large: Boolean = false) {
     }
 }
 
+/** Hinweis direkt auf dem Bild, dass man zum Ausrichten tippen kann. */
+@Composable
+private fun TapToCropBadge(modifier: Modifier, compact: Boolean = false) {
+    Row(
+        modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.6f)).padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(Icons.Default.Crop, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+        if (!compact) Text(str(R.string.photo_tap_badge), color = Color.White, style = MaterialTheme.typography.labelMedium)
+    }
+}
+
 /** Vorschau beider Ausschnitte; Antippen öffnet das große Ausrichten. */
 @Composable
 fun PhotoPositionEditor(
@@ -339,14 +353,17 @@ fun PhotoPositionEditor(
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(str(R.string.photo_tap_to_crop), style = MaterialTheme.typography.bodySmall)
         Text(str(R.string.photo_large), style = MaterialTheme.typography.labelLarge)
-        PositionedPhoto(
-            file, large,
-            Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT).clip(RoundedCornerShape(12.dp)).clickable { editing = "large" },
-        )
+        Box(Modifier.fillMaxWidth().aspectRatio(LARGE_PHOTO_ASPECT).clip(RoundedCornerShape(12.dp)).clickable { editing = "large" }) {
+            PositionedPhoto(file, large, Modifier.fillMaxSize())
+            TapToCropBadge(Modifier.align(Alignment.BottomEnd).padding(8.dp))
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.width(140.dp)) {
                 Text(str(R.string.photo_thumb), style = MaterialTheme.typography.labelLarge)
-                PositionedPhoto(file, thumb, Modifier.size(120.dp).clip(RoundedCornerShape(12.dp)).clickable { editing = "thumb" })
+                Box(Modifier.size(120.dp).clip(RoundedCornerShape(12.dp)).clickable { editing = "thumb" }) {
+                    PositionedPhoto(file, thumb, Modifier.fillMaxSize())
+                    TapToCropBadge(Modifier.align(Alignment.BottomEnd).padding(6.dp), compact = true)
+                }
             }
             TextButton(onClick = { onThumb(PhotoPos()); onLarge(PhotoPos()) }) { Text(str(R.string.reset)) }
         }

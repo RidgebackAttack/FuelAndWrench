@@ -551,6 +551,7 @@
     <string name="photo_mode_return">On return to the list</string>
     <string name="photo_mode_timed">Slideshow</string>
     <string name="photo_mode_daily">Once a day</string>
+    <string name="photo_tap_badge">Tap to adjust</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

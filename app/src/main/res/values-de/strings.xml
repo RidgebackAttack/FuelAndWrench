@@ -551,6 +551,7 @@
     <string name="photo_mode_return">Bei Rückkehr zur Liste</string>
     <string name="photo_mode_timed">Diashow</string>
     <string name="photo_mode_daily">Einmal am Tag</string>
+    <string name="photo_tap_badge">Tippen zum Ausrichten</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

@@ -551,6 +551,7 @@
     <string name="photo_mode_return">Ved tilbagevenden til listen</string>
     <string name="photo_mode_timed">Diasshow</string>
     <string name="photo_mode_daily">En gang om dagen</string>
+    <string name="photo_tap_badge">Tryk for at justere</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>
