@@ -1,0 +1,2 @@
+- Nyt: flere billeder pr. køretøj med faste udsnit; et nyt hver gang appen åbnes (tilfældigt eller efter hinanden, pr. køretøj)
+- Bemærk: opdater først alle enheder, og tilføj derefter billeder

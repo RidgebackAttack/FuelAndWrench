@@ -1,0 +1,2 @@
+- Neu: mehrere Bilder pro Fahrzeug mit festen Ausschnitten; bei jedem Öffnen ein anderes (zufällig oder nacheinander, pro Fahrzeug einstellbar)
+- Hinweis: erst alle Geräte aktualisieren, dann Bilder hinzufügen

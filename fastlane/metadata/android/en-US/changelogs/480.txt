@@ -1,0 +1,2 @@
+- New: several pictures per vehicle with fixed crops; a different one each time the app opens (random or in turn, set per vehicle)
+- Note: update all devices first, then add pictures
