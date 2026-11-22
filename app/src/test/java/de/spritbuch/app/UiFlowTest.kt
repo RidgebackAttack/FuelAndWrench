@@ -116,16 +116,14 @@ class UiFlowTest {
         rule.onNodeWithText(s(R.string.e2e_title)).performScrollTo()
     }
 
-    /** Erstes Fahrzeug über das Formular anlegen (ohne Bild). */
+    /** Weiteres Fahrzeug über „+ Fahrzeug“ und das Formular anlegen (ohne Bild). */
     @Test fun createVehicleThroughForm() {
+        seed(withHistory = false)
         launch()
-        // Beim ersten Start öffnet die App das Formular selbst; sonst über „+ Fahrzeug“
-        val nameField = hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)
+        waitForText("Testwagen")
         val fab = hasText(s(R.string.vehicle)) and hasClickAction()
-        rule.waitUntil(10_000) {
-            rule.onAllNodes(nameField).fetchSemanticsNodes().isNotEmpty() || rule.onAllNodes(fab).fetchSemanticsNodes().isNotEmpty()
-        }
-        if (rule.onAllNodes(nameField).fetchSemanticsNodes().isEmpty()) rule.onAllNodes(fab).onFirst().performClick()
+        rule.waitUntil(10_000) { rule.onAllNodes(fab).fetchSemanticsNodes().isNotEmpty() }
+        rule.onAllNodes(fab).onFirst().performClick()
         rule.waitUntil(10_000) {
             rule.onAllNodes(hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)).fetchSemanticsNodes().isNotEmpty()
         }
