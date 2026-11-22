@@ -270,7 +270,9 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 // Radwechsel: der bisher montierte Satz kommt runter, der andere drauf
                 val current = repo.mountedTireSetId(vehicleId)
                 removedSetId = current ?: ""
-                mountedSetId = sets.firstOrNull { it.id != current }?.id ?: ""
+                // bevorzugt der Satz, der zur aktuellen Saison passt („von O bis O“)
+                val season = TireSeason.period().first
+                mountedSetId = (sets.firstOrNull { it.id != current && it.season == season } ?: sets.firstOrNull { it.id != current })?.id ?: ""
             } else repo.db.services().lastTireChange(vehicleId)?.let { last ->
                 tireSeason = last.tireSeason; tireBrand = last.tireBrand; tireModel = last.tireModel; tireSize = last.tireSize
             }
@@ -342,10 +344,14 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.date())
             }
-            SuggestField(str(R.string.what_done), title, Options.serviceSuggestions) { title = it }
-            ChoiceField(str(R.string.category), category, Options.serviceCategories) { category = it }
+            // Radwechsel kompakt: nur Datum, km, Radsätze und Profiltiefe; der Rest ist eingeklappt
+            var showMore by rememberSaveable { mutableStateOf(!isWheelChange) }
+            if (!isWheelChange) {
+                SuggestField(str(R.string.what_done), title, Options.serviceSuggestions) { title = it }
+                ChoiceField(str(R.string.category), category, Options.serviceCategories) { category = it }
+            }
             NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
-            NumberField(str(R.string.cost), cost, { cost = it }, suffix = Units.cur(veh))
+            if (showMore) NumberField(str(R.string.cost), cost, { cost = it }, suffix = Units.cur(veh))
             if (category == "Reifen" && tireSets.isNotEmpty()) {
                 SectionTitle(str(R.string.wheel_change))
                 val none = str(R.string.none_dash)
@@ -359,7 +365,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                 TextButton(onClick = { nav.navigate("tireSetEdit/$vehicleId/new") }) { Text(str(R.string.add_another_set)) }
                 SectionTitle(str(R.string.tread_depth))
                 Text(
-                    str(R.string.tread_set_info),
+                    str(R.string.tread_set_info) + if (isWheelChange) " " + str(R.string.tread_skip_info) else "",
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Options.tirePositions(veh?.vehicleType).forEach { (key, label) ->
@@ -404,19 +410,23 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                     }
                 }
             }
-            OutlinedTextField(
-                workshop, { workshop = it }, label = { Text(str(R.string.workshop)) }, singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                note, { note = it }, label = { Text(str(R.string.service_note_hint)) }, minLines = 3,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            AttachmentSection(attachments) { attachments = it }
-            Text(
-                str(R.string.service_reminder_info),
-                style = MaterialTheme.typography.bodySmall,
-            )
+            if (!showMore) {
+                TextButton(onClick = { showMore = true }) { Text(str(R.string.more_details)) }
+            } else {
+                OutlinedTextField(
+                    workshop, { workshop = it }, label = { Text(str(R.string.workshop)) }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    note, { note = it }, label = { Text(str(R.string.service_note_hint)) }, minLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                AttachmentSection(attachments) { attachments = it }
+                Text(
+                    str(R.string.service_reminder_info),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 

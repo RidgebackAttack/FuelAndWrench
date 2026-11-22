@@ -590,7 +590,7 @@ private fun TireSeasonBanner(nav: NavController, v: Vehicle, services: List<Serv
     val sets by ctx.repo.tireSets(v.id).collectAsStateWithLifecycle(emptyList())
     var due by remember { mutableStateOf<TireSeason.Due?>(null) }
     var refresh by remember { mutableIntStateOf(0) }
-    LaunchedEffect(v.id, sets, services, refresh) { due = TireSeason.due(ctx, v) }
+    LaunchedEffect(v.id, v.tireSeasonDone, sets, services, refresh) { due = TireSeason.due(ctx, v) }
     val d = due ?: return
     Card(
         Modifier.fillMaxWidth(),
@@ -601,7 +601,8 @@ private fun TireSeasonBanner(nav: NavController, v: Vehicle, services: List<Serv
             Text(str(R.string.tires_due_info), style = MaterialTheme.typography.bodySmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { nav.navigate("serviceEdit/${v.id}/new-wheel") }) { Text(str(R.string.wheel_change)) }
-                TextButton(onClick = { TireSeason.markDone(ctx, v.id, d); refresh++ }) { Text(str(R.string.tires_due_done)) }
+                val scope = rememberCoroutineScope()
+                TextButton(onClick = { scope.launch { TireSeason.markDone(ctx, v.id, d); refresh++ } }) { Text(str(R.string.tires_due_done)) }
             }
         }
     }

@@ -134,6 +134,8 @@ data class Vehicle(
     val photoOrder: String = "random",
     /** Fahrzeugdokumente (Fahrzeugschein, Versicherungskarte, TÜV-Berichte …) als JSON, siehe [VehicleDoc]. */
     val documents: String = "",
+    /** Reifenwechsel-Hinweis dieser Saison als erledigt markiert (z. B. „W2026“); wird synchronisiert. */
+    val tireSeasonDone: String = "",
 ) {
     /** Alle Bilder mit ihren festgelegten Ausschnitten (erstes = Hauptbild). */
     fun images(): List<VehicleImage> =
@@ -540,6 +542,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_10_11 = object : Migration(10, 11) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE vehicles ADD COLUMN documents TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN tireSeasonDone TEXT NOT NULL DEFAULT ''")
             }
         }
 

@@ -640,6 +640,35 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             if (drive != "Elektro") {
                 ChoiceField(str(R.string.default_fuel), fuel, Options.fuelTypes.filter { it != ELECTRIC }) { fuel = it }
             }
+            // HU/TÜV-Fälligkeit (wie auf der Plakette) – stellt direkt die Datums-Erinnerung ein
+            if (!isNew) {
+                var huDue by remember { mutableStateOf<Long?>(null) }
+                var huPick by remember { mutableStateOf(false) }
+                LaunchedEffect(b.id) { huDue = repo.huReminder(b.id)?.dueDate }
+                OutlinedButton(onClick = { huPick = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        str(R.string.hu_due) + ": " + (huDue?.let { java.text.SimpleDateFormat("MM/yyyy", appLocale()).format(java.util.Date(it)) }
+                            ?: str(R.string.hu_due_none)),
+                    )
+                }
+                Text(str(R.string.hu_due_info), style = MaterialTheme.typography.bodySmall)
+                if (huPick) {
+                    val state = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = toUtcDate(huDue ?: now()))
+                    androidx.compose.material3.DatePickerDialog(
+                        onDismissRequest = { huPick = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                state.selectedDateMillis?.let { sel ->
+                                    val due = combineDate(sel, now())
+                                    scope.launch { repo.setHuDue(b.id, due); huDue = repo.huReminder(b.id)?.dueDate }
+                                }
+                                huPick = false
+                            }) { Text(str(R.string.ok)) }
+                        },
+                        dismissButton = { TextButton(onClick = { huPick = false }) { Text(str(R.string.cancel)) } },
+                    ) { androidx.compose.material3.DatePicker(state = state) }
+                }
+            }
             // Unbekannte Kraftstoffsorten (z. B. Zahlencodes aus dem Spritmonitor-Import) einer echten Sorte zuordnen
             var unknownFuels by remember { mutableStateOf<List<NameCount>>(emptyList()) }
             var fixVersion by remember { mutableIntStateOf(0) }

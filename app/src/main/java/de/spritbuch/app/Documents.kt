@@ -156,6 +156,7 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var askHu by remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(docId) {
         val d = if (isNew) VehicleDoc() else repo.getVehicle(vehicleId)?.documentList()?.firstOrNull { it.id == docId } ?: return@LaunchedEffect
         base = d
@@ -180,7 +181,10 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
                         if (files.isEmpty()) { error = str(R.string.document_need_page); return@IconButton }
                         scope.launch {
                             repo.saveDocument(vehicleId, b.copy(type = type, title = title.trim(), date = date.takeIf { it > 0 }, files = files))
-                            nav.popBackStack()
+                            // Neuer TÜV-Bericht mit Datum: nächste HU vorschlagen
+                            if (type == VehicleDoc.TYPE_INSPECTION && date > 0 && (isNew || b.date != date)) {
+                                askHu = java.util.Calendar.getInstance().apply { timeInMillis = date; add(java.util.Calendar.MONTH, 24) }.timeInMillis
+                            } else nav.popBackStack()
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
@@ -225,6 +229,19 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
             },
             dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
         ) { DatePicker(state = state) }
+    }
+    askHu?.let { due ->
+        AlertDialog(
+            onDismissRequest = { askHu = null; nav.popBackStack() },
+            title = { Text(str(R.string.hu_from_report, java.text.SimpleDateFormat("MM/yyyy", appLocale()).format(java.util.Date(due)))) },
+            text = { Text(str(R.string.hu_from_report_info)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch { repo.setHuDue(vehicleId, due); askHu = null; nav.popBackStack() }
+                }) { Text(str(R.string.yes)) }
+            },
+            dismissButton = { TextButton(onClick = { askHu = null; nav.popBackStack() }) { Text(str(R.string.no)) } },
+        )
     }
     if (confirmDelete) {
         AlertDialog(

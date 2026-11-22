@@ -570,6 +570,17 @@
     <string name="document_pages_info">Tilføj hver side for sig – f.eks. registreringsattesten som enkeltsider.</string>
     <string name="document_need_page">Tilføj mindst én side.</string>
     <string name="document_delete_q">Slet dokument?</string>
+    <string name="tread_skip_info">Lad felterne stå tomme for at springe over.</string>
+    <string name="more_details">Flere oplysninger (omkostninger, værksted, note, kvitteringer)</string>
+    <string name="hu_title">Syn</string>
+    <string name="hu_preset">Skabelon: syn hver 24. måned</string>
+    <string name="hu_due">Syn forfalder</string>
+    <string name="hu_due_none">Ikke angivet – tryk for at indtaste</string>
+    <string name="hu_due_info">Indstiller datopåmindelsen for synet (hver 24. måned).</string>
+    <string name="hu_from_report">Sæt næste syn til %1$s?</string>
+    <string name="hu_from_report_info">Denne rapports dato plus 24 måneder.</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

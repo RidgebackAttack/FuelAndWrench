@@ -570,6 +570,17 @@
     <string name="document_pages_info">Add each page separately – e.g. the registration certificate as individual pages.</string>
     <string name="document_need_page">Please add at least one page.</string>
     <string name="document_delete_q">Delete document?</string>
+    <string name="tread_skip_info">Leave empty to skip.</string>
+    <string name="more_details">More details (costs, workshop, note, receipts)</string>
+    <string name="hu_title">MOT/inspection</string>
+    <string name="hu_preset">Template: MOT/inspection every 24 months</string>
+    <string name="hu_due">Inspection (HU/TÜV) due</string>
+    <string name="hu_due_none">Not set – tap to enter (as on the sticker)</string>
+    <string name="hu_due_info">Sets the date reminder for the inspection (every 24 months).</string>
+    <string name="hu_from_report">Set next inspection to %1$s?</string>
+    <string name="hu_from_report_info">Based on this report’s date plus 24 months.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

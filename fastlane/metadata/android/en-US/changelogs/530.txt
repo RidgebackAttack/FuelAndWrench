@@ -1,0 +1,4 @@
+- New: vehicle documents (registration as single pages, insurance card, inspection reports with history)
+- New: enter the inspection due date; after a new inspection report the next date is suggested
+- New: seasonal tire change hint (October to Easter) with a compact wheel change incl. tread depth
+- Faster thanks to caching and a re-measured startup profile

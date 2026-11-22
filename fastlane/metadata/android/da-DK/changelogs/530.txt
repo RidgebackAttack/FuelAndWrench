@@ -1,0 +1,4 @@
+- Nyt: køretøjsdokumenter (registreringsattest som enkeltsider, forsikringskort, synsrapporter med historik)
+- Nyt: angiv hvornår synet forfalder; efter en ny synsrapport foreslås næste dato
+- Nyt: påmindelse om dækskift (oktober til påske) med kompakt hjulskift inkl. mønsterdybde
+- Hurtigere takket være mellemlager og en ny opstartsprofil

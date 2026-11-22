@@ -139,6 +139,10 @@ fun ReminderEditScreen(nav: NavController, vehicleId: String, reminderId: String
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             SuggestField(str(R.string.title), title, Options.reminderSuggestions) { title = it }
+            // Vorlage HU/TÜV: alle 24 Monate, nur nach Datum
+            if (isNew) TextButton(onClick = {
+                title = str(R.string.hu_title); interval = ""; warn = ""; months = "24"
+            }) { Text(str(R.string.hu_preset)) }
             Text(str(R.string.reminder_either_info), style = MaterialTheme.typography.bodySmall)
             SectionTitle(str(R.string.by_distance))
             NumberField(str(R.string.interval), interval, { interval = it }, suffix = du, decimal = false)

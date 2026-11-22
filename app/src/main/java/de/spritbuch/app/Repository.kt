@@ -199,6 +199,25 @@ class Repository(
      * Speichert ein Fahrzeug. Wurden Entfernungs- oder Volumeneinheit geändert, werden alle
      * vorhandenen Tankvorgänge, Erinnerungen und Kilometerstände umgerechnet.
      */
+    /** Die HU/TÜV-Erinnerung eines Fahrzeugs (feste Kennung; ältere, von Hand angelegte werden am Titel erkannt). */
+    suspend fun huReminder(vehicleId: String): Reminder? {
+        val all = db.reminders().forVehicle(vehicleId)
+        return all.firstOrNull { it.id == "$vehicleId-hu" }
+            ?: all.firstOrNull { r -> r.intervalMonths > 0 && Regex("""\b(hu|tüv|tuv)\b""", RegexOption.IGNORE_CASE).containsMatchIn(r.title) }
+    }
+
+    /** HU-Fälligkeit setzen: legt die Erinnerung an bzw. passt sie an (Standard 24 Monate, nur nach Datum). */
+    suspend fun setHuDue(vehicleId: String, due: Long) {
+        val r = huReminder(vehicleId)
+        val months = r?.intervalMonths?.takeIf { it > 0 } ?: 24
+        val last = java.util.Calendar.getInstance().apply { timeInMillis = due; add(java.util.Calendar.MONTH, -months) }.timeInMillis
+        saveReminder(
+            (r ?: Reminder(id = "$vehicleId-hu", vehicleId = vehicleId, title = str(R.string.hu_title))).copy(
+                intervalKm = 0, warnBeforeKm = 0, intervalMonths = months, lastDoneDate = last,
+            ),
+        )
+    }
+
     /** Unbekannte Kraftstoffsorte (z. B. Zahlencode aus einem Import) in allen Einträgen eines Fahrzeugs ersetzen. */
     suspend fun replaceFuelType(vehicleId: String, from: String, to: String) {
         db.refuels().replaceFuelType(vehicleId, from, to, now())

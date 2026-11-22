@@ -1,0 +1,4 @@
+- Neu: Fahrzeugdokumente (Fahrzeugschein in Einzelseiten, Versicherungskarte, TÜV-Berichte mit Historie)
+- Neu: HU/TÜV-Fälligkeit im Fahrzeug eintragen; nach einem neuen TÜV-Bericht wird die nächste HU vorgeschlagen
+- Neu: Reifenwechsel-Hinweis „von O bis O“, mit kompaktem Radwechsel inkl. Profiltiefe
+- Schneller durch Zwischenspeicher und neu gemessenes Startprofil

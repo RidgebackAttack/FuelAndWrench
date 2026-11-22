@@ -62,11 +62,14 @@ object TireSeason {
         if (v.deleted || v.archived) return null
         val repo = ctx.repo
         val d = decide(repo.db.tireSets().forVehicle(v.id), repo.mountedTireSetId(v.id)) ?: return null
-        return if (prefs(ctx).getBoolean("done_${v.id}_${d.period}", false)) null else d
+        return if (v.tireSeasonDone == d.period) null else d
     }
 
-    fun markDone(ctx: Context, vehicleId: String, d: Due) {
-        prefs(ctx).edit().putBoolean("done_${vehicleId}_${d.period}", true).apply()
+    /** Am Fahrzeug speichern, damit es über den Sync auf allen Geräten gilt. */
+    suspend fun markDone(ctx: Context, vehicleId: String, d: Due) {
+        val repo = ctx.repo
+        val v = repo.getVehicle(vehicleId) ?: return
+        repo.saveVehicle(v.copy(tireSeasonDone = d.period))
     }
 
     /** Einmal pro Saison benachrichtigen (aus dem täglichen Hintergrundjob bzw. nach dem Sync). */
