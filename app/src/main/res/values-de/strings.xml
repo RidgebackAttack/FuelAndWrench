@@ -582,6 +582,10 @@
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
     <string name="opt_doc_title">Fahrzeugbrief</string>
+    <string name="pages">Seiten</string>
+    <string name="close">Schließen</string>
+    <string name="open_other_app">In anderer App öffnen</string>
+    <string name="edit">Bearbeiten</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

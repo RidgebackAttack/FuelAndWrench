@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -101,7 +102,7 @@ object AttachmentStore {
 
 /** Belegliste mit „Foto aufnehmen“ und „Datei anhängen“. */
 @Composable
-fun AttachmentSection(names: List<String>, onChange: (List<String>) -> Unit) {
+fun AttachmentSection(names: List<String>, title: String = str(R.string.receipts), onChange: (List<String>) -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     var error by remember { mutableStateOf<String?>(null) }
@@ -119,21 +120,14 @@ fun AttachmentSection(names: List<String>, onChange: (List<String>) -> Unit) {
         if (ok) add(Uri.fromFile(target))
     }
 
-    SectionTitle(str(R.string.receipts))
-    names.forEach { name ->
+    var viewing by remember { mutableStateOf<Int?>(null) }
+    SectionTitle(title)
+    names.forEachIndexed { index, name ->
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            if (AttachmentStore.isPdf(name)) {
-                Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(48.dp))
-            } else {
-                AsyncImage(
-                    model = AttachmentStore.file(ctx, name),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(6.dp)),
-                )
-            }
+            // Vorschau der (ersten) Seite – auch bei PDFs
+            PageThumbnail(name, Modifier.size(56.dp).clip(RoundedCornerShape(6.dp)).clickable { viewing = index })
             Spacer(Modifier.width(12.dp))
-            TextButton(onClick = { AttachmentStore.open(ctx, name) }, modifier = Modifier.weight(1f)) {
+            TextButton(onClick = { viewing = index }, modifier = Modifier.weight(1f)) {
                 Text(str(if (AttachmentStore.isPdf(name)) R.string.receipt_pdf else R.string.receipt_photo), modifier = Modifier.fillMaxWidth())
             }
             IconButton(onClick = { onChange(current - name) }) { Icon(Icons.Default.Close, contentDescription = str(R.string.remove)) }
@@ -154,4 +148,5 @@ fun AttachmentSection(names: List<String>, onChange: (List<String>) -> Unit) {
         }
     }
     error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+    viewing?.let { PageViewer(names, it) { viewing = null } }
 }

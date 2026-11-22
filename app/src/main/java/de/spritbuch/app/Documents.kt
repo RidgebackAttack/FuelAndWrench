@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +21,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
@@ -123,9 +127,12 @@ fun LazyListScope.documentItems(nav: NavController, v: Vehicle) {
     }
     docs.forEach { d ->
         item(key = "doc-" + d.id) {
-            Card(Modifier.fillMaxWidth().clickable { nav.navigate("docEdit/${v.id}/${d.id}") }) {
+            // Antippen zeigt das Dokument groß (z. B. bei einer Kontrolle), der Stift öffnet die Bearbeitung
+            var viewing by remember { mutableStateOf(false) }
+            Card(Modifier.fillMaxWidth().clickable { if (d.files.isNotEmpty()) viewing = true else nav.navigate("docEdit/${v.id}/${d.id}") }) {
                 Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(docIcon(d.type), contentDescription = null)
+                    d.files.firstOrNull()?.let { PageThumbnail(it, Modifier.size(56.dp).clip(RoundedCornerShape(6.dp))) }
+                        ?: Icon(docIcon(d.type), contentDescription = null)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(d.label(), style = MaterialTheme.typography.titleSmall)
@@ -134,8 +141,12 @@ fun LazyListScope.documentItems(nav: NavController, v: Vehicle) {
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
+                    IconButton(onClick = { nav.navigate("docEdit/${v.id}/${d.id}") }) {
+                        Icon(Icons.Default.Edit, contentDescription = str(R.string.edit))
+                    }
                 }
             }
+            if (viewing) PageViewer(d.files, 0) { viewing = false }
         }
     }
 }
@@ -216,7 +227,7 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
                 Text(if (date > 0) date.date() else str(R.string.document_date))
             }
             Text(str(R.string.document_pages_info), style = MaterialTheme.typography.bodySmall)
-            AttachmentSection(files) { files = it; error = null }
+            AttachmentSection(files, str(R.string.pages)) { files = it; error = null }
         }
     }
     if (showDate) {

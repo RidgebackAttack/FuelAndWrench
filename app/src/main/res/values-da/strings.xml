@@ -582,6 +582,10 @@
     <string name="yes">Ja</string>
     <string name="no">Nej</string>
     <string name="opt_doc_title">Registreringsattest del II</string>
+    <string name="pages">Sider</string>
+    <string name="close">Luk</string>
+    <string name="open_other_app">Åbn i anden app</string>
+    <string name="edit">Rediger</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

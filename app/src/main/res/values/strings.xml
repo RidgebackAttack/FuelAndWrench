@@ -582,6 +582,10 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="opt_doc_title">Registration certificate part II (title)</string>
+    <string name="pages">Pages</string>
+    <string name="close">Close</string>
+    <string name="open_other_app">Open in another app</string>
+    <string name="edit">Edit</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>
