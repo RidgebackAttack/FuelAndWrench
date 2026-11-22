@@ -577,3 +577,7 @@ photo_mode_return	On return to the list	Bei Rückkehr zur Liste	Ved tilbagevende
 photo_mode_timed	Slideshow	Diashow	Diasshow
 photo_mode_daily	Once a day	Einmal am Tag	En gang om dagen
 photo_tap_badge	Tap to adjust	Tippen zum Ausrichten	Tryk for at justere
+tires_due_winter	Time for winter tyres (October to Easter)	Zeit für Winterreifen (von O bis O)	Tid til vinterdæk (oktober til påske)
+tires_due_summer	Time for summer tyres (from Easter)	Zeit für Sommerreifen (ab Ostern)	Tid til sommerdæk (fra påske)
+tires_due_info	Record the wheel change or mark it as done – then this hint disappears until next season.	Radwechsel eintragen oder als erledigt markieren – dann ist bis zur nächsten Saison Ruhe.	Registrer hjulskiftet eller markér det som udført – så er der ro til næste sæson.
+tires_due_done	Done	Erledigt	Udført

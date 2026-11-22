@@ -552,6 +552,10 @@
     <string name="photo_mode_timed">Diasshow</string>
     <string name="photo_mode_daily">En gang om dagen</string>
     <string name="photo_tap_badge">Tryk for at justere</string>
+    <string name="tires_due_winter">Tid til vinterdæk (oktober til påske)</string>
+    <string name="tires_due_summer">Tid til sommerdæk (fra påske)</string>
+    <string name="tires_due_info">Registrer hjulskiftet eller markér det som udført – så er der ro til næste sæson.</string>
+    <string name="tires_due_done">Udført</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

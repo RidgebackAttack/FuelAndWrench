@@ -552,6 +552,10 @@
     <string name="photo_mode_timed">Slideshow</string>
     <string name="photo_mode_daily">Once a day</string>
     <string name="photo_tap_badge">Tap to adjust</string>
+    <string name="tires_due_winter">Time for winter tyres (October to Easter)</string>
+    <string name="tires_due_summer">Time for summer tyres (from Easter)</string>
+    <string name="tires_due_info">Record the wheel change or mark it as done – then this hint disappears until next season.</string>
+    <string name="tires_due_done">Done</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

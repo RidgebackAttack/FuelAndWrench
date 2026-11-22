@@ -68,6 +68,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -434,6 +436,7 @@ private fun LazyListScope.overviewItems(
             }
         }
     }
+    item(key = "tire-season") { TireSeasonBanner(nav, v, services) }
     item(key = "kpi") {
         val otherCost = services.sumOf { it.cost } + expenses.sumOf { it.amount }
         KpiSection(v, stats, otherCost, currentOdo, onEditOdometer) {
@@ -571,6 +574,30 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: Lis
         items(y.list, key = { it.id }, contentType = { "refuel" }) { r ->
             RefuelCard(v, r, stats.perRefuel[r.id], if (r.isCharge && stats.avgElectric != null) stats.avgElectric else stats.avg, distances[r.id]) {
                 nav.navigate("refuelEdit/${v.id}/${r.id}")
+            }
+        }
+    }
+}
+
+/** Hinweis „Winter-/Sommerreifen aufziehen“ – bis der Radwechsel eingetragen oder als erledigt markiert ist. */
+@Composable
+private fun TireSeasonBanner(nav: NavController, v: Vehicle, services: List<ServiceEntry>) {
+    val ctx = LocalContext.current
+    val sets by ctx.repo.tireSets(v.id).collectAsStateWithLifecycle(emptyList())
+    var due by remember { mutableStateOf<TireSeason.Due?>(null) }
+    var refresh by remember { mutableIntStateOf(0) }
+    LaunchedEffect(v.id, sets, services, refresh) { due = TireSeason.due(ctx, v) }
+    val d = due ?: return
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(TireSeason.text(d), style = MaterialTheme.typography.titleSmall)
+            Text(str(R.string.tires_due_info), style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { nav.navigate("serviceEdit/${v.id}/new-wheel") }) { Text(str(R.string.wheel_change)) }
+                TextButton(onClick = { TireSeason.markDone(ctx, v.id, d); refresh++ }) { Text(str(R.string.tires_due_done)) }
             }
         }
     }

@@ -134,6 +134,7 @@ object ReminderChecker {
             Notifications.show(ctx, (r.id + level).hashCode(), "${v.name}: ${r.title}", describe(r, st, v.distanceUnit))
         }
         if (changed) prefs.notified = notified
+        TireSeason.notifyIfDue(ctx, v)
     }
 }
 
