@@ -2,6 +2,7 @@ package de.spritbuch.app
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -85,6 +86,10 @@ class UiFlowTest {
                 .putExtra(Shortcuts.EXTRA_VEHICLE, "v1"),
         )
         waitForText(s(R.string.refuel_new))
+        // Das Formular erscheint erst, wenn das Fahrzeug geladen ist
+        rule.waitUntil(10_000) {
+            rule.onAllNodes(hasSetTextAction() and hasText(s(R.string.odometer), substring = true)).fetchSemanticsNodes().isNotEmpty()
+        }
         rule.onNode(hasSetTextAction() and hasText(s(R.string.odometer), substring = true)).performTextInput("1500")
         rule.onNode(hasSetTextAction() and hasText(s(R.string.amount), substring = true)).performTextInput("40")
         rule.onNode(hasSetTextAction() and hasText(s(R.string.total), substring = true)).performTextInput("70")
@@ -114,9 +119,14 @@ class UiFlowTest {
     /** Erstes Fahrzeug über das Formular anlegen (ohne Bild). */
     @Test fun createVehicleThroughForm() {
         launch()
-        waitForText(s(R.string.vehicle))
-        rule.onAllNodesWithText(s(R.string.vehicle)).onFirst().performClick()
-        waitForText(s(R.string.vehicle_name_hint))
+        // Schaltfläche „+ Fahrzeug“ (anklickbarer Knoten mit genau diesem Text)
+        rule.waitUntil(10_000) {
+            rule.onAllNodes(hasText(s(R.string.vehicle)) and hasClickAction()).fetchSemanticsNodes().isNotEmpty()
+        }
+        rule.onAllNodes(hasText(s(R.string.vehicle)) and hasClickAction()).onFirst().performClick()
+        rule.waitUntil(10_000) {
+            rule.onAllNodes(hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)).fetchSemanticsNodes().isNotEmpty()
+        }
         rule.onNode(hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)).performTextInput("Neuwagen")
         rule.onNodeWithContentDescription(s(R.string.save)).performClick()
         rule.waitUntil(10_000) { runBlocking { db.vehicles().getAllRaw().any { it.name == "Neuwagen" } } }
