@@ -581,6 +581,7 @@
     <string name="hu_from_report_info">Based on this report’s date plus 24 months.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="opt_doc_title">Registration certificate part II (title)</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

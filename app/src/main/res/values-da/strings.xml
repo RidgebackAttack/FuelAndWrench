@@ -581,6 +581,7 @@
     <string name="hu_from_report_info">Denne rapports dato plus 24 måneder.</string>
     <string name="yes">Ja</string>
     <string name="no">Nej</string>
+    <string name="opt_doc_title">Registreringsattest del II</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

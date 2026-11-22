@@ -66,10 +66,12 @@ data class VehicleDoc(
 ) {
     companion object {
         const val TYPE_REGISTRATION = "Fahrzeugschein"
+        /** Zulassungsbescheinigung Teil II – sicher aufbewahren, nicht im Fahrzeug. */
+        const val TYPE_TITLE = "Fahrzeugbrief"
         const val TYPE_INSURANCE = "Versicherungskarte"
         const val TYPE_INSPECTION = "TÜV-Bericht"
         const val TYPE_OTHER = "Sonstiges"
-        val types = listOf(TYPE_REGISTRATION, TYPE_INSURANCE, TYPE_INSPECTION, TYPE_OTHER)
+        val types = listOf(TYPE_REGISTRATION, TYPE_TITLE, TYPE_INSURANCE, TYPE_INSPECTION, TYPE_OTHER)
 
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -101,7 +103,7 @@ suspend fun Repository.deleteDocument(vehicleId: String, docId: String) {
 }
 
 private fun docIcon(type: String): ImageVector = when (type) {
-    VehicleDoc.TYPE_REGISTRATION -> Icons.Default.Badge
+    VehicleDoc.TYPE_REGISTRATION, VehicleDoc.TYPE_TITLE -> Icons.Default.Badge
     VehicleDoc.TYPE_INSURANCE -> Icons.Default.Security
     VehicleDoc.TYPE_INSPECTION -> Icons.Default.FactCheck
     else -> Icons.Default.Description

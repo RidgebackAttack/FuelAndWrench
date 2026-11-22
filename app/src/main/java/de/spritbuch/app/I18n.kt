@@ -39,6 +39,7 @@ object Labels {
             "Gemischt" to R.string.opt_route_mixed,
             "Sommerreifen" to R.string.opt_tire_summer,
             "Fahrzeugschein" to R.string.opt_doc_registration,
+            "Fahrzeugbrief" to R.string.opt_doc_title,
             "Versicherungskarte" to R.string.opt_doc_insurance,
             "TÜV-Bericht" to R.string.opt_doc_inspection,
             "Winterreifen" to R.string.opt_tire_winter,

@@ -581,6 +581,7 @@
     <string name="hu_from_report_info">Datum dieses Berichts plus 24 Monate.</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
+    <string name="opt_doc_title">Fahrzeugbrief</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>
