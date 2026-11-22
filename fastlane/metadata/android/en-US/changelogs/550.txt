@@ -1,0 +1,3 @@
+- New: previews for PDFs too
+- New: built-in viewer for documents and receipts – swipe through all pages, zoom, open in another app if needed
+- Tapping a document in the overview shows it full screen (edit via the pencil)

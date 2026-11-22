@@ -1,0 +1,3 @@
+- Nyt: forhåndsvisning også for PDF-filer
+- Nyt: indbygget fremviser til dokumenter og kvitteringer – stryg gennem alle sider, zoom, åbn i anden app efter behov
+- Tryk på et dokument i oversigten viser det i fuld skærm (rediger via blyanten)

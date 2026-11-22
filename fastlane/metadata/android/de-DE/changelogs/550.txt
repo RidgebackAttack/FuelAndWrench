@@ -1,0 +1,3 @@
+- Neu: Vorschaubilder auch für PDFs
+- Neu: eigener Betrachter für Dokumente und Belege – durch alle Seiten wischen, zoomen, bei Bedarf in anderer App öffnen
+- Dokumente in der Übersicht antippen zeigt sie direkt groß (Bearbeiten über den Stift)
