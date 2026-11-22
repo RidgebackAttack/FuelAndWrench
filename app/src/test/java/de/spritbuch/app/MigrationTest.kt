@@ -23,7 +23,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34], application = Application::class)
 class MigrationTest {
     private val ctx: Context = ApplicationProvider.getApplicationContext()
-    private val current = 10
+    private val current = 11
 
     private fun schema(version: Int): List<String> =
         javaClass.classLoader!!.getResource("schemas/db_$version.sql")!!.readText()
@@ -100,6 +100,7 @@ class MigrationTest {
     @Test fun from7() = migrateFrom(7)
     @Test fun from8() = migrateFrom(8)
     @Test fun from9() = migrateFrom(9)
+    @Test fun from10() = migrateFrom(10)
 
     /** Das aktuelle Schema muss exakt zum Datenmodell passen (Grundlage für das nächste Update). */
     @Test fun currentSchemaMatches() = migrateFrom(current)

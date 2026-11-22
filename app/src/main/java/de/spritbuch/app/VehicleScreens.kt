@@ -221,7 +221,7 @@ private fun ArchivedVehicleRow(nav: NavController, v: Vehicle, refuels: List<Ref
 
 @Composable
 private fun VehicleCard(nav: NavController, v: Vehicle, refuels: List<Refuel>) {
-    val stats = remember(refuels, v.id) { computeStats(refuels.filter { it.vehicleId == v.id }) }
+    val stats = remember(refuels, v.id) { StatsCache.get(v.id, refuels.filter { it.vehicleId == v.id }, v.batteryCapacity) }
     Card(
         onClick = { nav.navigate("vehicle/${v.id}") },
         modifier = Modifier.fillMaxWidth(),
@@ -254,7 +254,7 @@ fun VehicleDetailScreen(nav: NavController, vehicleId: String) {
     val reminders by repo.reminders(vehicleId).collectAsStateWithLifecycle(emptyList())
     val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
     var odoDialog by remember { mutableStateOf(false) }
-    val stats = remember(refuels, vehicle?.batteryCapacity) { computeStats(refuels, vehicle?.batteryCapacity) }
+    val stats = remember(refuels, vehicle?.batteryCapacity) { StatsCache.get(vehicleId, refuels, vehicle?.batteryCapacity) }
     val v = vehicle
     val currentOdo = if (v == null) 0 else maxOf(v.initialOdometer, v.manualOdometer, refuels.maxOfOrNull { it.odometer } ?: 0)
     val fuel = v?.defaultFuelType ?: ""
@@ -544,7 +544,9 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     batteryCapacity = if (drive == "Elektro" || drive == "Plug-in-Hybrid") battery.toDoubleDe() else null,
                                 )
                             )
-                            if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                if (isNew) nav.navigate("vehicle/${b.id}") { popUpTo("vehicles") } else nav.popBackStack()
+                            }
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },

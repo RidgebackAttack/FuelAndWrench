@@ -438,3 +438,25 @@ fun distancesSincePrevious(refuels: List<Refuel>): Map<String, Int> {
     val sorted = refuels.filter { !it.deleted }.sortedWith(compareBy({ it.odometer }, { it.timestamp }))
     return sorted.zipWithNext().mapNotNull { (a, b) -> (b.odometer - a.odometer).takeIf { it > 0 }?.let { b.id to it } }.toMap()
 }
+
+/**
+ * Statistik je Fahrzeug zwischenspeichern: Ändert sich nur ein Fahrzeug, rechnet die Liste nicht alle neu.
+ * Der Fingerabdruck ändert sich, sobald eine Betankung dazukommt, geändert oder gelöscht wird.
+ */
+object StatsCache {
+    private val cache = HashMap<String, Pair<Long, Stats>>()
+
+    private fun fingerprint(refuels: List<Refuel>, battery: Double?): Long {
+        var h = refuels.size.toLong() * 31 + (battery?.hashCode() ?: 0)
+        for (r in refuels) h = h * 31 + r.id.hashCode() + r.updatedAt + if (r.deleted) 1 else 0
+        return h
+    }
+
+    fun get(vehicleId: String, refuels: List<Refuel>, battery: Double?): Stats {
+        val fp = fingerprint(refuels, battery)
+        synchronized(cache) { cache[vehicleId]?.let { if (it.first == fp) return it.second } }
+        val s = computeStats(refuels, battery)
+        synchronized(cache) { cache[vehicleId] = fp to s }
+        return s
+    }
+}

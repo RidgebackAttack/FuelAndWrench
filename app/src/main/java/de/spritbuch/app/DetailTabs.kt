@@ -375,7 +375,8 @@ fun VehicleDetailContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     when (page) {
-                        0 -> overviewItems(
+                        0 -> {
+                            overviewItems(
                             nav, v, refuels, reminders, services, expenses, stats, currentOdo, fuel, amt, du, cur,
                             onEditOdometer,
                             onDone = { r ->
@@ -385,7 +386,10 @@ fun VehicleDetailContent(
                                 }
                             },
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
-                        )
+                            )
+                            // Fahrzeugdokumente (Fahrzeugschein, Versicherungskarte, TÜV-Historie)
+                            documentItems(nav, v)
+                        }
                         1 -> refuelItems(nav, v, refuelYears, stats, distances)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)

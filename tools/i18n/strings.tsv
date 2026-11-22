@@ -577,7 +577,23 @@ photo_mode_return	On return to the list	Bei Rückkehr zur Liste	Ved tilbagevende
 photo_mode_timed	Slideshow	Diashow	Diasshow
 photo_mode_daily	Once a day	Einmal am Tag	En gang om dagen
 photo_tap_badge	Tap to adjust	Tippen zum Ausrichten	Tryk for at justere
-tires_due_winter	Time for winter tyres (October to Easter)	Zeit für Winterreifen (von O bis O)	Tid til vinterdæk (oktober til påske)
-tires_due_summer	Time for summer tyres (from Easter)	Zeit für Sommerreifen (ab Ostern)	Tid til sommerdæk (fra påske)
+tires_due_winter	Time for winter tires (October to Easter)	Zeit für Winterreifen (von O bis O)	Tid til vinterdæk (oktober til påske)
+tires_due_summer	Time for summer tires (from Easter)	Zeit für Sommerreifen (ab Ostern)	Tid til sommerdæk (fra påske)
 tires_due_info	Record the wheel change or mark it as done – then this hint disappears until next season.	Radwechsel eintragen oder als erledigt markieren – dann ist bis zur nächsten Saison Ruhe.	Registrer hjulskiftet eller markér det som udført – så er der ro til næste sæson.
 tires_due_done	Done	Erledigt	Udført
+opt_doc_registration	Registration certificate	Fahrzeugschein	Registreringsattest
+opt_doc_insurance	Insurance card	Versicherungskarte	Forsikringskort
+opt_doc_inspection	Inspection report	TÜV-Bericht	Synsrapport
+opt_doc_other	Other	Sonstiges	Andet
+documents	Documents	Dokumente	Dokumenter
+documents_empty	Registration, insurance card, inspection reports – photograph them or add files.	Fahrzeugschein, Versicherungskarte, TÜV-Berichte – abfotografieren oder als Datei hinzufügen.	Registreringsattest, forsikringskort, synsrapporter – fotografér dem eller tilføj som fil.
+document	Document	Dokument	Dokument
+document_new	New document	Neues Dokument	Nyt dokument
+document_title	Name	Bezeichnung	Betegnelse
+document_title_optional	Note (optional)	Zusatz (optional)	Tilføjelse (valgfri)
+document_date	Date (optional)	Datum (optional)	Dato (valgfri)
+document_pages_info	Add each page separately – e.g. the registration certificate as individual pages.	Jede Seite einzeln hinzufügen – z. B. den Fahrzeugschein als Einzelseiten.	Tilføj hver side for sig – f.eks. registreringsattesten som enkeltsider.
+document_need_page	Please add at least one page.	Bitte mindestens eine Seite hinzufügen.	Tilføj mindst én side.
+document_delete_q	Delete document?	Dokument löschen?	Slet dokument?
+pl_pages#one	%d page	%d Seite	%d side
+pl_pages#other	%d pages	%d Seiten	%d sider

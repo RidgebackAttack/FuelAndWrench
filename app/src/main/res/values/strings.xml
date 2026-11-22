@@ -552,10 +552,24 @@
     <string name="photo_mode_timed">Slideshow</string>
     <string name="photo_mode_daily">Once a day</string>
     <string name="photo_tap_badge">Tap to adjust</string>
-    <string name="tires_due_winter">Time for winter tyres (October to Easter)</string>
-    <string name="tires_due_summer">Time for summer tyres (from Easter)</string>
+    <string name="tires_due_winter">Time for winter tires (October to Easter)</string>
+    <string name="tires_due_summer">Time for summer tires (from Easter)</string>
     <string name="tires_due_info">Record the wheel change or mark it as done – then this hint disappears until next season.</string>
     <string name="tires_due_done">Done</string>
+    <string name="opt_doc_registration">Registration certificate</string>
+    <string name="opt_doc_insurance">Insurance card</string>
+    <string name="opt_doc_inspection">Inspection report</string>
+    <string name="opt_doc_other">Other</string>
+    <string name="documents">Documents</string>
+    <string name="documents_empty">Registration, insurance card, inspection reports – photograph them or add files.</string>
+    <string name="document">Document</string>
+    <string name="document_new">New document</string>
+    <string name="document_title">Name</string>
+    <string name="document_title_optional">Note (optional)</string>
+    <string name="document_date">Date (optional)</string>
+    <string name="document_pages_info">Add each page separately – e.g. the registration certificate as individual pages.</string>
+    <string name="document_need_page">Please add at least one page.</string>
+    <string name="document_delete_q">Delete document?</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>
@@ -611,5 +625,9 @@
     <plurals name="pl_rem_date_left">
         <item quantity="one">%1$d day left (%2$s)</item>
         <item quantity="other">%1$d days left (%2$s)</item>
+    </plurals>
+    <plurals name="pl_pages">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
     </plurals>
 </resources>

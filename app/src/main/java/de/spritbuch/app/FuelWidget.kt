@@ -111,7 +111,7 @@ class FuelWidget : AppWidgetProvider() {
             }
             val db = ctx.repo.db
             val refuels = db.refuels().forVehicle(v.id)
-            val stats = computeStats(refuels, v.batteryCapacity)
+            val stats = StatsCache.get(v.id, refuels, v.batteryCapacity)
             val odo = maxOf(v.initialOdometer, v.manualOdometer, refuels.maxOfOrNull { it.odometer } ?: 0)
 
             val month = Calendar.getInstance().apply {

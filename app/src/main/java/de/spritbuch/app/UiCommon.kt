@@ -157,6 +157,9 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
         composable("tireSetEdit/{vehicleId}/{id}") {
             TireSetEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
+        composable("docEdit/{vehicleId}/{id}") {
+            DocEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
+        }
         composable("expenseEdit/{vehicleId}/{id}") {
             ExpenseEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }

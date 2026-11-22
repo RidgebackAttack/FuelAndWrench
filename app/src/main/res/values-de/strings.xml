@@ -556,6 +556,20 @@
     <string name="tires_due_summer">Zeit für Sommerreifen (ab Ostern)</string>
     <string name="tires_due_info">Radwechsel eintragen oder als erledigt markieren – dann ist bis zur nächsten Saison Ruhe.</string>
     <string name="tires_due_done">Erledigt</string>
+    <string name="opt_doc_registration">Fahrzeugschein</string>
+    <string name="opt_doc_insurance">Versicherungskarte</string>
+    <string name="opt_doc_inspection">TÜV-Bericht</string>
+    <string name="opt_doc_other">Sonstiges</string>
+    <string name="documents">Dokumente</string>
+    <string name="documents_empty">Fahrzeugschein, Versicherungskarte, TÜV-Berichte – abfotografieren oder als Datei hinzufügen.</string>
+    <string name="document">Dokument</string>
+    <string name="document_new">Neues Dokument</string>
+    <string name="document_title">Bezeichnung</string>
+    <string name="document_title_optional">Zusatz (optional)</string>
+    <string name="document_date">Datum (optional)</string>
+    <string name="document_pages_info">Jede Seite einzeln hinzufügen – z. B. den Fahrzeugschein als Einzelseiten.</string>
+    <string name="document_need_page">Bitte mindestens eine Seite hinzufügen.</string>
+    <string name="document_delete_q">Dokument löschen?</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>
@@ -611,5 +625,9 @@
     <plurals name="pl_rem_date_left">
         <item quantity="one">noch %1$d Tag (%2$s)</item>
         <item quantity="other">noch %1$d Tage (%2$s)</item>
+    </plurals>
+    <plurals name="pl_pages">
+        <item quantity="one">%d Seite</item>
+        <item quantity="other">%d Seiten</item>
     </plurals>
 </resources>

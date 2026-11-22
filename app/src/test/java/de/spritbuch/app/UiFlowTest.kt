@@ -110,4 +110,34 @@ class UiFlowTest {
         }
         rule.onNodeWithText(s(R.string.e2e_title)).performScrollTo()
     }
+
+    /** Erstes Fahrzeug über das Formular anlegen (ohne Bild). */
+    @Test fun createVehicleThroughForm() {
+        launch()
+        waitForText(s(R.string.vehicle))
+        rule.onAllNodesWithText(s(R.string.vehicle)).onFirst().performClick()
+        waitForText(s(R.string.vehicle_name_hint))
+        rule.onNode(hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)).performTextInput("Neuwagen")
+        rule.onNodeWithContentDescription(s(R.string.save)).performClick()
+        rule.waitUntil(10_000) { runBlocking { db.vehicles().getAllRaw().any { it.name == "Neuwagen" } } }
+    }
+
+    /** Reifenwechsel-Hinweis erscheint, wenn der falsche Radsatz montiert ist, und verschwindet mit „Erledigt“. */
+    @Test fun tireSeasonHintUntilDone() {
+        seed(withHistory = false)
+        val (target, _) = TireSeason.period()
+        val wrong = if (target == TireSeason.WINTER) TireSeason.SUMMER else TireSeason.WINTER
+        runBlocking {
+            db.tireSets().upsert(TireSet(id = "t1", vehicleId = "v1", season = wrong))
+            db.tireSets().upsert(TireSet(id = "t2", vehicleId = "v1", season = target))
+            db.services().upsert(ServiceEntry(id = "s1", vehicleId = "v1", category = "Reifen", title = "Radwechsel", tireSetId = "t1", odometer = 1000))
+        }
+        launch()
+        waitForText("Testwagen")
+        rule.onAllNodesWithText("Testwagen").onFirst().performClick()
+        val hint = s(if (target == TireSeason.WINTER) R.string.tires_due_winter else R.string.tires_due_summer)
+        waitForText(hint)
+        rule.onNodeWithText(s(R.string.tires_due_done)).performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText(hint).fetchSemanticsNodes().isEmpty() }
+    }
 }

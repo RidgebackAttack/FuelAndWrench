@@ -556,6 +556,20 @@
     <string name="tires_due_summer">Tid til sommerdæk (fra påske)</string>
     <string name="tires_due_info">Registrer hjulskiftet eller markér det som udført – så er der ro til næste sæson.</string>
     <string name="tires_due_done">Udført</string>
+    <string name="opt_doc_registration">Registreringsattest</string>
+    <string name="opt_doc_insurance">Forsikringskort</string>
+    <string name="opt_doc_inspection">Synsrapport</string>
+    <string name="opt_doc_other">Andet</string>
+    <string name="documents">Dokumenter</string>
+    <string name="documents_empty">Registreringsattest, forsikringskort, synsrapporter – fotografér dem eller tilføj som fil.</string>
+    <string name="document">Dokument</string>
+    <string name="document_new">Nyt dokument</string>
+    <string name="document_title">Betegnelse</string>
+    <string name="document_title_optional">Tilføjelse (valgfri)</string>
+    <string name="document_date">Dato (valgfri)</string>
+    <string name="document_pages_info">Tilføj hver side for sig – f.eks. registreringsattesten som enkeltsider.</string>
+    <string name="document_need_page">Tilføj mindst én side.</string>
+    <string name="document_delete_q">Slet dokument?</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>
@@ -611,5 +625,9 @@
     <plurals name="pl_rem_date_left">
         <item quantity="one">%1$d dag tilbage (%2$s)</item>
         <item quantity="other">%1$d dage tilbage (%2$s)</item>
+    </plurals>
+    <plurals name="pl_pages">
+        <item quantity="one">%d side</item>
+        <item quantity="other">%d sider</item>
     </plurals>
 </resources>

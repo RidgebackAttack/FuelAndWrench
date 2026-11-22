@@ -231,7 +231,8 @@ object SyncManager {
             syncAttachments(
                 ctx, dav, prefs, crypt, reupload,
                 merged.services.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
-                    merged.expenses.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() },
+                    merged.expenses.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
+                    merged.vehicles.filter { !it.deleted && prefs.shows(it.id) }.flatMap { v -> v.documentList().flatMap { it.files } },
             )
             if (reupload) prefs.reuploadFiles = false
             ReminderChecker.checkAll(ctx)

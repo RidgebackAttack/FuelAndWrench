@@ -58,7 +58,8 @@ object Backup {
                 }
             }
             val names = data.services.filter { !it.deleted }.flatMap { it.attachmentList() } +
-                data.expenses.filter { !it.deleted }.flatMap { it.attachmentList() }
+                data.expenses.filter { !it.deleted }.flatMap { it.attachmentList() } +
+                data.vehicles.filter { !it.deleted }.flatMap { v -> v.documentList().flatMap { it.files } }
             names.distinct().forEach { putFile("${AttachmentStore.DIR}/$it", AttachmentStore.file(ctx, it)) }
             val byId = vehicles.associateBy { it.id }
             put("csv/refuels.csv", Csv.refuels(data.refuels.filter { !it.deleted && it.vehicleId in byId }, byId).toByteArray())
