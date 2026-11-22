@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -121,9 +122,9 @@ class UiFlowTest {
         seed(withHistory = false)
         launch()
         waitForText("Testwagen")
-        val fab = hasText(s(R.string.vehicle)) and hasClickAction()
-        rule.waitUntil(10_000) { rule.onAllNodes(fab).fetchSemanticsNodes().isNotEmpty() }
-        rule.onAllNodes(fab).onFirst().performClick()
+        // Text der Schaltfläche „+ Fahrzeug“ antippen (Tipp landet auf der Schaltfläche)
+        rule.waitUntil(10_000) { rule.onAllNodesWithText(s(R.string.vehicle), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        rule.onAllNodesWithText(s(R.string.vehicle), useUnmergedTree = true).onLast().performClick()
         rule.waitUntil(10_000) {
             rule.onAllNodes(hasSetTextAction() and hasText(s(R.string.vehicle_name_hint), substring = true)).fetchSemanticsNodes().isNotEmpty()
         }
