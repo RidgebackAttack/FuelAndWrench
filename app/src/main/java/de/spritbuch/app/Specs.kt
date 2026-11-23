@@ -214,7 +214,7 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
                         scope.launch {
                             // aktuellen Stand holen, damit parallel synchronisierte Änderungen am Fahrzeug erhalten bleiben
                             val cur = repo.getVehicle(vehicleId) ?: v
-                            repo.saveVehicle(cur.copy(specs = Specs.encode(list)))
+                            repo.saveVehicle(cur.copy(specs = Specs.encode(list), specsUpdatedAt = now()))
                             nav.popBackStack()
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }

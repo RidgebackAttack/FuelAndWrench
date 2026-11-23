@@ -1,0 +1,1 @@
+- Rettet: Datablad og dokumenter kunne gå tabt ved synkronisering, når køretøjet blev gemt senere på en anden enhed – de flettes nu separat

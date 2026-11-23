@@ -120,7 +120,7 @@ class Repository(
                         ),
                     )
                 }
-                db.vehicles().upsert(v.copy(documents = VehicleDoc.encodeList(docs - reports.toSet()), updatedAt = t))
+                db.vehicles().upsert(v.copy(documents = VehicleDoc.encodeList(docs - reports.toSet()), docsUpdatedAt = t, updatedAt = t))
                 any = true
             }
         }
@@ -305,6 +305,9 @@ class Repository(
                     tankCapacity = if (Units.isLiquid(v.defaultFuelType)) v.tankCapacity?.let { it * vf } else v.tankCapacity,
                 )
             }
+            // Formulare mit veraltetem Stand (z. B. Fahrzeug bearbeiten, während der Sync einen neuen Steckbrief brachte)
+            // überschreiben Steckbrief und Dokumente nicht
+            if (old != null) toSave = mergeVehicleParts(toSave, old)
             db.vehicles().upsert(toSave.copy(updatedAt = t))
         }
         ensureDefaultReminders(v.id)

@@ -1,0 +1,1 @@
+- Fixed: data sheet and documents could get lost in sync when the vehicle was saved later on another device – they are now merged separately

@@ -189,7 +189,7 @@ object SyncManager {
                 SyncData(
                     reminderTemplates = tplList,
                     templatesUpdatedAt = tplTs,
-                    vehicles = mergeInto(db.vehicles().getAllRaw(), r.vehicles, { it.id }, { it.updatedAt }) { db.vehicles().upsert(it) },
+                    vehicles = mergeVehicles(db.vehicles().getAllRaw(), r.vehicles) { db.vehicles().upsert(it) },
                     refuels = mergeInto(db.refuels().getAllRaw(), r.refuels, { it.id }, { it.updatedAt }) { db.refuels().upsert(it) },
                     reminders = mergeInto(db.reminders().getAllRaw(), r.reminders, { it.id }, { it.updatedAt }) { db.reminders().upsert(it) },
                     services = mergeInto(db.services().getAllRaw(), r.services, { it.id }, { it.updatedAt }) { db.services().upsert(it) },
@@ -401,6 +401,35 @@ object SyncScheduler {
             .build()
         WorkManager.getInstance(ctx).enqueueUniqueWork("sync-now", ExistingWorkPolicy.REPLACE, req)
     }
+}
+
+/**
+ * Steckbrief und Dokumente aus der Fassung mit dem jeweils neueren eigenen Zeitstempel übernehmen,
+ * alles andere aus [base]. Bei Gleichstand bleibt [base].
+ */
+fun mergeVehicleParts(base: Vehicle, other: Vehicle): Vehicle {
+    var v = base
+    if (other.specsUpdatedAt > v.specsUpdatedAt) v = v.copy(specs = other.specs, specsUpdatedAt = other.specsUpdatedAt)
+    if (other.docsUpdatedAt > v.docsUpdatedAt) v = v.copy(documents = other.documents, docsUpdatedAt = other.docsUpdatedAt)
+    return v
+}
+
+/**
+ * Fahrzeuge zusammenführen: das Fahrzeug selbst nach updatedAt (Gleichstand: Server), Steckbrief und
+ * Dokumente getrennt nach ihren eigenen Zeitstempeln. Liefert den zusammengeführten Stand; geänderte
+ * lokale Datensätze werden über [write] gespeichert.
+ */
+suspend fun mergeVehicles(local: List<Vehicle>, remote: List<Vehicle>, write: suspend (Vehicle) -> Unit): List<Vehicle> {
+    val result = local.associateBy { it.id }.toMutableMap()
+    for (r in remote) {
+        val l = result[r.id]
+        val m = if (l == null) r else if (l.updatedAt > r.updatedAt) mergeVehicleParts(l, r) else mergeVehicleParts(r, l)
+        if (m != l) {
+            result[r.id] = m
+            write(m)
+        }
+    }
+    return result.values.toList()
 }
 
 /**

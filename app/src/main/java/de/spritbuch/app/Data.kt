@@ -148,6 +148,10 @@ data class Vehicle(
     val tireSeasonDone: String = "",
     /** Steckbrief (Ölsorte, Reifendruck, Teilenummern …) als JSON, siehe [SpecField]. */
     val specs: String = "",
+    /** Eigene Zeitstempel für Steckbrief und Dokumente: beim Sync werden sie getrennt vom übrigen Fahrzeug
+     *  zusammengeführt, damit eine Änderung am Fahrzeug auf Gerät A den Steckbrief von Gerät B nicht verdrängt. */
+    val specsUpdatedAt: Long = 0,
+    val docsUpdatedAt: Long = 0,
 ) {
     /** Alle Bilder mit ihren festgelegten Ausschnitten (erstes = Hauptbild). */
     fun images(): List<VehicleImage> =
@@ -515,7 +519,7 @@ data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val l
     }
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 12, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 13, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -560,6 +564,17 @@ abstract class AppDatabase : RoomDatabase() {
                 for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
                     db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
                 }
+            }
+        }
+
+        /** 1.12.2: eigene Zeitstempel für Steckbrief und Dokumente (getrennt zusammengeführt). */
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN specsUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN docsUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                // Vorhandene Inhalte gelten als zum letzten Speichern geändert; leere bleiben bei 0 und verlieren so gegen jeden Inhalt
+                db.execSQL("UPDATE vehicles SET specsUpdatedAt = updatedAt WHERE specs != ''")
+                db.execSQL("UPDATE vehicles SET docsUpdatedAt = updatedAt WHERE documents != ''")
             }
         }
 
@@ -631,7 +646,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

@@ -1,0 +1,1 @@
+- Behoben: Steckbrief und Dokumente gingen beim Sync verloren, wenn das Fahrzeug auf einem anderen Gerät später gespeichert wurde – sie werden jetzt getrennt zusammengeführt

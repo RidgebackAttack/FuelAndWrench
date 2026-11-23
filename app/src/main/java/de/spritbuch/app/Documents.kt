@@ -102,12 +102,12 @@ fun Vehicle.documentList(): List<VehicleDoc> =
 suspend fun Repository.saveDocument(vehicleId: String, doc: VehicleDoc) {
     val v = getVehicle(vehicleId) ?: return
     val list = VehicleDoc.parseList(v.documents).filter { it.id != doc.id } + doc
-    saveVehicle(v.copy(documents = VehicleDoc.encodeList(list)))
+    saveVehicle(v.copy(documents = VehicleDoc.encodeList(list), docsUpdatedAt = now()))
 }
 
 suspend fun Repository.deleteDocument(vehicleId: String, docId: String) {
     val v = getVehicle(vehicleId) ?: return
-    saveVehicle(v.copy(documents = VehicleDoc.encodeList(VehicleDoc.parseList(v.documents).filter { it.id != docId })))
+    saveVehicle(v.copy(documents = VehicleDoc.encodeList(VehicleDoc.parseList(v.documents).filter { it.id != docId }), docsUpdatedAt = now()))
 }
 
 private fun docIcon(type: String): ImageVector = when (type) {
