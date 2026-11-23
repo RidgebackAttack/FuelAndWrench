@@ -214,7 +214,7 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                 if (s.category == HU_CATEGORY && s.huResult.isNotBlank()) HuResultBadge(s.huResult)
                 s.oilAmount?.takeIf { it > 0 }?.let { a ->
                     Text(
-                        (if (s.isOilChange && s.category != OIL_TOPUP) str(R.string.oil_filled, "${a.fmt(2)} ${OilStats.unit(v)}")
+                        (if (s.countsAsOilChange() && s.category != OIL_TOPUP) str(R.string.oil_filled, "${a.fmt(2)} ${OilStats.unit(v)}")
                         else "${a.fmt(2)} ${OilStats.unit(v)}"),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
                     )
@@ -379,7 +379,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         attachments = s.attachmentList()
         huResult = s.huResult
         oilAmount = s.oilAmount?.fmt(2) ?: ""
-        oilChange = s.oilChange || (s.category != OIL_TOPUP && s.isOilChange)
+        oilChange = s.oilChange || (s.category != OIL_TOPUP && s.countsAsOilChange())
         tireSeason = s.tireSeason; tireBrand = s.tireBrand; tireModel = s.tireModel; tireSize = s.tireSize
         mountedSetId = s.tireSetId; removedSetId = s.removedTireSetId
         if (isNew) {

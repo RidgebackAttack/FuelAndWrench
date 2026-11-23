@@ -36,9 +36,9 @@ class OilAndFilterTest {
     }
 
     @Test fun explicitFlagAndTitle() {
-        assertTrue(ServiceEntry(title = "Inspektion", oilChange = true).isOilChange)
-        assertTrue(ServiceEntry(title = "Öl-Wechsel mit Filter").isOilChange)
-        assertTrue(!ServiceEntry(title = "Bremsen").isOilChange)
+        assertTrue(ServiceEntry(title = "Inspektion", oilChange = true).countsAsOilChange())
+        assertTrue(ServiceEntry(title = "Öl-Wechsel mit Filter").countsAsOilChange())
+        assertTrue(!ServiceEntry(title = "Bremsen").countsAsOilChange())
     }
 
     @Test fun perYear() {

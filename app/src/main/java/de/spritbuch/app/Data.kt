@@ -282,8 +282,7 @@ data class ServiceEntry(
     fun attachmentList(): List<String> = attachments.split("|").filter { it.isNotBlank() }
 
     /** Ölwechsel – ausdrücklich markiert oder (ältere Einträge) am Titel erkannt. */
-    val isOilChange: Boolean
-        get() = oilChange || Regex("""öl\s*-?\s*wechsel|oil\s*change|olieskift""", RegexOption.IGNORE_CASE).containsMatchIn(title.lowercase())
+    fun countsAsOilChange(): Boolean = oilChange || Regex("""öl\s*-?\s*wechsel|oil\s*change|olieskift""", RegexOption.IGNORE_CASE).containsMatchIn(title.lowercase())
 
     fun tireSummary(): String = listOf(
         lbl(tireSeason),

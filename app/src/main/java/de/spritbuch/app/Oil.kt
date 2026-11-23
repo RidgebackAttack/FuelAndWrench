@@ -48,7 +48,7 @@ object OilStats {
      * Nachfüllung als Ausgangspunkt.
      */
     fun summary(services: List<ServiceEntry>): Summary {
-        val change = services.filter { it.category != OIL_TOPUP && it.isOilChange }.maxByOrNull { it.timestamp }
+        val change = services.filter { it.category != OIL_TOPUP && it.countsAsOilChange() }.maxByOrNull { it.timestamp }
         val topUps = services.filter { it.category == OIL_TOPUP && (change == null || it.timestamp > change.timestamp) }
             .sortedWith(compareBy({ it.timestamp }, { it.odometer }))
         val withKm = topUps.filter { it.odometer > 0 && (it.oilAmount ?: 0.0) > 0 }
