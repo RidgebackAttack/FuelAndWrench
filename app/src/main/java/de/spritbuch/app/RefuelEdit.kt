@@ -1,5 +1,7 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -346,7 +348,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     ) { pad ->
         if (base == null) return@Scaffold
         Column(
-            Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }

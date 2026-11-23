@@ -1,5 +1,7 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -86,7 +88,7 @@ fun AboutScreen(nav: NavController) {
 
     Scaffold(topBar = { TopAppBar(title = { Text(str(R.string.about_title)) }, navigationIcon = { BackButton(nav) }) }) { pad ->
         Column(
-            Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("Fuel & Wrench", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)

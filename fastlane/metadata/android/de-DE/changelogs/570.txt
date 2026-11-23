@@ -1,0 +1,1 @@
+- Behoben: Die Tastatur verdeckte untere Eingabefelder (Steckbrief, Betankung, Service, Fahrzeug …) – die Ansicht scrollt jetzt mit

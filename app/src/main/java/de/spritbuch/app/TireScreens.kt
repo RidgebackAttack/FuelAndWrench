@@ -1,5 +1,7 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -171,7 +173,7 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
         if (base == null) return@Scaffold
         val moto = veh?.vehicleType == "Motorrad"
         Column(
-            Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionTitle(str(R.string.tire_kind))

@@ -1,0 +1,1 @@
+- Rettet: Tastaturet dækkede nederste indtastningsfelter (datablad, tankning, service, køretøj …) – visningen ruller nu med

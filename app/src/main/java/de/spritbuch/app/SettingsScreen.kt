@@ -1,5 +1,7 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Backup
@@ -144,7 +146,7 @@ fun SettingsScreen(nav: NavController, section: String? = null) {
         },
     ) { pad ->
         Column(
-            Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (section == null) SettingsOverview(nav, prefs, status)

@@ -1,5 +1,7 @@
 package de.spritbuch.app
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -555,7 +557,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     ) { pad ->
         val b = base ?: return@Scaffold
         Column(
-            Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             val sel = selectedImage.coerceIn(0, (images.size - 1).coerceAtLeast(0))
