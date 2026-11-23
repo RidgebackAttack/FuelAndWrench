@@ -60,11 +60,12 @@ class Repository(
      * Speichert einen Service-Eintrag. Gibt es eine Erinnerung mit gleichem Namen, wird deren
      * "zuletzt erledigt" auf den Kilometerstand des Eintrags gesetzt.
      */
-    suspend fun saveService(s: ServiceEntry) {
+    suspend fun saveService(s: ServiceEntry): Long? {
         val t = now()
         db.withTransaction {
             db.services().upsert(s.copy(updatedAt = t))
-            db.reminders().forVehicle(s.vehicleId)
+            // HU mit erheblichen Mängeln zählt nicht als erledigt (keine Plakette)
+            if (!(s.category == HU_CATEGORY && s.huResult == HU_MAJOR)) db.reminders().forVehicle(s.vehicleId)
                 .filter { it.title.equals(s.title.trim(), ignoreCase = true) && (s.odometer > it.lastDoneKm || s.timestamp > it.lastDoneDate) }
                 .forEach {
                     db.reminders().upsert(
@@ -78,6 +79,52 @@ class Repository(
         }
         ReminderChecker.check(ctx, s.vehicleId)
         changed()
+        return if (s.category == HU_CATEGORY && s.huResult in setOf(HU_OK, HU_MINOR)) completeHu(s) else null
+    }
+
+    /**
+     * Bestandene HU (auch mit geringen Mängeln): nächste HU = Prüfdatum + Intervall (Standard 24 Monate).
+     * Nur wenn es die neueste HU ist, damit nachgetragene alte Berichte die Fälligkeit nicht zurücksetzen.
+     * Liefert die neue Fälligkeit oder null.
+     */
+    suspend fun completeHu(s: ServiceEntry): Long? {
+        val newer = db.services().forVehicle(s.vehicleId).any { it.id != s.id && it.category == HU_CATEGORY && it.timestamp > s.timestamp }
+        if (newer) return null
+        val months = huReminder(s.vehicleId)?.intervalMonths?.takeIf { it > 0 } ?: 24
+        val due = java.util.Calendar.getInstance().apply { timeInMillis = s.timestamp; add(java.util.Calendar.MONTH, months) }.timeInMillis
+        setHuDue(s.vehicleId, due)
+        return due
+    }
+
+    /**
+     * TÜV-Berichte gehören seit 1.12 zum Service (Kategorie HU/TÜV): ältere Berichte aus den Dokumenten
+     * werden zu Service-Einträgen. Feste Kennung je Bericht, damit mehrere Geräte keine Doppel anlegen;
+     * läuft beim Start und nach dem Sync (Berichte von Geräten mit älterer Version).
+     */
+    suspend fun convertInspectionDocs() {
+        var any = false
+        db.withTransaction {
+            for (v in db.vehicles().getAllRaw()) {
+                if (v.deleted) continue
+                val docs = VehicleDoc.parseList(v.documents)
+                val reports = docs.filter { it.type == VehicleDoc.TYPE_INSPECTION }
+                if (reports.isEmpty()) continue
+                val t = now()
+                for (d in reports) {
+                    val id = "doc-" + d.id
+                    if (db.services().get(id) != null) continue
+                    db.services().upsert(
+                        ServiceEntry(
+                            id = id, vehicleId = v.id, timestamp = d.date ?: t, category = HU_CATEGORY,
+                            title = str(R.string.hu_title), note = d.title, attachments = d.files.joinToString("|"), updatedAt = t,
+                        ),
+                    )
+                }
+                db.vehicles().upsert(v.copy(documents = VehicleDoc.encodeList(docs - reports.toSet()), updatedAt = t))
+                any = true
+            }
+        }
+        if (any) changed()
     }
 
     /**
@@ -180,7 +227,8 @@ class Repository(
 
     /** Erinnerung als erledigt markieren und dabei einen Service-Eintrag anlegen. */
     suspend fun completeReminder(r: Reminder, odometer: Int) {
-        saveService(ServiceEntry(vehicleId = r.vehicleId, odometer = odometer, title = r.title, category = "Wartung"))
+        val hu = r.id == huReminder(r.vehicleId)?.id
+        saveService(ServiceEntry(vehicleId = r.vehicleId, odometer = odometer, title = r.title, category = if (hu) HU_CATEGORY else "Wartung"))
         db.reminders().get(r.id)?.let { db.reminders().upsert(it.copy(lastDoneKm = odometer, lastDoneDate = now(), updatedAt = now())) }
         changed()
     }
@@ -202,8 +250,7 @@ class Repository(
     /** Die HU/TÜV-Erinnerung eines Fahrzeugs (feste Kennung; ältere, von Hand angelegte werden am Titel erkannt). */
     suspend fun huReminder(vehicleId: String): Reminder? {
         val all = db.reminders().forVehicle(vehicleId)
-        return all.firstOrNull { it.id == "$vehicleId-hu" }
-            ?: all.firstOrNull { r -> r.intervalMonths > 0 && Regex("""\b(hu|tüv|tuv)\b""", RegexOption.IGNORE_CASE).containsMatchIn(r.title) }
+        return all.firstOrNull { it.id == "$vehicleId-hu" } ?: all.firstOrNull { it.isHu }
     }
 
     /** HU-Fälligkeit setzen: legt die Erinnerung an bzw. passt sie an (Standard 24 Monate, nur nach Datum). */

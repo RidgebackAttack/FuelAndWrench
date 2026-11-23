@@ -59,6 +59,7 @@ class App : Application() {
             runCatching { DailyWorker.schedule(this@App) }
             Shortcuts.update(this@App)
             runCatching { repo.repairImportedData() }
+            runCatching { repo.convertInspectionDocs() }
         }
     }
 }

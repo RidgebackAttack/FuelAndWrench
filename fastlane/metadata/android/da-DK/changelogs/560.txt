@@ -1,0 +1,6 @@
+- Nyt: syn som servicepost med resultat og rapport; bestået sætter næste syn
+- Nyt: servicefilter – flere kategorier, tryk igen for at udelukke
+- Nyt: forhåndsvisning af bilag i servicelisten
+- Nyt: datablad (olie, dæktryk, reservedelsnumre, VIN, egne felter) – tryk for at kopiere
+- Nyt: oliepåfyldning med olieforbrug siden olieskift og pr. år
+- Gamle synsdokumenter flyttes automatisk

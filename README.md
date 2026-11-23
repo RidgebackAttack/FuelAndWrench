@@ -15,6 +15,9 @@ Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronis
 - Verbrauch nach Voll-zu-Voll-Methode, Kosten pro 100 km, Gesamtkosten
 - Wartungserinnerungen nach Kilometern und/oder Zeit (Vorwarnung + Fälligkeit als Benachrichtigung)
 - Sonstige Kosten (Versicherung, Steuer, Parken, Maut …), Belege als Foto/PDF an Service und Kosten
+- Service-Historie mit Filter (mehrere Kategorien, auch „ohne“), Vorschau der Belege; HU/TÜV mit Ergebnis und Prüfbericht setzt die nächste HU
+- Fahrzeug-Steckbrief (Ölsorte, Reifendruck, Teilenummern, FIN, HSN/TSN, eigene Felder) – antippen zum Kopieren
+- Ölnachfüllungen mit Ölverbrauch (l/1000 km seit Ölwechsel, pro Jahr)
 - Statistik: Kosten pro Monat/Jahr, Literpreis-Verlauf, Verbrauch nach Reifen, Strecke und Fahrstil
 - Beleg- und Tacho-Scan per Kamera (Tesseract, offline auf dem Gerät)
 - Backup als ZIP (inkl. Fotos, Belege, CSV-Tabellen) und Wiederherstellen

@@ -87,7 +87,9 @@ object Options {
         "Zuhause", "EnBW", "Ionity", "Tesla Supercharger", "Aral pulse", "Shell Recharge", "EWE Go", "E.ON Drive",
         "Allego", "Fastned", "Maingau", "Clever", "Circle K", "Arbeitgeber",
     )
-    val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", "Pflege", "Zubehör", "Sonstiges")
+    val serviceCategories = listOf("Wartung", "Reparatur", "Reifen", "HU/AU", OIL_TOPUP, "Pflege", "Zubehör", "Sonstiges")
+    /** Ergebnis der Hauptuntersuchung: ohne/geringe Mängel (Plakette) oder erhebliche Mängel (Nachprüfung). */
+    val huResults = listOf(HU_OK, HU_MINOR, HU_MAJOR)
     val serviceSuggestions get() = strList(R.string.list_service_suggestions)
     val reminderSuggestions get() = strList(R.string.list_reminder_suggestions)
 
@@ -100,6 +102,14 @@ object Options {
 
 /** Schlüssel der Energieart „Strom“ (Laden statt Tanken). */
 const val ELECTRIC = "Strom"
+
+/** Service-Kategorie „Öl nachgefüllt“ (Menge in [ServiceEntry.oilAmount]). */
+const val OIL_TOPUP = "Öl"
+/** Service-Kategorie Hauptuntersuchung (Anzeige „HU/TÜV“). */
+const val HU_CATEGORY = "HU/AU"
+const val HU_OK = "bestanden"
+const val HU_MINOR = "geringe Mängel"
+const val HU_MAJOR = "erhebliche Mängel"
 
 @Serializable
 @Entity(tableName = "vehicles")
@@ -136,6 +146,8 @@ data class Vehicle(
     val documents: String = "",
     /** Reifenwechsel-Hinweis dieser Saison als erledigt markiert (z. B. „W2026“); wird synchronisiert. */
     val tireSeasonDone: String = "",
+    /** Steckbrief (Ölsorte, Reifendruck, Teilenummern …) als JSON, siehe [SpecField]. */
+    val specs: String = "",
 ) {
     /** Alle Bilder mit ihren festgelegten Ausschnitten (erstes = Hauptbild). */
     fun images(): List<VehicleImage> =
@@ -222,6 +234,10 @@ data class Reminder(
         return ReminderState(remKm, remDays, overdue, warn)
     }
 
+    /** HU/TÜV-Erinnerung (feste Kennung oder von Hand angelegt mit passendem Titel). */
+    val isHu: Boolean
+        get() = id == "$vehicleId-hu" || (intervalMonths > 0 && Regex("""\b(hu|tüv|tuv)\b""").containsMatchIn(title.lowercase()))
+
     companion object { const val WARN_DAYS = 30 }
 }
 
@@ -256,8 +272,18 @@ data class ServiceEntry(
     val deleted: Boolean = false,
     /** Belege: Dateinamen im Ordner „attachments“, mit „|“ getrennt. */
     @ColumnInfo(defaultValue = "") val attachments: String = "",
+    /** HU/TÜV: Ergebnis ([HU_OK], [HU_MINOR], [HU_MAJOR]) oder leer. */
+    val huResult: String = "",
+    /** Öl: nachgefüllte bzw. beim Ölwechsel eingefüllte Menge (Volumeneinheit des Fahrzeugs). */
+    val oilAmount: Double? = null,
+    /** Dieser Eintrag ist ein Ölwechsel (Grundlage für den Ölverbrauch). */
+    val oilChange: Boolean = false,
 ) {
     fun attachmentList(): List<String> = attachments.split("|").filter { it.isNotBlank() }
+
+    /** Ölwechsel – ausdrücklich markiert oder (ältere Einträge) am Titel erkannt. */
+    val isOilChange: Boolean
+        get() = oilChange || Regex("""öl\s*-?\s*wechsel|oil\s*change|olieskift""", RegexOption.IGNORE_CASE).containsMatchIn(title.lowercase())
 
     fun tireSummary(): String = listOf(
         lbl(tireSeason),
@@ -490,7 +516,7 @@ data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val l
     }
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 11, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 12, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -535,6 +561,16 @@ abstract class AppDatabase : RoomDatabase() {
                 for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
                     db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
                 }
+            }
+        }
+
+        /** 1.12: HU-Ergebnis, Ölnachfüllungen, Steckbrief. */
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE services ADD COLUMN huResult TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE services ADD COLUMN oilAmount REAL")
+                db.execSQL("ALTER TABLE services ADD COLUMN oilChange INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN specs TEXT NOT NULL DEFAULT ''")
             }
         }
 
@@ -596,7 +632,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

@@ -293,6 +293,25 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                     }
                 }
             }
+            // Ölnachfüllungen je Jahr mit Verbrauch pro 1000 km
+            val oilYears = OilStats.perYear(services, refuels)
+            if (oilYears.isNotEmpty()) item {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(str(R.string.oil_stats_title), style = MaterialTheme.typography.titleSmall)
+                        oilYears.forEach { y ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("${y.year} · ${y.amount.fmt(2)} ${OilStats.unit(v)} (${y.count}×)", modifier = Modifier.weight(1f))
+                                Text(y.per1000?.let { OilStats.rateText(v, it) } ?: "–", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+            }
+            val oilRates = oilYears.reversed().mapNotNull { it.per1000 }
+            if (oilRates.size >= 2) item {
+                ConsumptionChart(oilRates, str(R.string.oil_chart_title)) { OilStats.rateText(v, it) }
+            }
             item { Spacer(Modifier.height(24.dp)) }
         }
     }

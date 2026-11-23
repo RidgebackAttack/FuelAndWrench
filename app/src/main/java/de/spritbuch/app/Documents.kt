@@ -76,6 +76,8 @@ data class VehicleDoc(
         const val TYPE_INSPECTION = "TÜV-Bericht"
         const val TYPE_OTHER = "Sonstiges"
         val types = listOf(TYPE_REGISTRATION, TYPE_TITLE, TYPE_INSURANCE, TYPE_INSPECTION, TYPE_OTHER)
+        /** Neu anlegbar – TÜV-Berichte gehören seit 1.12 zum Service-Eintrag „HU/TÜV“. */
+        val selectable = types - TYPE_INSPECTION
 
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -113,16 +115,39 @@ private fun docIcon(type: String): ImageVector = when (type) {
     else -> Icons.Default.Description
 }
 
-/** Dokumente in der Fahrzeugübersicht. */
-fun LazyListScope.documentItems(nav: NavController, v: Vehicle) {
+/** Dokumente in der Fahrzeugübersicht; der aktuelle TÜV-Bericht kommt aus dem neuesten HU/TÜV-Service-Eintrag. */
+fun LazyListScope.documentItems(nav: NavController, v: Vehicle, services: List<ServiceEntry>) {
     val docs = v.documentList()
+    val hu = services.filter { it.category == HU_CATEGORY && it.attachments.isNotBlank() }.maxByOrNull { it.timestamp }
     item(key = "docs-head") {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { SectionTitle(str(R.string.documents)) }
             TextButton(onClick = { nav.navigate("docEdit/${v.id}/new") }) { Text(str(R.string.plus_new)) }
         }
     }
-    if (docs.isEmpty()) item(key = "docs-empty") {
+    if (hu != null) item(key = "doc-hu") {
+        var viewing by remember { mutableStateOf(false) }
+        val files = hu.attachmentList()
+        Card(Modifier.fillMaxWidth().clickable { viewing = true }) {
+            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                PageThumbnail(files.first(), Modifier.size(56.dp).clip(RoundedCornerShape(6.dp)))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(lbl(VehicleDoc.TYPE_INSPECTION), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        listOf(hu.timestamp.date(), plural(R.plurals.pl_files, files.size)).joinToString(" · "),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (hu.huResult.isNotBlank()) HuResultBadge(hu.huResult)
+                }
+                IconButton(onClick = { nav.navigate("serviceEdit/${v.id}/${hu.id}") }) {
+                    Icon(Icons.Default.Edit, contentDescription = str(R.string.edit))
+                }
+            }
+        }
+        if (viewing) PageViewer(files, 0) { viewing = false }
+    }
+    if (docs.isEmpty() && hu == null) item(key = "docs-empty") {
         Text(str(R.string.documents_empty), style = MaterialTheme.typography.bodySmall)
     }
     docs.forEach { d ->
@@ -169,7 +194,6 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
     var showDate by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    var askHu by remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(docId) {
         val d = if (isNew) VehicleDoc() else repo.getVehicle(vehicleId)?.documentList()?.firstOrNull { it.id == docId } ?: return@LaunchedEffect
         base = d
@@ -194,10 +218,7 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
                         if (files.isEmpty()) { error = str(R.string.document_need_page); return@IconButton }
                         scope.launch {
                             repo.saveDocument(vehicleId, b.copy(type = type, title = title.trim(), date = date.takeIf { it > 0 }, files = files))
-                            // Neuer TÜV-Bericht mit Datum: nächste HU vorschlagen
-                            if (type == VehicleDoc.TYPE_INSPECTION && date > 0 && (isNew || b.date != date)) {
-                                askHu = java.util.Calendar.getInstance().apply { timeInMillis = date; add(java.util.Calendar.MONTH, 24) }.timeInMillis
-                            } else nav.popBackStack()
+                            nav.popBackStack()
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
                 },
@@ -210,12 +231,8 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            SingleChips(VehicleDoc.types.map { lbl(it) }, lbl(type)) { s ->
-                VehicleDoc.types.firstOrNull { lbl(it) == s }?.let {
-                    type = it
-                    // TÜV-Berichte brauchen ein Datum für die Historie
-                    if (it == VehicleDoc.TYPE_INSPECTION && date == 0L) date = now()
-                }
+            SingleChips((VehicleDoc.selectable + listOf(type).filter { it !in VehicleDoc.selectable }).map { lbl(it) }, lbl(type)) { s ->
+                VehicleDoc.types.firstOrNull { lbl(it) == s }?.let { type = it }
             }
             OutlinedTextField(
                 title, { title = it }, singleLine = true, modifier = Modifier.fillMaxWidth(),
@@ -242,19 +259,6 @@ fun DocEditScreen(nav: NavController, vehicleId: String, docId: String) {
             },
             dismissButton = { TextButton(onClick = { showDate = false }) { Text(str(R.string.cancel)) } },
         ) { DatePicker(state = state) }
-    }
-    askHu?.let { due ->
-        AlertDialog(
-            onDismissRequest = { askHu = null; nav.popBackStack() },
-            title = { Text(str(R.string.hu_from_report, java.text.SimpleDateFormat("MM/yyyy", appLocale()).format(java.util.Date(due)))) },
-            text = { Text(str(R.string.hu_from_report_info)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    scope.launch { repo.setHuDue(vehicleId, due); askHu = null; nav.popBackStack() }
-                }) { Text(str(R.string.yes)) }
-            },
-            dismissButton = { TextButton(onClick = { askHu = null; nav.popBackStack() }) { Text(str(R.string.no)) } },
-        )
     }
     if (confirmDelete) {
         AlertDialog(

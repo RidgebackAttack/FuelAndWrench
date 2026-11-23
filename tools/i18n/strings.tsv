@@ -20,7 +20,7 @@ opt_vehicle_motorcycle	Motorcycle	Motorrad	Motorcykel
 opt_cat_maintenance	Maintenance	Wartung	Vedligeholdelse
 opt_cat_repair	Repair	Reparatur	Reparation
 opt_cat_tires	Tires	Reifen	Dæk
-opt_cat_inspection	Roadworthiness test	HU/AU	Syn
+opt_cat_inspection	Inspection (MOT)	HU/TÜV	Syn
 opt_cat_care	Care	Pflege	Pleje
 opt_cat_accessories	Accessories	Zubehör	Tilbehør
 opt_cat_other	Other	Sonstiges	Andet
@@ -586,7 +586,7 @@ opt_doc_insurance	Insurance card	Versicherungskarte	Forsikringskort
 opt_doc_inspection	Inspection report	TÜV-Bericht	Synsrapport
 opt_doc_other	Other	Sonstiges	Andet
 documents	Documents	Dokumente	Dokumenter
-documents_empty	Registration, insurance card, inspection reports – photograph them or add files.	Fahrzeugschein, Versicherungskarte, TÜV-Berichte – abfotografieren oder als Datei hinzufügen.	Registreringsattest, forsikringskort, synsrapporter – fotografér dem eller tilføj som fil.
+documents_empty	Registration, insurance card – photograph them or add files. Inspection reports go with the service entry “Inspection”.	Fahrzeugschein, Versicherungskarte – abfotografieren oder als Datei hinzufügen. TÜV-Berichte gehören zum Service-Eintrag „HU/TÜV“.	Registreringsattest, forsikringskort – fotografér dem eller tilføj som fil. Synsrapporter hører til serviceposten „Syn“.
 document	Document	Dokument	Dokument
 document_new	New document	Neues Dokument	Nyt dokument
 document_title	Name	Bezeichnung	Betegnelse
@@ -604,8 +604,6 @@ hu_preset	Template: MOT/inspection every 24 months	Vorlage: HU/TÜV alle 24 Mona
 hu_due	Inspection (HU/TÜV) due	HU/TÜV fällig	Syn forfalder
 hu_due_none	Not set – tap to enter (as on the sticker)	Nicht eingetragen – antippen (wie auf der Plakette)	Ikke angivet – tryk for at indtaste
 hu_due_info	Sets the date reminder for the inspection (every 24 months).	Stellt die Datums-Erinnerung für die HU ein (alle 24 Monate).	Indstiller datopåmindelsen for synet (hver 24. måned).
-hu_from_report	Set next inspection to %1$s?	Nächste HU auf %1$s setzen?	Sæt næste syn til %1$s?
-hu_from_report_info	Based on this report’s date plus 24 months.	Datum dieses Berichts plus 24 Monate.	Denne rapports dato plus 24 måneder.
 yes	Yes	Ja	Ja
 no	No	Nein	Nej
 opt_doc_title	Registration certificate part II (title)	Fahrzeugbrief	Registreringsattest del II
@@ -613,3 +611,69 @@ pages	Pages	Seiten	Sider
 close	Close	Schließen	Luk
 open_other_app	Open in another app	In anderer App öffnen	Åbn i anden app
 edit	Edit	Bearbeiten	Rediger
+copy	Copy	Kopieren	Kopiér
+copied	Copied: %1$s	Kopiert: %1$s	Kopieret: %1$s
+cost_optional	Cost (optional)	Kosten (optional)	Udgift (valgfri)
+spec_vin	Vehicle identification number (VIN)	Fahrgestellnummer (FIN)	Stelnummer (VIN)
+spec_hsn	Manufacturer code (HSN, 2.1)	Herstellerschlüssel (HSN, 2.1)	Producentkode (HSN, 2.1)
+spec_tsn	Type code (TSN, 2.2)	Typschlüssel (TSN, 2.2)	Typekode (TSN, 2.2)
+spec_engine_code	Engine code	Motorkennbuchstaben	Motorkode
+spec_oil_spec	Engine oil	Motoröl	Motorolie
+spec_oil_capacity	Oil capacity incl. filter	Ölmenge mit Filter	Oliemængde inkl. filter
+spec_oil_filter	Oil filter	Ölfilter	Oliefilter
+spec_air_filter	Air filter	Luftfilter	Luftfilter
+spec_cabin_filter	Cabin filter	Innenraumfilter	Kabinefilter
+spec_spark_plugs	Spark plugs	Zündkerzen	Tændrør
+spec_tire_size_front	Tire size front	Reifengröße vorne	Dækstørrelse for
+spec_tire_size_rear	Tire size rear	Reifengröße hinten	Dækstørrelse bag
+spec_tire_pressure_front	Tire pressure front	Reifendruck vorne	Dæktryk for
+spec_tire_pressure_rear	Tire pressure rear	Reifendruck hinten	Dæktryk bag
+spec_brake_fluid	Brake fluid	Bremsflüssigkeit	Bremsevæske
+spec_coolant	Coolant	Kühlmittel	Kølervæske
+spec_battery	Battery	Batterie	Batteri
+spec_wipers	Wiper blades	Scheibenwischer	Viskerblade
+spec_chain	Chain	Kette	Kæde
+spec_sprockets	Sprockets (front/rear)	Ritzel/Kettenrad	Tandhjul (for/bag)
+spec_chain_slack	Chain slack	Kettendurchhang	Kædeslæk
+spec_brake_pads_front	Brake pads front	Bremsbeläge vorne	Bremseklodser for
+spec_brake_pads_rear	Brake pads rear	Bremsbeläge hinten	Bremseklodser bag
+spec_fork_oil	Fork oil	Gabelöl	Forgaffelolie
+specs	Vehicle data sheet	Steckbrief	Datablad
+specs_empty	Oil, tire pressure, part numbers, VIN – always at hand, tap to copy.	Ölsorte, Reifendruck, Teilenummern, FIN – immer griffbereit, antippen zum Kopieren.	Olie, dæktryk, reservedelsnumre, VIN – altid ved hånden, tryk for at kopiere.
+specs_info	Fill in only what you need. In the overview, tap a value to copy it (e.g. for the insurer or when ordering parts).	Nur ausfüllen, was du brauchst. In der Übersicht einen Wert antippen, um ihn zu kopieren (z. B. für die Versicherung oder Teilebestellung).	Udfyld kun det, du har brug for. Tryk på en værdi i oversigten for at kopiere den (f.eks. til forsikringen eller ved bestilling af dele).
+specs_custom	Own fields	Eigene Felder	Egne felter
+specs_custom_add	+ Own field	+ Eigenes Feld	+ Eget felt
+specs_custom_label	Name	Bezeichnung	Betegnelse
+specs_value	Value	Wert	Værdi
+specs_show_all	Show all (%1$d)	Alle anzeigen (%1$d)	Vis alle (%1$d)
+specs_show_less	Show less	Weniger anzeigen	Vis mindre
+specs_hint_oil	e.g. 5W-30, BMW LL-04	z. B. 5W-30, BMW LL-04	f.eks. 5W-30, BMW LL-04
+specs_hint_pressure	e.g. 2.5 bar	z. B. 2,5 bar	f.eks. 2,5 bar
+opt_cat_oil	Oil top-up	Öl nachgefüllt	Olie påfyldt
+oil_topup_title	Oil topped up	Öl nachgefüllt	Olie påfyldt
+oil_amount	Amount	Menge	Mængde
+oil_filled_amount	Oil filled (optional)	Eingefüllte Ölmenge (optional)	Påfyldt oliemængde (valgfri)
+oil_filled	Filled: %1$s	Eingefüllt: %1$s	Påfyldt: %1$s
+oil_change_flag	Oil change (basis for oil consumption)	Ölwechsel (Grundlage für den Ölverbrauch)	Olieskift (grundlag for olieforbrug)
+oil_section	Engine oil	Motoröl	Motorolie
+oil_topup_btn	Top up	Nachfüllen	Påfyld
+oil_last_change	Last oil change: %1$s	Letzter Ölwechsel: %1$s	Sidste olieskift: %1$s
+oil_no_change	No oil change recorded yet	Noch kein Ölwechsel eingetragen	Intet olieskift registreret endnu
+oil_topped_up	Topped up since: %1$s	Seitdem nachgefüllt: %1$s	Påfyldt siden: %1$s
+oil_consumption	Oil consumption: %1$s	Ölverbrauch: %1$s	Olieforbrug: %1$s
+oil_spec_line	Oil: %1$s	Öl: %1$s	Olie: %1$s
+oil_stats_title	Oil top-ups per year	Ölnachfüllungen pro Jahr	Oliepåfyldninger pr. år
+oil_chart_title	Oil consumption per year	Ölverbrauch pro Jahr	Olieforbrug pr. år
+hu_result	Result	Ergebnis	Resultat
+hu_ok	Passed	Bestanden	Bestået
+hu_minor	Minor defects	Geringe Mängel	Mindre mangler
+hu_major	Major defects	Erhebliche Mängel	Væsentlige mangler
+hu_report	Inspection report	Prüfbericht	Synsrapport
+hu_result_info	Saving sets the next inspection (+24 months) – unless a newer inspection is already recorded.	Beim Speichern wird die nächste HU eingetragen (+24 Monate) – außer es gibt schon eine neuere HU.	Ved gemning sættes næste syn (+24 måneder) – medmindre et nyere syn allerede er registreret.
+hu_major_info	Major defects: no new sticker – the reminder stays until the re-inspection is recorded as passed.	Erhebliche Mängel: keine neue Plakette – die Erinnerung bleibt, bis die Nachprüfung als bestanden eingetragen ist.	Væsentlige mangler: intet nyt mærke – påmindelsen forbliver, indtil omsynet er registreret som bestået.
+hu_next_set	Next inspection set to %1$s	Nächste HU auf %1$s gesetzt	Næste syn sat til %1$s
+filter_all	All	Alle	Alle
+filter_only	only	nur	kun
+filter_without	without	ohne	uden
+filter_info	Tap: only this · again: without · again: off	Tippen: nur diese · nochmal: ohne · nochmal: aus	Tryk: kun denne · igen: uden · igen: fra
+filter_none	No entries for this filter.	Keine Einträge für diesen Filter.	Ingen poster for dette filter.

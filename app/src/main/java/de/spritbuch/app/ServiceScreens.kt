@@ -38,6 +38,20 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.OilBarrel
 import androidx.compose.material.icons.filled.TireRepair
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
@@ -81,6 +95,7 @@ fun serviceIcon(category: String): ImageVector = when (category) {
     "Reparatur" -> Icons.Default.Build
     "Reifen" -> Icons.Default.TireRepair
     "HU/AU" -> Icons.Default.Verified
+    OIL_TOPUP -> Icons.Default.WaterDrop
     "Pflege" -> Icons.Default.LocalCarWash
     "Zubehör" -> Icons.Default.Extension
     else -> Icons.Default.MoreHoriz
@@ -88,11 +103,103 @@ fun serviceIcon(category: String): ImageVector = when (category) {
 
 private fun yearOf(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts }.get(Calendar.YEAR)
 
+/** Farbiges Ergebnis der HU: grün bestanden, gelb geringe Mängel, rot erhebliche Mängel. */
+@Composable
+fun HuResultBadge(result: String) {
+    val (bg, fg) = when (result) {
+        HU_OK -> Color(0xFF2E7D32) to Color.White
+        HU_MINOR -> Color(0xFFF9A825) to Color.Black
+        else -> MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
+    }
+    Surface(color = bg, contentColor = fg, shape = RoundedCornerShape(6.dp)) {
+        Text(lbl(result), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+    }
+}
+
+/**
+ * Filter der Service-Liste je Fahrzeug: Kategorie → true („nur“) oder false („ohne“).
+ * Mehrere „nur“ werden zusammengefasst (Ölwechsel ODER Reifen), „ohne“ blendet immer aus.
+ */
+object ServiceFilter {
+    private fun sp(ctx: Context) = ctx.applicationContext.getSharedPreferences("spritbuch", Context.MODE_PRIVATE)
+
+    fun load(ctx: Context, vehicleId: String): Map<String, Boolean> =
+        (sp(ctx).getString("svc_filter_$vehicleId", "") ?: "").split("|").filter { it.length > 1 }
+            .associate { it.substring(1) to (it[0] == '+') }
+
+    fun save(ctx: Context, vehicleId: String, f: Map<String, Boolean>) {
+        sp(ctx).edit().putString("svc_filter_$vehicleId", f.entries.joinToString("|") { (if (it.value) "+" else "-") + it.key }).apply()
+    }
+
+    fun apply(list: List<ServiceEntry>, f: Map<String, Boolean>): List<ServiceEntry> {
+        if (f.isEmpty()) return list
+        val only = f.filterValues { it }.keys
+        val without = f.filterValues { !it }.keys
+        return list.filter { (only.isEmpty() || it.category in only) && it.category !in without }
+    }
+
+    /** Antippen schaltet weiter: aus → nur → ohne → aus. */
+    fun next(f: Map<String, Boolean>, category: String): Map<String, Boolean> = when (f[category]) {
+        null -> f + (category to true)
+        true -> f + (category to false)
+        false -> f - category
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ServiceFilterChips(services: List<ServiceEntry>, filter: Map<String, Boolean>, onChange: (Map<String, Boolean>) -> Unit) {
+    val counts = services.groupingBy { it.category }.eachCount()
+    val cats = Options.serviceCategories.filter { it in counts || it in filter } + counts.keys.filter { it !in Options.serviceCategories }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(selected = filter.isEmpty(), onClick = { onChange(emptyMap()) }, label = { Text(str(R.string.filter_all)) })
+            cats.forEach { c ->
+                val state = filter[c]
+                FilterChip(
+                    selected = state != null,
+                    onClick = { onChange(ServiceFilter.next(filter, c)) },
+                    label = {
+                        Text(
+                            "${lbl(c)} (${counts[c] ?: 0})",
+                            textDecoration = if (state == false) TextDecoration.LineThrough else null,
+                        )
+                    },
+                    leadingIcon = when (state) {
+                        true -> { { Icon(Icons.Default.Check, contentDescription = str(R.string.filter_only), Modifier.size(18.dp)) } }
+                        false -> { { Icon(Icons.Default.Remove, contentDescription = str(R.string.filter_without), Modifier.size(18.dp)) } }
+                        null -> null
+                    },
+                    colors = if (state == false) FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ) else FilterChipDefaults.filterChipColors(),
+                )
+            }
+        }
+        Text(str(R.string.filter_info), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
 @Composable
 fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillMaxWidth(), onClick: () -> Unit) {
+    val files = s.attachmentList()
+    var viewing by remember { mutableStateOf(false) }
     Card(onClick = onClick, modifier = modifier) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-            Icon(serviceIcon(s.category), contentDescription = lbl(s.category), tint = MaterialTheme.colorScheme.primary)
+            if (files.isNotEmpty()) {
+                // Vorschau des Belegs bzw. Prüfberichts – antippen öffnet ihn direkt
+                Box(Modifier.size(56.dp).clip(RoundedCornerShape(6.dp)).clickable { viewing = true }) {
+                    PageThumbnail(files.first(), Modifier.fillMaxSize())
+                    if (files.size > 1) Surface(
+                        color = Color.Black.copy(alpha = 0.6f), contentColor = Color.White,
+                        shape = RoundedCornerShape(topStart = 6.dp), modifier = Modifier.align(Alignment.BottomEnd),
+                    ) { Text("+${files.size - 1}", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 4.dp)) }
+                }
+            } else {
+                Icon(serviceIcon(s.category), contentDescription = lbl(s.category), tint = MaterialTheme.colorScheme.primary)
+            }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row {
@@ -104,6 +211,14 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                         .filter { it.isNotBlank() }.joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall,
                 )
+                if (s.category == HU_CATEGORY && s.huResult.isNotBlank()) HuResultBadge(s.huResult)
+                s.oilAmount?.takeIf { it > 0 }?.let { a ->
+                    Text(
+                        (if (s.isOilChange && s.category != OIL_TOPUP) str(R.string.oil_filled, "${a.fmt(2)} ${OilStats.unit(v)}")
+                        else "${a.fmt(2)} ${OilStats.unit(v)}"),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 if (s.workshop.isNotBlank()) Text(s.workshop, style = MaterialTheme.typography.bodySmall)
                 if (s.tireSummary().isNotBlank()) {
                     Text(s.tireSummary(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
@@ -123,13 +238,10 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     }
                 }
                 if (s.note.isNotBlank()) Text(s.note, style = MaterialTheme.typography.bodySmall)
-                if (s.attachments.isNotBlank()) {
-                    Text("📎 " + plural(R.plurals.pl_receipts, s.attachmentList().size), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary)
-                }
             }
         }
     }
+    if (viewing) PageViewer(files, 0) { viewing = false }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -234,6 +346,9 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
     var workshop by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
     var attachments by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var huResult by rememberSaveable { mutableStateOf("") }
+    var oilAmount by rememberSaveable { mutableStateOf("") }
+    var oilChange by rememberSaveable { mutableStateOf(false) }
     var tireSeason by rememberSaveable { mutableStateOf("") }
     var tireBrand by rememberSaveable { mutableStateOf("") }
     var tireModel by rememberSaveable { mutableStateOf("") }
@@ -262,6 +377,9 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
         workshop = s.workshop
         note = s.note
         attachments = s.attachmentList()
+        huResult = s.huResult
+        oilAmount = s.oilAmount?.fmt(2) ?: ""
+        oilChange = s.oilChange || (s.category != OIL_TOPUP && s.isOilChange)
         tireSeason = s.tireSeason; tireBrand = s.tireBrand; tireModel = s.tireModel; tireSize = s.tireSize
         mountedSetId = s.tireSetId; removedSetId = s.removedTireSetId
         if (isNew) {
@@ -278,6 +396,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
             }
         }
         if (isWheelChange) { category = "Reifen"; title = str(R.string.wheel_change) }
+        if (serviceId == "new-hu") { category = HU_CATEGORY; title = str(R.string.hu_title); huResult = HU_OK }
         TreadCodec.parse(s.treadDepth).forEach { (k, t) ->
             t.old?.let { treadOld[k] = it.fmt(1) }
             t.new?.let { treadNew[k] = it.fmt(1) }
@@ -305,8 +424,11 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                             tireSize = mountedSet.sizes()
                         }
                         scope.launch {
-                            repo.saveService(
+                            val huDue = repo.saveService(
                                 b.copy(
+                                    huResult = if (category == HU_CATEGORY) huResult else "",
+                                    oilAmount = if (category == OIL_TOPUP || oilChange) oilAmount.toDoubleDe()?.takeIf { it > 0 } else null,
+                                    oilChange = category != OIL_TOPUP && oilChange,
                                     tireSetId = if (category == "Reifen") mountedSetId else "",
                                     removedTireSetId = if (category == "Reifen") removedSetId else "",
                                     timestamp = timestamp, odometer = odometer.toIntKm() ?: 0, title = title.trim(),
@@ -326,6 +448,9 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                                     } else b.treadDepth,
                                 )
                             )
+                            huDue?.let { d ->
+                                Toast.makeText(ctx, str(R.string.hu_next_set, java.text.SimpleDateFormat("MM/yyyy", appLocale()).format(java.util.Date(d))), Toast.LENGTH_LONG).show()
+                            }
                             nav.popBackStack()
                         }
                     }) { Icon(Icons.Default.Check, contentDescription = str(R.string.save)) }
@@ -348,7 +473,31 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
             var showMore by rememberSaveable { mutableStateOf(!isWheelChange) }
             if (!isWheelChange) {
                 SuggestField(str(R.string.what_done), title, Options.serviceSuggestions) { title = it }
-                ChoiceField(str(R.string.category), category, Options.serviceCategories) { category = it }
+                ChoiceField(str(R.string.category), category, Options.serviceCategories) {
+                    category = it
+                    // passender Titel, solange noch keiner eingetragen ist
+                    if (title.isBlank()) when (it) {
+                        HU_CATEGORY -> title = str(R.string.hu_title)
+                        OIL_TOPUP -> title = str(R.string.oil_topup_title)
+                    }
+                    if (it == HU_CATEGORY && huResult.isBlank()) huResult = HU_OK
+                }
+            }
+            when (category) {
+                HU_CATEGORY -> {
+                    SectionTitle(str(R.string.hu_result))
+                    SingleChips(Options.huResults, huResult) { huResult = it }
+                    Text(
+                        str(if (huResult == HU_MAJOR) R.string.hu_major_info else R.string.hu_result_info),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                OIL_TOPUP -> NumberField(str(R.string.oil_amount), oilAmount, { oilAmount = it }, suffix = OilStats.unit(veh))
+                "Reifen" -> Unit
+                else -> {
+                    LabeledSwitch(str(R.string.oil_change_flag), oilChange) { oilChange = it }
+                    if (oilChange) NumberField(str(R.string.oil_filled_amount), oilAmount, { oilAmount = it }, suffix = OilStats.unit(veh))
+                }
             }
             NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = Units.dist(veh), decimal = false)
             if (showMore) NumberField(str(R.string.cost), cost, { cost = it }, suffix = Units.cur(veh))
@@ -421,7 +570,7 @@ fun ServiceEditScreen(nav: NavController, vehicleId: String, serviceId: String) 
                     note, { note = it }, label = { Text(str(R.string.service_note_hint)) }, minLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                AttachmentSection(attachments) { attachments = it }
+                AttachmentSection(attachments, str(if (category == HU_CATEGORY) R.string.hu_report else R.string.receipts)) { attachments = it }
                 Text(
                     str(R.string.service_reminder_info),
                     style = MaterialTheme.typography.bodySmall,

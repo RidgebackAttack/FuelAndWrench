@@ -1,0 +1,6 @@
+- Neu: HU/TÜV als Service-Eintrag mit Ergebnis und Prüfbericht; bestanden setzt die nächste HU
+- Neu: Service-Filter – mehrere Kategorien, nochmal tippen = ohne
+- Neu: Vorschau der Belege in der Service-Liste
+- Neu: Steckbrief (Ölsorte, Reifendruck, Teilenummern, FIN, HSN/TSN, eigene Felder) – antippen kopiert
+- Neu: Öl nachfüllen mit Ölverbrauch seit Ölwechsel und pro Jahr
+- Alte TÜV-Dokumente werden automatisch übernommen

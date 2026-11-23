@@ -236,6 +236,8 @@ object SyncManager {
             )
             if (reupload) prefs.reuploadFiles = false
             ReminderChecker.checkAll(ctx)
+            // TÜV-Berichte von Geräten mit älterer Version in den Service übernehmen (beim nächsten Sync hochgeladen)
+            runCatching { ctx.repo.convertInspectionDocs() }
             FuelWidget.refresh(ctx)
             val v = merged.vehicles.count { !it.deleted }
             val t = merged.refuels.count { !it.deleted }

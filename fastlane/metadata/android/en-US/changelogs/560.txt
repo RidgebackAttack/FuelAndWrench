@@ -1,0 +1,6 @@
+- New: inspection (MOT) as a service entry with result and report; passed sets the next due date
+- New: service filter – several categories, tap again to exclude
+- New: receipt previews in the service list
+- New: data sheet (oil, tire pressure, part numbers, VIN, custom fields) – tap to copy
+- New: oil top-ups with oil consumption since the last change and per year
+- Old inspection documents are moved automatically

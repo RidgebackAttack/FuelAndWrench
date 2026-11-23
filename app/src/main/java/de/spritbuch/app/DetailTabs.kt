@@ -291,6 +291,8 @@ fun VehicleDetailContent(
     val dotColor = MaterialTheme.colorScheme.primary
     val distances = remember(refuels) { distancesSincePrevious(refuels) }
     val refuelYears = remember(v, refuels, stats, distances) { if (v == null) emptyList() else groupRefuelsByYear(v, refuels, stats, distances) }
+    val ctx = LocalContext.current
+    var serviceFilter by remember(vehicleId) { mutableStateOf(ServiceFilter.load(ctx, vehicleId)) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -387,13 +389,17 @@ fun VehicleDetailContent(
                             },
                             openTab = { scope.launch { pager.animateScrollToPage(it) } },
                             )
-                            // Fahrzeugdokumente (Fahrzeugschein, Versicherungskarte, TÜV-Historie)
-                            documentItems(nav, v)
+                            // Fahrzeugdokumente (Fahrzeugschein, Versicherungskarte, aktueller TÜV-Bericht) und Steckbrief
+                            documentItems(nav, v, services)
+                            specItems(nav, v)
                         }
                         1 -> refuelItems(nav, v, refuelYears, stats, distances)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)
-                            serviceItems(nav, v, services, lineColor, dotColor)
+                            serviceItems(nav, v, services, serviceFilter, lineColor, dotColor) {
+                                serviceFilter = it
+                                ServiceFilter.save(ctx, vehicleId, it)
+                            }
                         }
                         3 -> expenseItems(nav, v, expenses)
                     }
@@ -519,7 +525,8 @@ private fun LazyListScope.overviewItems(
                         Text(r.title, style = MaterialTheme.typography.titleSmall)
                         Text(ReminderChecker.describe(r, st, du), style = MaterialTheme.typography.bodySmall)
                     }
-                    OutlinedButton(onClick = { onDone(r) }) { Text(str(R.string.done)) }
+                    // HU erledigt: Eintrag mit Ergebnis und Prüfbericht statt nur abhaken
+                    OutlinedButton(onClick = { if (r.isHu) nav.navigate("serviceEdit/${v.id}/new-hu") else onDone(r) }) { Text(str(R.string.done)) }
                 }
                 LinearProgressIndicator(
                     progress = { progress },
@@ -529,6 +536,7 @@ private fun LazyListScope.overviewItems(
             }
         }
     }
+    if (!v.isElectric) item(key = "oil") { OilCard(v, services, currentOdo) }
     refuels.firstOrNull()?.let { last ->
         item { SectionTitle(str(R.string.last_refuel)) }
         item(key = "last-refuel") { RefuelCard(v, last, stats.perRefuel[last.id], stats.avg) { openTab(1) } }
@@ -638,17 +646,25 @@ private fun LazyListScope.tireSetItems(nav: NavController, v: Vehicle, sets: Lis
 private fun LazyListScope.serviceItems(
     nav: NavController,
     v: Vehicle,
-    services: List<ServiceEntry>,
+    all: List<ServiceEntry>,
+    filter: Map<String, Boolean>,
     lineColor: Color,
     dotColor: Color,
+    onFilter: (Map<String, Boolean>) -> Unit,
 ) {
-    if (services.isEmpty()) {
+    if (all.isEmpty()) {
         item {
             EmptyState(
                 Icons.Default.Build, str(R.string.empty_services_title),
                 str(R.string.empty_services_text),
             )
         }
+        return
+    }
+    item(key = "svc-filter") { ServiceFilterChips(all, filter, onFilter) }
+    val services = ServiceFilter.apply(all, filter)
+    if (services.isEmpty()) {
+        item(key = "svc-none") { Text(str(R.string.filter_none), style = MaterialTheme.typography.bodyMedium) }
         return
     }
     item {
