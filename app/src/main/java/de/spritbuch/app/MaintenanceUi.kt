@@ -79,6 +79,9 @@ fun MaintenanceSection(nav: NavController) {
     val vehicles by repo.vehicles.collectAsStateWithLifecycle(emptyList())
     val refuels by repo.allRefuels.collectAsStateWithLifecycle(emptyList())
     val issues = remember(vehicles, refuels) { vehicles.filter { Prefs(ctx).shows(it.id) }.sumOf { DataCheck.open(ctx, it, refuels).size } }
+    var busy by remember { mutableStateOf(false) }
+    var found by remember { mutableStateOf<StorageCleanup.Found?>(null) }
+    var cleanupInfo by remember { mutableStateOf<String?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // Datenprüfung
@@ -93,9 +96,6 @@ fun MaintenanceSection(nav: NavController) {
         // Speicher aufräumen
         SectionTitle(str(R.string.cleanup_title))
         Text(str(R.string.cleanup_info), style = MaterialTheme.typography.bodySmall)
-        var busy by remember { mutableStateOf(false) }
-        var found by remember { mutableStateOf<StorageCleanup.Found?>(null) }
-        var cleanupInfo by remember { mutableStateOf<String?>(null) }
         OutlinedButton(enabled = !busy, onClick = {
             busy = true
             cleanupInfo = null
