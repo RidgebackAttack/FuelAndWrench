@@ -650,6 +650,44 @@
     <string name="filter_without">ohne</string>
     <string name="filter_info">Tippen: nur diese · nochmal: ohne · nochmal: aus</string>
     <string name="filter_none">Keine Einträge für diesen Filter.</string>
+    <string name="check_title">Datenprüfung</string>
+    <string name="check_info">Hinweise auf mögliche Tippfehler. Stimmt ein Eintrag so, „Passt so“ antippen.</string>
+    <string name="check_none">Keine Auffälligkeiten</string>
+    <string name="check_ignore">Passt so</string>
+    <string name="check_open">Ansehen</string>
+    <string name="check_odo_backwards">Kilometerstand %1$s ist kleiner als %2$s vom %3$s</string>
+    <string name="check_over_tank">%1$s getankt, der Tank fasst %2$s</string>
+    <string name="check_duplicate">Sieht doppelt aus – gleicher Kilometerstand und gleiche Menge kurz hintereinander</string>
+    <string name="check_future">Datum liegt in der Zukunft</string>
+    <string name="cleanup_title">Speicher aufräumen</string>
+    <string name="cleanup_info">Sucht Belege und Fotos, die zu keinem Eintrag mehr gehören (z. B. von gelöschten Einträgen oder ersetzten Fotos) – auf diesem Gerät und auf dem Server.</string>
+    <string name="cleanup_scan">Prüfen</string>
+    <string name="cleanup_nothing">Nichts zu löschen.</string>
+    <string name="cleanup_local">Auf diesem Gerät: %1$s (%2$s)</string>
+    <string name="cleanup_remote">Auf dem Server: %1$s (%2$s)</string>
+    <string name="cleanup_done">Gelöscht – %1$s frei</string>
+    <string name="purge_info">Gelöschte Einträge bleiben ein Jahr als Löschvermerk erhalten, damit jedes Gerät die Löschung mitbekommt. Danach werden sie automatisch endgültig entfernt.</string>
+    <string name="sync_log_title">Sync-Protokoll</string>
+    <string name="sync_log_details">empfangen %1$d, gesendet %2$d, Dateien ↓%3$d ↑%4$d</string>
+    <string name="sync_log_purged">%1$d alte Löschvermerke entfernt</string>
+    <string name="crash_title">Absturzberichte</string>
+    <string name="crash_none">Keine Abstürze</string>
+    <string name="crash_info">Stürzt die App ab, wird der Fehler nur auf diesem Gerät gespeichert. Über „Teilen“ kannst du ihn weitergeben – sonst verlässt er das Gerät nicht.</string>
+    <string name="set_maintenance">Datenpflege</string>
+    <string name="set_maintenance_sub">Datenprüfung, Speicher aufräumen, Protokolle</string>
+    <string name="reg_title">Zulassung</string>
+    <string name="reg_all_year">Ganzjährig</string>
+    <string name="reg_season">Saisonkennzeichen</string>
+    <string name="reg_from">von</string>
+    <string name="reg_to">bis</string>
+    <string name="reg_info">Außerhalb des Zeitraums pausieren Benachrichtigungen und der Reifenhinweis; was fällig wird, meldet sich zum Saisonstart.</string>
+    <string name="reg_overview">Saisonkennzeichen %1$s – %2$s</string>
+    <string name="reg_on">angemeldet bis Ende %1$s</string>
+    <string name="reg_off">abgemeldet, wieder ab %1$s</string>
+    <string name="total_cost_title">Gesamtkosten</string>
+    <string name="total_cost_per_km">Pro %1$s: %2$s</string>
+    <string name="total_cost_per_100">Pro 100 %1$s: %2$s</string>
+    <string name="total_cost_per_month">Pro Monat seit dem ersten Eintrag: %1$s</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>
@@ -709,5 +747,13 @@
     <plurals name="pl_pages">
         <item quantity="one">%d Seite</item>
         <item quantity="other">%d Seiten</item>
+    </plurals>
+    <plurals name="pl_check_issues">
+        <item quantity="one">%d Auffälligkeit in den Daten – antippen zum Ansehen</item>
+        <item quantity="other">%d Auffälligkeiten in den Daten – antippen zum Ansehen</item>
+    </plurals>
+    <plurals name="pl_crashes">
+        <item quantity="one">%d Absturz gespeichert</item>
+        <item quantity="other">%d Abstürze gespeichert</item>
     </plurals>
 </resources>

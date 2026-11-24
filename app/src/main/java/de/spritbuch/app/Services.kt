@@ -116,6 +116,8 @@ object ReminderChecker {
         val repo = ctx.repo
         val v = repo.getVehicle(vehicleId) ?: return
         if (v.deleted || v.archived || !Prefs(ctx).shows(v.id)) return
+        // Saisonkennzeichen: außerhalb des Zeitraums keine Benachrichtigungen – Fälliges meldet sich zum Saisonstart
+        if (!Registration.isActive(v)) return
         val odo = repo.currentOdometer(vehicleId)
         val prefs = Prefs(ctx)
         val notified = prefs.notified.toMutableSet()

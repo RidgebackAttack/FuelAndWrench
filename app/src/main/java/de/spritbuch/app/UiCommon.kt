@@ -164,6 +164,7 @@ fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, Strin
             ExpenseEditScreen(nav, it.arguments?.getString("vehicleId") ?: "", it.arguments?.getString("id") ?: "new")
         }
         composable("pick/{action}") { VehiclePickScreen(nav, it.arguments?.getString("action") ?: Shortcuts.REFUEL) }
+        composable("checks") { ChecksScreen(nav) }
         composable("specs/{vehicleId}") { SpecsEditScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("stats/{vehicleId}") { StatsScreen(nav, it.arguments?.getString("vehicleId") ?: "") }
         composable("serviceEdit/{vehicleId}/{id}") {

@@ -1,0 +1,5 @@
+- New: seasonal registration per vehicle (e.g. March–October) – reminders pause outside
+- New: data care – data check (typos), storage clean-up, sync log, crash reports (local only)
+- New: total cost per km and per month in statistics
+- Sync: photos, odometer and “tires done” are merged separately
+- Deleted entries are removed for good after a year

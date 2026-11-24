@@ -1,0 +1,5 @@
+- Nyt: sæsonindregistrering pr. køretøj (f.eks. marts–oktober) – påmindelser holder pause udenfor
+- Nyt: datapleje – datatjek (tastefejl), oprydning, synkroniseringslog, nedbrudsrapporter (kun lokalt)
+- Nyt: samlede udgifter pr. km og pr. måned i statistik
+- Sync: fotos, kilometertal og “dæk skiftet” flettes separat
+- Slettede poster fjernes endeligt efter et år

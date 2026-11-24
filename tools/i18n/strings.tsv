@@ -677,3 +677,45 @@ filter_only	only	nur	kun
 filter_without	without	ohne	uden
 filter_info	Tap: only this · again: without · again: off	Tippen: nur diese · nochmal: ohne · nochmal: aus	Tryk: kun denne · igen: uden · igen: fra
 filter_none	No entries for this filter.	Keine Einträge für diesen Filter.	Ingen poster for dette filter.
+check_title	Data check	Datenprüfung	Datatjek
+check_info	Hints at possible typos. If an entry is correct, tap “It’s fine”.	Hinweise auf mögliche Tippfehler. Stimmt ein Eintrag so, „Passt so“ antippen.	Tegn på mulige tastefejl. Er en post korrekt, tryk på “Det passer”.
+check_none	No issues found	Keine Auffälligkeiten	Ingen afvigelser
+check_ignore	It’s fine	Passt so	Det passer
+check_open	Show	Ansehen	Vis
+check_odo_backwards	Odometer %1$s is lower than %2$s on %3$s	Kilometerstand %1$s ist kleiner als %2$s vom %3$s	Kilometertal %1$s er lavere end %2$s den %3$s
+check_over_tank	%1$s refuelled, tank holds %2$s	%1$s getankt, der Tank fasst %2$s	%1$s tanket, tanken rummer %2$s
+check_duplicate	Looks like a duplicate – same odometer and amount shortly after each other	Sieht doppelt aus – gleicher Kilometerstand und gleiche Menge kurz hintereinander	Ligner en dublet – samme kilometertal og mængde kort efter hinanden
+check_future	Date is in the future	Datum liegt in der Zukunft	Datoen ligger i fremtiden
+pl_check_issues#one	%d issue in the data – tap to view	%d Auffälligkeit in den Daten – antippen zum Ansehen	%d afvigelse i dataene – tryk for at se
+pl_check_issues#other	%d issues in the data – tap to view	%d Auffälligkeiten in den Daten – antippen zum Ansehen	%d afvigelser i dataene – tryk for at se
+cleanup_title	Clean up storage	Speicher aufräumen	Ryd op i lager
+cleanup_info	Finds receipts and photos that no longer belong to any entry (e.g. from deleted entries or replaced photos) – on this device and on the server.	Sucht Belege und Fotos, die zu keinem Eintrag mehr gehören (z. B. von gelöschten Einträgen oder ersetzten Fotos) – auf diesem Gerät und auf dem Server.	Finder bilag og fotos, der ikke længere hører til nogen post (f.eks. fra slettede poster eller udskiftede fotos) – på denne enhed og på serveren.
+cleanup_scan	Check	Prüfen	Tjek
+cleanup_nothing	Nothing to delete.	Nichts zu löschen.	Intet at slette.
+cleanup_local	On this device: %1$s (%2$s)	Auf diesem Gerät: %1$s (%2$s)	På denne enhed: %1$s (%2$s)
+cleanup_remote	On the server: %1$s (%2$s)	Auf dem Server: %1$s (%2$s)	På serveren: %1$s (%2$s)
+cleanup_done	Deleted – %1$s freed	Gelöscht – %1$s frei	Slettet – %1$s frigjort
+purge_info	Deleted entries are kept for a year as a deletion note so every device learns about the deletion. After that they are removed for good automatically.	Gelöschte Einträge bleiben ein Jahr als Löschvermerk erhalten, damit jedes Gerät die Löschung mitbekommt. Danach werden sie automatisch endgültig entfernt.	Slettede poster gemmes et år som sletningsnote, så alle enheder får sletningen med. Derefter fjernes de automatisk for altid.
+sync_log_title	Sync log	Sync-Protokoll	Synkroniseringslog
+sync_log_details	received %1$d, sent %2$d, files ↓%3$d ↑%4$d	empfangen %1$d, gesendet %2$d, Dateien ↓%3$d ↑%4$d	modtaget %1$d, sendt %2$d, filer ↓%3$d ↑%4$d
+sync_log_purged	%1$d old deletion notes removed	%1$d alte Löschvermerke entfernt	%1$d gamle sletningsnoter fjernet
+crash_title	Crash reports	Absturzberichte	Nedbrudsrapporter
+crash_none	No crashes	Keine Abstürze	Ingen nedbrud
+pl_crashes#one	%d crash saved	%d Absturz gespeichert	%d nedbrud gemt
+pl_crashes#other	%d crashes saved	%d Abstürze gespeichert	%d nedbrud gemt
+crash_info	If the app crashes, the error is only saved on this device. Use “Share” to pass it on – otherwise it never leaves the device.	Stürzt die App ab, wird der Fehler nur auf diesem Gerät gespeichert. Über „Teilen“ kannst du ihn weitergeben – sonst verlässt er das Gerät nicht.	Hvis appen går ned, gemmes fejlen kun på denne enhed. Med “Del” kan du give den videre – ellers forlader den aldrig enheden.
+set_maintenance	Data care	Datenpflege	Datapleje
+set_maintenance_sub	Data check, clean up storage, logs	Datenprüfung, Speicher aufräumen, Protokolle	Datatjek, oprydning, logs
+reg_title	Registration	Zulassung	Indregistrering
+reg_all_year	All year	Ganzjährig	Hele året
+reg_season	Seasonal	Saisonkennzeichen	Sæson
+reg_from	from	von	fra
+reg_to	to	bis	til
+reg_info	Outside this period, notifications and the tire hint pause; anything that falls due shows up when the season starts.	Außerhalb des Zeitraums pausieren Benachrichtigungen und der Reifenhinweis; was fällig wird, meldet sich zum Saisonstart.	Uden for perioden holder notifikationer og dækpåmindelsen pause; det, der forfalder, vises ved sæsonstart.
+reg_overview	Seasonal registration %1$s – %2$s	Saisonkennzeichen %1$s – %2$s	Sæsonindregistrering %1$s – %2$s
+reg_on	registered until end of %1$s	angemeldet bis Ende %1$s	indregistreret til udgangen af %1$s
+reg_off	off the road, back from %1$s	abgemeldet, wieder ab %1$s	afmeldt, igen fra %1$s
+total_cost_title	Total cost	Gesamtkosten	Samlede udgifter
+total_cost_per_km	Per %1$s: %2$s	Pro %1$s: %2$s	Pr. %1$s: %2$s
+total_cost_per_100	Per 100 %1$s: %2$s	Pro 100 %1$s: %2$s	Pr. 100 %1$s: %2$s
+total_cost_per_month	Per month since the first entry: %1$s	Pro Monat seit dem ersten Eintrag: %1$s	Pr. måned siden første post: %1$s

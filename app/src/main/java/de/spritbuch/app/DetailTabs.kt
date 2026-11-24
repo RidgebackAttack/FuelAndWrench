@@ -434,6 +434,23 @@ private fun LazyListScope.overviewItems(
             Text(str(R.string.vehicle_archived_banner), modifier = Modifier.padding(12.dp))
         }
     }
+    Registration.describe(v)?.let { d ->
+        item(key = "registration") {
+            Text(d, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+    // Auffälligkeiten in den Betankungen (z. B. Tippfehler beim Kilometerstand)
+    item(key = "checks") {
+        val ctx = LocalContext.current
+        val n = remember(v, refuels) { DataCheck.open(ctx, v, refuels).size }
+        if (n > 0) Card(
+            onClick = { nav.navigate("checks") },
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+        ) {
+            Text(plural(R.plurals.pl_check_issues, n), modifier = Modifier.padding(12.dp))
+        }
+    }
     item(key = "hero") {
         VehicleHero(v) {
             Column {

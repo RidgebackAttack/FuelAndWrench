@@ -1,0 +1,75 @@
+package de.spritbuch.app
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.util.Calendar
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
+class MaintenanceTest {
+    private fun day(y: Int, m: Int, d: Int) = Calendar.getInstance().apply { clear(); set(y, m, d, 12, 0) }.timeInMillis
+
+    @Test fun stampMarksChangedPartsAndKeepsNewerFromStaleForm() {
+        val old = Vehicle(id = "v", specs = "neu", specsUpdatedAt = 500, manualOdometer = 1000, odoUpdatedAt = 100, updatedAt = 500)
+        // Formular mit altem Stand (Steckbrief noch leer), aber neuem Kilometerstand
+        val form = Vehicle(id = "v", specs = "", specsUpdatedAt = 0, manualOdometer = 1200, odoUpdatedAt = 100)
+        val saved = stampVehicleParts(form, old, 900)
+        assertEquals("neu", saved.specs)
+        assertEquals(500, saved.specsUpdatedAt)
+        assertEquals(1200, saved.manualOdometer)
+        assertEquals(900, saved.odoUpdatedAt)
+    }
+
+    @Test fun photosAndOdometerMergeSeparately() {
+        val a = Vehicle(id = "v", name = "A", photoVersion = 7, photosUpdatedAt = 300, updatedAt = 300)
+        val b = Vehicle(id = "v", name = "B", manualOdometer = 5000, odoUpdatedAt = 400, updatedAt = 400)
+        val m = mergeVehicleParts(b, a)
+        assertEquals("B", m.name)
+        assertEquals(7L, m.photoVersion)
+        assertEquals(5000, m.manualOdometer)
+    }
+
+    @Test fun purgeDropsOnlyOldTombstones() {
+        val cutoff = 1_000L
+        val d = SyncData(
+            refuels = listOf(
+                Refuel(id = "old", deleted = true, updatedAt = 10),
+                Refuel(id = "recent", deleted = true, updatedAt = 2_000),
+                Refuel(id = "live", updatedAt = 10),
+            ),
+        )
+        assertEquals(listOf("recent", "live"), Purge.remote(d, cutoff).refuels.map { it.id })
+    }
+
+    @Test fun dataCheckFindsTypos() {
+        val v = Vehicle(id = "v", tankCapacity = 50.0)
+        val list = listOf(
+            Refuel(id = "1", vehicleId = "v", timestamp = day(2026, 0, 1), odometer = 10_000, amount = 40.0, fuelType = "Super E10"),
+            Refuel(id = "2", vehicleId = "v", timestamp = day(2026, 0, 10), odometer = 1_050, amount = 40.0, fuelType = "Super E10"),
+            Refuel(id = "3", vehicleId = "v", timestamp = day(2026, 0, 20), odometer = 10_600, amount = 75.0, fuelType = "Super E10"),
+        )
+        val kinds = DataCheck.check(v, list, now = day(2026, 1, 1)).map { it.refuel.id to it.kind }
+        assertTrue("2" to DataCheck.Kind.ODO_BACKWARDS in kinds)
+        assertTrue("3" to DataCheck.Kind.OVER_TANK in kinds)
+        assertFalse(kinds.any { it.first == "3" && it.second == DataCheck.Kind.ODO_BACKWARDS })
+    }
+
+    @Test fun seasonalRegistration() {
+        val v = Vehicle(registration = "03-10")
+        assertTrue(Registration.isActive(v, day(2026, Calendar.MARCH, 1)))
+        assertTrue(Registration.isActive(v, day(2026, Calendar.OCTOBER, 31)))
+        assertFalse(Registration.isActive(v, day(2026, Calendar.NOVEMBER, 1)))
+        assertFalse(Registration.isActive(v, day(2026, Calendar.FEBRUARY, 28)))
+        val winter = Vehicle(registration = "10-03")
+        assertTrue(Registration.isActive(winter, day(2026, Calendar.JANUARY, 5)))
+        assertFalse(Registration.isActive(winter, day(2026, Calendar.JULY, 5)))
+        assertTrue(Registration.isActive(Vehicle(), day(2026, Calendar.JULY, 5)))
+        assertNull(Registration.parse("13-02"))
+    }
+}

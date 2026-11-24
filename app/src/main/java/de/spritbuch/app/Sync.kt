@@ -44,6 +44,8 @@ interface Dav {
     fun delete(path: String): Int
     fun put(path: String, data: ByteArray, type: String, ifMatch: String? = null, ifNoneMatch: Boolean = false): Int
     fun ensureDir(path: String)
+    /** Dateien eines Ordners mit Größe; null = kann der Server (bzw. Test-Server) nicht. */
+    fun listFiles(path: String): List<Pair<String, Long>>? = null
 }
 
 class WebDavClient(baseUrl: String, user: String, password: String) : Dav {
@@ -87,6 +89,8 @@ class WebDavClient(baseUrl: String, user: String, password: String) : Dav {
         if (ifNoneMatch) b.header("If-None-Match", "*")
         return exec(b.build()).code
     }
+
+    override fun listFiles(path: String): List<Pair<String, Long>> = listFilesWithSize(path)
 
     /** Legt einen Ordner an; "existiert schon" (405) ist ok. */
     override fun ensureDir(path: String) {
@@ -153,10 +157,17 @@ object SyncManager {
         val stamped = "${now().dateTime()} – ${result.message}"
         prefs.lastSync = stamped
         status.value = stamped
+        SyncLog.add(app, if (result.ok) "$stamped · $details" else stamped)
         result
     }
 
+    /** Zähler des laufenden Syncs fürs Protokoll (nur unter [mutex] benutzt). */
+    private var down = 0
+    private var details = ""
+
     private suspend fun doSync(ctx: Context, prefs: Prefs): String {
+        down = 0
+        details = ""
         val dav = connect(prefs)
         dav.ensureDir("")
         dav.ensureDir("photos")
@@ -175,7 +186,11 @@ object SyncManager {
                 remote.code in 200..299 -> json.decodeFromString<SyncData>(remote.body?.let { crypt.open(it) }?.decodeToString() ?: "{}")
                 else -> throw IOException(httpMessage(remote.code))
             }
-            val r = remoteData ?: SyncData()
+            // Löschvermerke, die älter als ein Jahr sind, endgültig entfernen (lokal und auf dem Server)
+            val cutoff = Purge.cutoff()
+            val rAll = remoteData ?: SyncData()
+            val r = Purge.remote(rAll, cutoff)
+            val remotePurged = r != rAll
 
             // Vorlagen für Standard-Erinnerungen: die zuletzt geänderte Liste gewinnt
             val remoteTplNewer = r.templatesUpdatedAt > prefs.templatesUpdatedAt
@@ -185,11 +200,13 @@ object SyncManager {
             val tplList = prefs.reminderTemplates.map { TemplateItem(it.title, it.km, it.months) }
             val tplTs = prefs.templatesUpdatedAt
 
+            var purged = 0
             val merged = db.withTransaction {
+                purged = Purge.local(db, cutoff)
                 SyncData(
                     reminderTemplates = tplList,
                     templatesUpdatedAt = tplTs,
-                    vehicles = mergeVehicles(db.vehicles().getAllRaw(), r.vehicles) { db.vehicles().upsert(it) },
+                    vehicles = mergeVehicles(db.vehicles().getAllRaw(), r.vehicles) { db.vehicles().upsert(it); down++ },
                     refuels = mergeInto(db.refuels().getAllRaw(), r.refuels, { it.id }, { it.updatedAt }) { db.refuels().upsert(it) },
                     reminders = mergeInto(db.reminders().getAllRaw(), r.reminders, { it.id }, { it.updatedAt }) { db.reminders().upsert(it) },
                     services = mergeInto(db.services().getAllRaw(), r.services, { it.id }, { it.updatedAt }) { db.services().upsert(it) },
@@ -198,7 +215,7 @@ object SyncManager {
                 )
             }
 
-            val remoteChanged = remoteData == null || remoteEncrypted != crypt.enabled ||
+            val remoteChanged = remoteData == null || remoteEncrypted != crypt.enabled || remotePurged ||
                 merged.vehicles.toSet() != r.vehicles.toSet() ||
                 merged.refuels.toSet() != r.refuels.toSet() ||
                 merged.reminders.toSet() != r.reminders.toSet() ||
@@ -226,15 +243,22 @@ object SyncManager {
             }
             crypt.finish()
 
+            val up = if (!remoteChanged) 0 else
+                (merged.vehicles.toSet() - r.vehicles.toSet()).size + (merged.refuels.toSet() - r.refuels.toSet()).size +
+                    (merged.reminders.toSet() - r.reminders.toSet()).size + (merged.services.toSet() - r.services.toSet()).size +
+                    (merged.tireSets.toSet() - r.tireSets.toSet()).size + (merged.expenses.toSet() - r.expenses.toSet()).size
+
             val reupload = prefs.reuploadFiles
-            syncPhotos(ctx, dav, prefs, crypt, reupload, merged.vehicles)
-            syncAttachments(
+            val photos = syncPhotos(ctx, dav, prefs, crypt, reupload, merged.vehicles)
+            val files = syncAttachments(
                 ctx, dav, prefs, crypt, reupload,
                 merged.services.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
                     merged.expenses.filter { !it.deleted && prefs.shows(it.vehicleId) }.flatMap { it.attachmentList() } +
                     merged.vehicles.filter { !it.deleted && prefs.shows(it.id) }.flatMap { v -> v.documentList().flatMap { it.files } },
             )
             if (reupload) prefs.reuploadFiles = false
+            details = str(R.string.sync_log_details, down, up, photos.second + files.second, photos.first + files.first) +
+                if (purged > 0) " · " + str(R.string.sync_log_purged, purged) else ""
             ReminderChecker.checkAll(ctx)
             // TÜV-Berichte von Geräten mit älterer Version in den Service übernehmen (beim nächsten Sync hochgeladen)
             runCatching { ctx.repo.convertInspectionDocs() }
@@ -253,11 +277,15 @@ object SyncManager {
     ): List<T> {
         val (merged, changed) = mergeRecords(local, remote, id, ts)
         for (item in changed) write(item)
+        down += changed.size
         return merged
     }
 
     /** Belege: fehlende hochladen bzw. herunterladen (Dateinamen sind eindeutig, Inhalte ändern sich nie). */
-    private fun syncAttachments(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, names: List<String>) {
+    /** Liefert (hochgeladen, heruntergeladen). */
+    private fun syncAttachments(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, names: List<String>): Pair<Int, Int> {
+        var nUp = 0
+        var nDown = 0
         val uploaded = prefs.uploadedAttachments.toMutableSet()
         for (name in names.distinct()) {
             val file = AttachmentStore.file(ctx, name)
@@ -267,6 +295,7 @@ object SyncManager {
                 if (reupload || dav.head(remotePath) == 404) {
                     val code = dav.put(remotePath, crypt.seal(file.readBytes()), crypt.type(AttachmentStore.mime(name)))
                     if (code !in 200..299) continue
+                    nUp++
                 }
                 uploaded += name
             } else {
@@ -275,13 +304,17 @@ object SyncManager {
                 if (got.code in 200..299 && body != null) {
                     file.writeBytes(crypt.open(body))
                     uploaded += name
+                    nDown++
                 }
             }
         }
         prefs.uploadedAttachments = uploaded
+        return nUp to nDown
     }
 
-    private fun syncPhotos(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>) {
+    private fun syncPhotos(ctx: Context, dav: Dav, prefs: Prefs, crypt: Crypt, reupload: Boolean, vehicles: List<Vehicle>): Pair<Int, Int> {
+        var nUp = 0
+        var nDown = 0
         val uploaded = prefs.uploadedPhotos.toMutableSet()
         // Alle Bilder aller (auf diesem Gerät sichtbaren) Fahrzeuge
         val all = vehicles.filter { !it.deleted && prefs.shows(it.id) }.flatMap { v -> v.images().map { v.id to it.version } }
@@ -293,6 +326,7 @@ object SyncManager {
                 if (reupload || dav.head("photos/$name") == 404) {
                     val code = dav.put("photos/$name", crypt.seal(file.readBytes()), crypt.type("image/jpeg"))
                     if (code !in 200..299) continue
+                    nUp++
                 }
                 uploaded += name
             } else {
@@ -302,10 +336,47 @@ object SyncManager {
                     file.parentFile?.mkdirs()
                     file.writeBytes(crypt.open(body))
                     uploaded += name
+                    nDown++
                 }
             }
         }
         prefs.uploadedPhotos = uploaded
+        return nUp to nDown
+    }
+
+    /**
+     * Verwaiste Dateien suchen: auf diesem Gerät und – wenn Sync eingerichtet – auf dem Server.
+     * Vorher wird synchronisiert, damit Belege anderer Geräte nicht als verwaist gelten.
+     */
+    suspend fun findOrphans(ctx: Context): StorageCleanup.Found = mutex.withLock {
+        val app = ctx.applicationContext
+        val prefs = Prefs(app)
+        withContext(Dispatchers.IO) {
+            val synced = prefs.configured && runCatching { doSync(app, prefs) }.isSuccess
+            val (att, photos) = StorageCleanup.referenced(app.repo.db)
+            val local = StorageCleanup.localOrphans(app, att, photos)
+            val remote = if (!synced) emptyList() else runCatching {
+                val dav = connect(prefs)
+                (dav.listFiles(AttachmentStore.DIR) ?: emptyList()).filter { it.first !in att }.map { (AttachmentStore.DIR + "/" + it.first) to it.second } +
+                    (dav.listFiles("photos") ?: emptyList()).filter { it.first !in photos }.map { ("photos/" + it.first) to it.second }
+            }.getOrDefault(emptyList())
+            StorageCleanup.Found(local, remote)
+        }
+    }
+
+    suspend fun deleteOrphans(ctx: Context, found: StorageCleanup.Found) = mutex.withLock {
+        val app = ctx.applicationContext
+        val prefs = Prefs(app)
+        withContext(Dispatchers.IO) {
+            StorageCleanup.deleteLocal(app, found.local)
+            if (found.remote.isNotEmpty() && prefs.configured) {
+                val dav = connect(prefs)
+                found.remote.forEach { runCatching { dav.delete(it.first) } }
+                val names = found.remote.map { it.first.substringAfterLast('/') }.toSet()
+                prefs.uploadedAttachments = prefs.uploadedAttachments - names
+                prefs.uploadedPhotos = prefs.uploadedPhotos - names
+            }
+        }
     }
 }
 
@@ -401,17 +472,6 @@ object SyncScheduler {
             .build()
         WorkManager.getInstance(ctx).enqueueUniqueWork("sync-now", ExistingWorkPolicy.REPLACE, req)
     }
-}
-
-/**
- * Steckbrief und Dokumente aus der Fassung mit dem jeweils neueren eigenen Zeitstempel übernehmen,
- * alles andere aus [base]. Bei Gleichstand bleibt [base].
- */
-fun mergeVehicleParts(base: Vehicle, other: Vehicle): Vehicle {
-    var v = base
-    if (other.specsUpdatedAt > v.specsUpdatedAt) v = v.copy(specs = other.specs, specsUpdatedAt = other.specsUpdatedAt)
-    if (other.docsUpdatedAt > v.docsUpdatedAt) v = v.copy(documents = other.documents, docsUpdatedAt = other.docsUpdatedAt)
-    return v
 }
 
 /**

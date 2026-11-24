@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
@@ -441,6 +442,7 @@ fun SettingsScreen(nav: NavController, section: String? = null) {
                 if (backupBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 backupInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
+            if (section == "maintenance") MaintenanceSection(nav)
             if (section == "updates") {
                 if (UpdateChecker.isDirectInstall(ctx)) {
                     var updateCheck by remember { mutableStateOf(prefs.updateCheck) }
@@ -496,6 +498,7 @@ object SettingsSections {
         Section("prices", Icons.Default.Euro, R.string.prices_section, R.string.set_prices_sub),
         Section("location", Icons.Default.LocationOn, R.string.set_location, R.string.set_location_sub),
         Section("backup", Icons.Default.Backup, R.string.backup, R.string.set_backup_sub),
+        Section("maintenance", Icons.Default.CleaningServices, R.string.set_maintenance, R.string.set_maintenance_sub),
         Section("updates", Icons.Default.SystemUpdate, R.string.set_updates, R.string.set_updates_sub),
     )
 

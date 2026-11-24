@@ -152,6 +152,12 @@ data class Vehicle(
      *  zusammengeführt, damit eine Änderung am Fahrzeug auf Gerät A den Steckbrief von Gerät B nicht verdrängt. */
     val specsUpdatedAt: Long = 0,
     val docsUpdatedAt: Long = 0,
+    /** Ebenso getrennt zusammengeführt: Fotos, Kilometerstand von Hand, „Reifenwechsel erledigt“. */
+    val photosUpdatedAt: Long = 0,
+    val odoUpdatedAt: Long = 0,
+    val tireDoneUpdatedAt: Long = 0,
+    /** Zulassung: leer = ganzjährig, sonst Saison „MM-MM“ (z. B. „03-10“ = März bis Oktober). */
+    val registration: String = "",
 ) {
     /** Alle Bilder mit ihren festgelegten Ausschnitten (erstes = Hauptbild). */
     fun images(): List<VehicleImage> =
@@ -352,6 +358,10 @@ data class Expense(
 
 @Dao
 interface ExpenseDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM expenses WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM expenses WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY timestamp DESC")
     fun observeForVehicle(vehicleId: String): Flow<List<Expense>>
 
@@ -370,6 +380,10 @@ interface ExpenseDao {
 
 @Dao
 interface TireSetDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM tire_sets WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM tire_sets WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY season, brandFront")
     fun observeForVehicle(vehicleId: String): Flow<List<TireSet>>
 
@@ -388,6 +402,10 @@ interface TireSetDao {
 
 @Dao
 interface ServiceDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM services WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM services WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY timestamp DESC, odometer DESC")
     fun observeForVehicle(vehicleId: String): Flow<List<ServiceEntry>>
 
@@ -415,6 +433,10 @@ interface ServiceDao {
 
 @Dao
 interface VehicleDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM vehicles WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM vehicles WHERE deleted = 0 ORDER BY name COLLATE NOCASE")
     fun observeAll(): Flow<List<Vehicle>>
 
@@ -436,6 +458,10 @@ interface VehicleDao {
 
 @Dao
 interface RefuelDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM refuels WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM refuels WHERE deleted = 0 ORDER BY odometer DESC, timestamp DESC")
     fun observeAll(): Flow<List<Refuel>>
 
@@ -477,6 +503,10 @@ interface RefuelDao {
 
 @Dao
 interface ReminderDao {
+    /** Gelöschte Einträge endgültig entfernen, wenn die Löschung lange genug zurückliegt. */
+    @Query("DELETE FROM reminders WHERE deleted = 1 AND updatedAt < :cutoff")
+    suspend fun purgeDeleted(cutoff: Long): Int
+
     @Query("SELECT * FROM reminders WHERE deleted = 0 AND vehicleId = :vehicleId ORDER BY title COLLATE NOCASE")
     fun observeForVehicle(vehicleId: String): Flow<List<Reminder>>
 
@@ -519,7 +549,7 @@ data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val l
     }
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 13, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 14, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -564,6 +594,19 @@ abstract class AppDatabase : RoomDatabase() {
                 for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
                     db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
                 }
+            }
+        }
+
+        /** 1.13: weitere getrennt synchronisierte Teile, Saisonzulassung. */
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN photosUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN odoUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN tireDoneUpdatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE vehicles ADD COLUMN registration TEXT NOT NULL DEFAULT ''")
+                db.execSQL("UPDATE vehicles SET photosUpdatedAt = updatedAt WHERE photoVersion > 0 OR extraPhotos != ''")
+                db.execSQL("UPDATE vehicles SET odoUpdatedAt = updatedAt WHERE manualOdometer > 0")
+                db.execSQL("UPDATE vehicles SET tireDoneUpdatedAt = updatedAt WHERE tireSeasonDone != ''")
             }
         }
 
@@ -646,7 +689,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

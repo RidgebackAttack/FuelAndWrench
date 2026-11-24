@@ -650,6 +650,44 @@
     <string name="filter_without">uden</string>
     <string name="filter_info">Tryk: kun denne · igen: uden · igen: fra</string>
     <string name="filter_none">Ingen poster for dette filter.</string>
+    <string name="check_title">Datatjek</string>
+    <string name="check_info">Tegn på mulige tastefejl. Er en post korrekt, tryk på “Det passer”.</string>
+    <string name="check_none">Ingen afvigelser</string>
+    <string name="check_ignore">Det passer</string>
+    <string name="check_open">Vis</string>
+    <string name="check_odo_backwards">Kilometertal %1$s er lavere end %2$s den %3$s</string>
+    <string name="check_over_tank">%1$s tanket, tanken rummer %2$s</string>
+    <string name="check_duplicate">Ligner en dublet – samme kilometertal og mængde kort efter hinanden</string>
+    <string name="check_future">Datoen ligger i fremtiden</string>
+    <string name="cleanup_title">Ryd op i lager</string>
+    <string name="cleanup_info">Finder bilag og fotos, der ikke længere hører til nogen post (f.eks. fra slettede poster eller udskiftede fotos) – på denne enhed og på serveren.</string>
+    <string name="cleanup_scan">Tjek</string>
+    <string name="cleanup_nothing">Intet at slette.</string>
+    <string name="cleanup_local">På denne enhed: %1$s (%2$s)</string>
+    <string name="cleanup_remote">På serveren: %1$s (%2$s)</string>
+    <string name="cleanup_done">Slettet – %1$s frigjort</string>
+    <string name="purge_info">Slettede poster gemmes et år som sletningsnote, så alle enheder får sletningen med. Derefter fjernes de automatisk for altid.</string>
+    <string name="sync_log_title">Synkroniseringslog</string>
+    <string name="sync_log_details">modtaget %1$d, sendt %2$d, filer ↓%3$d ↑%4$d</string>
+    <string name="sync_log_purged">%1$d gamle sletningsnoter fjernet</string>
+    <string name="crash_title">Nedbrudsrapporter</string>
+    <string name="crash_none">Ingen nedbrud</string>
+    <string name="crash_info">Hvis appen går ned, gemmes fejlen kun på denne enhed. Med “Del” kan du give den videre – ellers forlader den aldrig enheden.</string>
+    <string name="set_maintenance">Datapleje</string>
+    <string name="set_maintenance_sub">Datatjek, oprydning, logs</string>
+    <string name="reg_title">Indregistrering</string>
+    <string name="reg_all_year">Hele året</string>
+    <string name="reg_season">Sæson</string>
+    <string name="reg_from">fra</string>
+    <string name="reg_to">til</string>
+    <string name="reg_info">Uden for perioden holder notifikationer og dækpåmindelsen pause; det, der forfalder, vises ved sæsonstart.</string>
+    <string name="reg_overview">Sæsonindregistrering %1$s – %2$s</string>
+    <string name="reg_on">indregistreret til udgangen af %1$s</string>
+    <string name="reg_off">afmeldt, igen fra %1$s</string>
+    <string name="total_cost_title">Samlede udgifter</string>
+    <string name="total_cost_per_km">Pr. %1$s: %2$s</string>
+    <string name="total_cost_per_100">Pr. 100 %1$s: %2$s</string>
+    <string name="total_cost_per_month">Pr. måned siden første post: %1$s</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>
@@ -709,5 +747,13 @@
     <plurals name="pl_pages">
         <item quantity="one">%d side</item>
         <item quantity="other">%d sider</item>
+    </plurals>
+    <plurals name="pl_check_issues">
+        <item quantity="one">%d afvigelse i dataene – tryk for at se</item>
+        <item quantity="other">%d afvigelser i dataene – tryk for at se</item>
+    </plurals>
+    <plurals name="pl_crashes">
+        <item quantity="one">%d nedbrud gemt</item>
+        <item quantity="other">%d nedbrud gemt</item>
     </plurals>
 </resources>

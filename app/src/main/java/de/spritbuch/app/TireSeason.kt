@@ -59,7 +59,7 @@ object TireSeason {
     }
 
     suspend fun due(ctx: Context, v: Vehicle): Due? {
-        if (v.deleted || v.archived) return null
+        if (v.deleted || v.archived || !Registration.isActive(v)) return null
         val repo = ctx.repo
         val d = decide(repo.db.tireSets().forVehicle(v.id), repo.mountedTireSetId(v.id)) ?: return null
         return if (v.tireSeasonDone == d.period) null else d

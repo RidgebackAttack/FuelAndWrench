@@ -650,6 +650,44 @@
     <string name="filter_without">without</string>
     <string name="filter_info">Tap: only this · again: without · again: off</string>
     <string name="filter_none">No entries for this filter.</string>
+    <string name="check_title">Data check</string>
+    <string name="check_info">Hints at possible typos. If an entry is correct, tap “It’s fine”.</string>
+    <string name="check_none">No issues found</string>
+    <string name="check_ignore">It’s fine</string>
+    <string name="check_open">Show</string>
+    <string name="check_odo_backwards">Odometer %1$s is lower than %2$s on %3$s</string>
+    <string name="check_over_tank">%1$s refuelled, tank holds %2$s</string>
+    <string name="check_duplicate">Looks like a duplicate – same odometer and amount shortly after each other</string>
+    <string name="check_future">Date is in the future</string>
+    <string name="cleanup_title">Clean up storage</string>
+    <string name="cleanup_info">Finds receipts and photos that no longer belong to any entry (e.g. from deleted entries or replaced photos) – on this device and on the server.</string>
+    <string name="cleanup_scan">Check</string>
+    <string name="cleanup_nothing">Nothing to delete.</string>
+    <string name="cleanup_local">On this device: %1$s (%2$s)</string>
+    <string name="cleanup_remote">On the server: %1$s (%2$s)</string>
+    <string name="cleanup_done">Deleted – %1$s freed</string>
+    <string name="purge_info">Deleted entries are kept for a year as a deletion note so every device learns about the deletion. After that they are removed for good automatically.</string>
+    <string name="sync_log_title">Sync log</string>
+    <string name="sync_log_details">received %1$d, sent %2$d, files ↓%3$d ↑%4$d</string>
+    <string name="sync_log_purged">%1$d old deletion notes removed</string>
+    <string name="crash_title">Crash reports</string>
+    <string name="crash_none">No crashes</string>
+    <string name="crash_info">If the app crashes, the error is only saved on this device. Use “Share” to pass it on – otherwise it never leaves the device.</string>
+    <string name="set_maintenance">Data care</string>
+    <string name="set_maintenance_sub">Data check, clean up storage, logs</string>
+    <string name="reg_title">Registration</string>
+    <string name="reg_all_year">All year</string>
+    <string name="reg_season">Seasonal</string>
+    <string name="reg_from">from</string>
+    <string name="reg_to">to</string>
+    <string name="reg_info">Outside this period, notifications and the tire hint pause; anything that falls due shows up when the season starts.</string>
+    <string name="reg_overview">Seasonal registration %1$s – %2$s</string>
+    <string name="reg_on">registered until end of %1$s</string>
+    <string name="reg_off">off the road, back from %1$s</string>
+    <string name="total_cost_title">Total cost</string>
+    <string name="total_cost_per_km">Per %1$s: %2$s</string>
+    <string name="total_cost_per_100">Per 100 %1$s: %2$s</string>
+    <string name="total_cost_per_month">Per month since the first entry: %1$s</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>
@@ -709,5 +747,13 @@
     <plurals name="pl_pages">
         <item quantity="one">%d page</item>
         <item quantity="other">%d pages</item>
+    </plurals>
+    <plurals name="pl_check_issues">
+        <item quantity="one">%d issue in the data – tap to view</item>
+        <item quantity="other">%d issues in the data – tap to view</item>
+    </plurals>
+    <plurals name="pl_crashes">
+        <item quantity="one">%d crash saved</item>
+        <item quantity="other">%d crashes saved</item>
     </plurals>
 </resources>

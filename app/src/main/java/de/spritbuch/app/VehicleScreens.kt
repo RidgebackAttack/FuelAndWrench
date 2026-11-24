@@ -479,6 +479,8 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
     var archived by rememberSaveable { mutableStateOf(false) }
     var distU by rememberSaveable { mutableStateOf("km") }
     var vType by rememberSaveable { mutableStateOf("Auto") }
+    var regFrom by rememberSaveable { mutableIntStateOf(0) } // 0 = ganzjährig
+    var regTo by rememberSaveable { mutableIntStateOf(10) }
     var drive by rememberSaveable { mutableStateOf("Verbrenner") }
     var battery by rememberSaveable { mutableStateOf("") }
     var volU by rememberSaveable { mutableStateOf("l") }
@@ -500,6 +502,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
         archived = v.archived
         distU = v.distanceUnit; volU = v.volumeUnit; fmtU = v.consumptionFormat; cur = v.currency
         vType = v.vehicleType
+        Registration.parse(v.registration)?.let { (f, t) -> regFrom = f; regTo = t }
         drive = if (v.driveType == "Verbrenner" && v.defaultFuelType == ELECTRIC) "Elektro" else v.driveType
         battery = v.batteryCapacity?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.fmt(1) } ?: ""
     }
@@ -542,6 +545,7 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
                                     photoOrder = photoOrder,
                                     distanceUnit = distU, volumeUnit = volU, consumptionFormat = fmtU, currency = cur,
                                     vehicleType = vType,
+                                    registration = if (regFrom == 0) "" else Registration.format(regFrom, regTo),
                                     driveType = drive,
                                     batteryCapacity = if (drive == "Elektro" || drive == "Plug-in-Hybrid") battery.toDoubleDe() else null,
                                 )
@@ -632,6 +636,20 @@ fun VehicleEditScreen(nav: NavController, vehicleId: String) {
             OutlinedTextField(name, { name = it }, label = { Text(str(R.string.vehicle_name_hint)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(plate, { plate = it }, label = { Text(str(R.string.plate)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             ChoiceField(str(R.string.vehicle_type), vType, Options.vehicleTypes) { vType = it }
+            // Zulassung: ganzjährig oder Saisonkennzeichen (Monat von–bis)
+            SectionTitle(str(R.string.reg_title))
+            SingleChips(listOf(str(R.string.reg_all_year), str(R.string.reg_season)), str(if (regFrom == 0) R.string.reg_all_year else R.string.reg_season)) { sel ->
+                if (sel.isEmpty()) return@SingleChips
+                regFrom = if (sel == str(R.string.reg_all_year)) 0 else regFrom.takeIf { it > 0 } ?: 3
+            }
+            if (regFrom > 0) {
+                val months = (1..12).map { Registration.monthName(it) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.weight(1f)) { ChoiceField(str(R.string.reg_from), months[regFrom - 1], months) { regFrom = months.indexOf(it) + 1 } }
+                    Box(Modifier.weight(1f)) { ChoiceField(str(R.string.reg_to), months[regTo - 1], months) { regTo = months.indexOf(it) + 1 } }
+                }
+                Text(str(R.string.reg_info), style = MaterialTheme.typography.bodySmall)
+            }
             SectionTitle(str(R.string.drive_type))
             SingleChips(Options.driveTypes, drive) { sel ->
                 if (sel.isEmpty()) return@SingleChips

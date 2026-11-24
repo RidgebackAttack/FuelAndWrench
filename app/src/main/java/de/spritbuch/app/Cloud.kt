@@ -119,6 +119,47 @@ object Nextcloud {
     }
 }
 
+/** Dateien eines WebDAV-Ordners mit Größe (PROPFIND, Depth 1); fehlender Ordner = leer. */
+fun WebDavClient.listFilesWithSize(path: String): List<Pair<String, Long>> {
+    val body = """<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>"""
+    val res = propfind(path, body)
+    if (res.code == 404) return emptyList()
+    if (res.code !in 200..299) throw java.io.IOException(httpMessage(res.code))
+    val xml = res.body?.decodeToString() ?: return emptyList()
+    val parser = Xml.newPullParser().apply {
+        setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
+        setInput(xml.reader())
+    }
+    val out = mutableListOf<Pair<String, Long>>()
+    var href: String? = null
+    var size = 0L
+    var isDir = false
+    var tag = ""
+    while (parser.next() != XmlPullParser.END_DOCUMENT) {
+        when (parser.eventType) {
+            XmlPullParser.START_TAG -> {
+                tag = parser.name
+                when (parser.name) {
+                    "response" -> { href = null; size = 0; isDir = false }
+                    "collection" -> isDir = true
+                }
+            }
+            XmlPullParser.TEXT -> when (tag) {
+                "href" -> href = (href ?: "") + parser.text
+                "getcontentlength" -> size = parser.text.trim().toLongOrNull() ?: size
+            }
+            XmlPullParser.END_TAG -> {
+                tag = ""
+                if (parser.name == "response" && !isDir) href?.let { h ->
+                    val name = URLDecoder.decode(h.trimEnd('/').substringAfterLast('/').replace("+", "%2B"), "UTF-8")
+                    if (name.isNotEmpty() && !name.startsWith(".")) out += name to size
+                }
+            }
+        }
+    }
+    return out
+}
+
 /** Unterordner eines WebDAV-Ordners auflisten (PROPFIND, Depth 1). */
 fun WebDavClient.listFolders(path: String): List<String> {
     val body = """<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>"""

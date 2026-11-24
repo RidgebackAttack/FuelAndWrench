@@ -29,6 +29,11 @@ object DebugLog {
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             runCatching { error("Absturz (Thread ${t.name})", e) }
+            runCatching {
+                val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(Date())
+                val trace = StringWriter().also { w -> e.printStackTrace(PrintWriter(w)) }.toString()
+                CrashLog.add(app, "$time · ${header()} · Thread ${t.name}\n$trace")
+            }
             previous?.uncaughtException(t, e)
         }
     }
@@ -77,10 +82,20 @@ object DebugLog {
     }
 
     /** Kopie in den Export-Ordner legen und über das Teilen-Menü anbieten (z. B. per Mail). */
-    fun share(ctx: Context) {
+    fun share(ctx: Context) = shareText(ctx, "fuelandwrench-log.txt", header() + "\n\n" + file(ctx).readText())
+
+    fun shareCrashes(ctx: Context) =
+        shareText(ctx, "fuelandwrench-crashes.txt", redactText(ctx, CrashLog.entries(ctx).joinToString("\n\n=====\n\n")))
+
+    private fun redactText(ctx: Context, s: String): String {
+        if (!::app.isInitialized) app = ctx.applicationContext
+        return redact(s)
+    }
+
+    private fun shareText(ctx: Context, name: String, text: String) {
         val dir = File(ctx.cacheDir, "export").apply { mkdirs() }
-        val copy = File(dir, "fuelandwrench-log.txt")
-        copy.writeText(header() + "\n\n" + file(ctx).readText())
+        val copy = File(dir, name)
+        copy.writeText(text)
         val uri = AttachmentStore.uri(ctx, copy)
         val send = Intent(Intent.ACTION_SEND)
             .setType("text/plain")

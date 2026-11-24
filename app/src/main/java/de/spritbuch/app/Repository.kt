@@ -307,7 +307,7 @@ class Repository(
             }
             // Formulare mit veraltetem Stand (z. B. Fahrzeug bearbeiten, während der Sync einen neuen Steckbrief brachte)
             // überschreiben Steckbrief und Dokumente nicht
-            if (old != null) toSave = mergeVehicleParts(toSave, old)
+            toSave = stampVehicleParts(toSave, old, t)
             db.vehicles().upsert(toSave.copy(updatedAt = t))
         }
         ensureDefaultReminders(v.id)

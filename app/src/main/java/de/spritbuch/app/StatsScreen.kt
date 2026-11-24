@@ -191,6 +191,11 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
                     }
                 }
             }
+            // Was kostet das Fahrzeug insgesamt – pro km und pro Monat seit dem ersten Eintrag
+            item {
+                val first = (refuels.map { it.timestamp } + services.map { it.timestamp } + expenses.map { it.timestamp }).minOrNull()
+                TotalCostCard(v, years.sumOf { it.fuel }, years.sumOf { it.service }, years.sumOf { it.other }, years.sumOf { it.distance }, first)
+            }
             item {
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

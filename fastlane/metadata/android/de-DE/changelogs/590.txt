@@ -1,0 +1,5 @@
+- Neu: Saisonkennzeichen am Fahrzeug (z. B. März–Oktober) – außerhalb pausieren Erinnerungen
+- Neu: Datenpflege – Datenprüfung (Tippfehler), Speicher aufräumen, Sync-Protokoll, Absturzberichte (nur lokal)
+- Neu: Gesamtkosten pro km und Monat in der Statistik
+- Sync: Fotos, Kilometerstand und „Reifen erledigt“ werden getrennt zusammengeführt
+- Gelöschte Einträge werden nach einem Jahr endgültig entfernt
