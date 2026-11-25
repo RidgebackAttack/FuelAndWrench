@@ -60,6 +60,7 @@ class App : Application() {
             Shortcuts.update(this@App)
             runCatching { repo.repairImportedData() }
             runCatching { repo.convertInspectionDocs() }
+            runCatching { DataCheck.migrateLocalIgnores(this@App) }
         }
     }
 }

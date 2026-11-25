@@ -200,6 +200,8 @@ data class Refuel(
     /** Akkustand in Prozent vor bzw. nach dem Laden (optional). */
     val socStart: Int? = null,
     val socEnd: Int? = null,
+    /** Datenprüfung: als „passt so“ markierte Auffälligkeiten (Namen von [DataCheck.Kind], kommagetrennt); wird synchronisiert. */
+    val checkOk: String = "",
 ) {
     val isCharge: Boolean get() = fuelType == ELECTRIC
 
@@ -549,7 +551,7 @@ data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val l
     }
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 14, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 15, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -594,6 +596,13 @@ abstract class AppDatabase : RoomDatabase() {
                 for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
                     db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
                 }
+            }
+        }
+
+        /** 1.13.2: „passt so“ der Datenprüfung an der Betankung (synchronisiert). */
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE refuels ADD COLUMN checkOk TEXT NOT NULL DEFAULT ''")
             }
         }
 
@@ -689,7 +698,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

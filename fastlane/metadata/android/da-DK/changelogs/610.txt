@@ -1,0 +1,2 @@
+- Fjernet: aflæsning af kilometertal fra foto (for upålidelig) – appen er nu mindre
+- Datatjek: “Det passer” synkroniseres nu til alle enheder

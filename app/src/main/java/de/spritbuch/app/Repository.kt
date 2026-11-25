@@ -369,6 +369,12 @@ class Repository(
         if (created) changed()
     }
 
+    /** Nur Markierungen ändern (z. B. Datenprüfung): ohne Erinnerungs-Prüfung, aber synchronisiert. */
+    suspend fun saveRefuelQuiet(r: Refuel) {
+        db.refuels().upsert(r.copy(updatedAt = now()))
+        changed()
+    }
+
     suspend fun saveRefuel(r: Refuel) {
         db.refuels().upsert(r.copy(updatedAt = now()))
         ensureDefaultReminders(r.vehicleId)

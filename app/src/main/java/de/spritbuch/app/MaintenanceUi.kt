@@ -41,8 +41,8 @@ fun ChecksScreen(nav: NavController) {
     val repo = ctx.repo
     val vehicles by repo.vehicles.collectAsStateWithLifecycle(emptyList())
     val refuels by repo.allRefuels.collectAsStateWithLifecycle(emptyList())
-    var ignoredTick by remember { mutableIntStateOf(0) }
-    val issues = remember(vehicles, refuels, ignoredTick) {
+    val scope = rememberCoroutineScope()
+    val issues = remember(vehicles, refuels) {
         vehicles.filter { Prefs(ctx).shows(it.id) }.flatMap { v -> DataCheck.open(ctx, v, refuels).map { v to it } }
     }
     Scaffold(topBar = { TopAppBar(title = { Text(str(R.string.check_title)) }, navigationIcon = { BackButton(nav) }) }) { pad ->
@@ -59,7 +59,7 @@ fun ChecksScreen(nav: NavController) {
                         Text(i.text, style = MaterialTheme.typography.bodyMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = { nav.navigate("refuelEdit/${v.id}/${i.refuel.id}") }) { Text(str(R.string.edit)) }
-                            TextButton(onClick = { DataCheck.ignore(ctx, i); ignoredTick++ }) { Text(str(R.string.check_ignore)) }
+                            TextButton(onClick = { scope.launch { DataCheck.ignore(ctx, i) } }) { Text(str(R.string.check_ignore)) }
                         }
                     }
                 }

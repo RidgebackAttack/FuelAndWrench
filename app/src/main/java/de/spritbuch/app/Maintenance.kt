@@ -174,17 +174,35 @@ object DataCheck {
         return out
     }
 
-    private fun sp(ctx: Context) = ctx.applicationContext.getSharedPreferences("spritbuch", Context.MODE_PRIVATE)
-    fun ignored(ctx: Context): Set<String> = sp(ctx).getStringSet("check_ignored", emptySet()) ?: emptySet()
-    fun ignore(ctx: Context, issue: Issue) {
-        sp(ctx).edit().putStringSet("check_ignored", ignored(ctx) + issue.key).apply()
+    fun isOk(r: Refuel, kind: Kind): Boolean = kind.name in r.checkOk.split(",")
+
+    /** „Passt so“ an der Betankung speichern – damit wird es auf alle Geräte synchronisiert. */
+    suspend fun ignore(ctx: Context, issue: Issue) {
+        val repo = ctx.repo
+        val r = repo.getRefuel(issue.refuel.id) ?: return
+        if (isOk(r, issue.kind)) return
+        val ok = (r.checkOk.split(",").filter { it.isNotBlank() } + issue.kind.name).joinToString(",")
+        repo.saveRefuelQuiet(r.copy(checkOk = ok))
+    }
+
+    /** Ältere, nur lokal gespeicherte „passt so“ (bis 1.13.1) an die Betankungen übertragen. */
+    suspend fun migrateLocalIgnores(ctx: Context) {
+        val sp = ctx.applicationContext.getSharedPreferences("spritbuch", Context.MODE_PRIVATE)
+        val old = sp.getStringSet("check_ignored", null) ?: return
+        val repo = ctx.repo
+        for (key in old) {
+            val id = key.substringBeforeLast(':')
+            val kind = runCatching { Kind.valueOf(key.substringAfterLast(':')) }.getOrNull() ?: continue
+            val r = repo.getRefuel(id) ?: continue
+            if (!isOk(r, kind)) repo.saveRefuelQuiet(r.copy(checkOk = (r.checkOk.split(",").filter { it.isNotBlank() } + kind.name).joinToString(",")))
+        }
+        sp.edit().remove("check_ignored").apply()
     }
 
     /** Offene Auffälligkeiten (ohne die als „passt so“ markierten). */
-    fun open(ctx: Context, v: Vehicle, refuels: List<Refuel>): List<Issue> {
-        val ign = ignored(ctx)
-        return check(v, refuels).filter { it.key !in ign }
-    }
+    @Suppress("UNUSED_PARAMETER")
+    fun open(ctx: Context, v: Vehicle, refuels: List<Refuel>): List<Issue> =
+        check(v, refuels).filter { !isOk(it.refuel, it.kind) }
 }
 
 // ---------------------------------------------------------------------------------------------

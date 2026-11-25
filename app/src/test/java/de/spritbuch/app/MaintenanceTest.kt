@@ -58,6 +58,9 @@ class MaintenanceTest {
         assertTrue("2" to DataCheck.Kind.ODO_BACKWARDS in kinds)
         assertTrue("3" to DataCheck.Kind.OVER_TANK in kinds)
         assertFalse(kinds.any { it.first == "3" && it.second == DataCheck.Kind.ODO_BACKWARDS })
+        // „passt so“ hängt an der Betankung und wird damit synchronisiert
+        val ok = list.map { if (it.id == "3") it.copy(checkOk = "OVER_TANK") else it }
+        assertFalse(DataCheck.check(v, ok, now = day(2026, 1, 1)).filter { !DataCheck.isOk(it.refuel, it.kind) }.any { it.refuel.id == "3" })
     }
 
     @Test fun seasonalRegistration() {

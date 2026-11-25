@@ -1,0 +1,2 @@
+- Removed: reading the odometer from a photo (too unreliable) – the app is smaller now
+- Data check: “It’s fine” is now synced to all devices

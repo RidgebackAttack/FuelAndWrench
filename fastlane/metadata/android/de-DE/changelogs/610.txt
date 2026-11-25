@@ -1,0 +1,2 @@
+- Entfernt: Kilometerstand per Foto ablesen (zu unzuverlässig) – die App wird dadurch kleiner
+- Datenprüfung: „Passt so“ wird jetzt auf alle Geräte synchronisiert
