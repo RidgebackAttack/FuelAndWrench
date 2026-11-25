@@ -13,7 +13,10 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -70,7 +73,13 @@ class ManualScreenshots {
         step("05-service") { click(s(R.string.tab_service)); waitText(s(R.string.filter_all)) }
         step("06-costs") { click(s(R.string.tab_costs)) }
         step("07-refuel-new") { go("refuelEdit/${DemoData.CAR}/new"); waitText(s(R.string.scan_receipt)) }
-        step("08-odometer-prompt") { click(s(R.string.scan_receipt)); waitText(s(R.string.scan_odo_continue)) }
+        step("08-odometer-prompt", idle = false) {
+            // Dialog mit Eingabefeld: blinkender Cursor hält Compose nie still – Uhr von Hand weiterdrehen
+            rule.mainClock.autoAdvance = false
+            click(s(R.string.scan_receipt))
+            repeat(5) { rule.mainClock.advanceTimeBy(200) }
+        }
+        rule.mainClock.autoAdvance = true
         step("09-refuel-foreign") { go("refuelEdit/${DemoData.CAR}/${DemoData.DK_REFUEL}"); waitText(s(R.string.fx_currency)) }
         step("10-service-hu") { go("serviceEdit/${DemoData.CAR}/${DemoData.HU}"); waitText(s(R.string.hu_result)) }
         step("11-tire-set") { go("tireSetEdit/${DemoData.CAR}/${DemoData.SUMMER}"); scrollTo(s(R.string.tire_dot_title)) }
@@ -87,8 +96,8 @@ class ManualScreenshots {
     }
 
     /** Ein Bild; schlägt ein Schritt fehl, fehlt nur dieses Bild. */
-    private fun step(name: String, action: () -> Unit) {
-        val ok = runCatching { action(); rule.waitForIdle(); capture(name) }
+    private fun step(name: String, idle: Boolean = true, action: () -> Unit) {
+        val ok = runCatching { action(); if (idle) rule.waitForIdle(); capture(name) }
         ok.exceptionOrNull()?.let { failed += name; println("Screenshot $name: ${it.message}") }
     }
 
@@ -100,16 +109,23 @@ class ManualScreenshots {
         rule.waitForIdle()
     }
 
+    /** Antippen über die Semantik statt über Touch-Ereignisse (die gehen unter Robolectric bei Tabs daneben). */
     private fun click(text: String) {
-        rule.onAllNodesWithText(text).onFirst().performClick()
-        rule.waitForIdle()
+        rule.onAllNodes(hasText(text, substring = true) and hasClickAction()).onFirst().performSemanticsAction(SemanticsActions.OnClick)
+        if (rule.mainClock.autoAdvance) rule.waitForIdle()
         rule.mainClock.advanceTimeBy(400)
     }
 
+    /** Zu einem Text scrollen: in normalen Spalten direkt, in Listen über die Listen-Scrollaktion. */
     private fun scrollTo(text: String) {
-        rule.waitUntil(10_000) { rule.onAllNodes(hasScrollToNodeAction()).fetchSemanticsNodes().isNotEmpty() }
-        rule.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(hasText(text, substring = true))
         rule.waitForIdle()
+        if (runCatching { rule.onAllNodesWithText(text, substring = true).onFirst().performScrollTo() }.isSuccess) return
+        val lists = rule.onAllNodes(hasScrollToNodeAction())
+        val n = lists.fetchSemanticsNodes().size
+        for (i in 0 until n) {
+            if (runCatching { lists[i].performScrollToNode(hasText(text, substring = true)) }.isSuccess) { rule.waitForIdle(); return }
+        }
+        error("nicht gefunden: $text")
     }
 
     private fun waitText(text: String, substring: Boolean = false) = rule.waitUntil(10_000) {
@@ -178,8 +194,8 @@ object DemoData {
             val amount = 48.0 + rnd.nextInt(120) / 10.0
             odo += (amount / (6.1 + rnd.nextInt(8) / 10.0) * 100).toInt()
             val price = 1.55 + rnd.nextInt(30) / 100.0
-            val id = if (n == 30) DK_REFUEL else "car-$n"
-            val r = if (n == 30) {
+            val id = if (n == 36) DK_REFUEL else "car-$n"
+            val r = if (n == 36) {
                 // Urlaubsfahrt: in Dänemark getankt, in DKK bezahlt
                 val dkk = (amount * 13.39).let { Math.round(it * 100) / 100.0 }
                 Refuel(
@@ -196,9 +212,6 @@ object DemoData {
             t += (17 + rnd.nextInt(10)) * 24L * 3600 * 1000
             n++
         }
-        // Ein Tippfehler für die Datenprüfung (mehr getankt als in den Tank passt)
-        db.refuels().upsert(Refuel(id = "car-typo", vehicleId = CAR, timestamp = ts(2026, 10, 2), odometer = odo - 400, amount = 75.2,
-            totalPrice = 124.0, fuelType = "Diesel", stationBrand = "Aral"))
 
         // Motorrad: nur in der Saison März–Oktober
         var bodo = 21_000
@@ -208,9 +221,11 @@ object DemoData {
             while (bt < ts(year, 10, 20)) {
                 val amount = 11.0 + rnd.nextInt(40) / 10.0
                 bodo += (amount / (5.2 + rnd.nextInt(8) / 10.0) * 100).toInt()
+                // Ein Tippfehler für die Datenprüfung: mehr getankt als in den Tank passt
+                val typo = n == 5
                 db.refuels().upsert(
                     Refuel(
-                        id = "bike-$n", vehicleId = BIKE, timestamp = bt, odometer = bodo, amount = amount,
+                        id = "bike-$n", vehicleId = BIKE, timestamp = bt, odometer = bodo, amount = if (typo) 21.4 else amount,
                         totalPrice = Math.round(amount * (1.92 + rnd.nextInt(15) / 100.0) * 100) / 100.0,
                         fuelType = if (n % 4 == 3) "Super E5" else "Premium", stationBrand = brands[(n + 1) % brands.size],
                     ),
