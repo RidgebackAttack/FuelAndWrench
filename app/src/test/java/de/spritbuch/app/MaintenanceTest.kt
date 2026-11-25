@@ -85,4 +85,13 @@ class MaintenanceTest {
         val set = TireSet(dotFront = "0525", dotRear = "1018")
         assertEquals(2, TireAge.level(TireAge.max(set, now)!!))
     }
+
+    @Test fun cropRegionMapsToOriginalRotation() {
+        val c = android.graphics.RectF(0.1f, 0.2f, 0.3f, 0.4f)
+        fun RectF4(r: android.graphics.RectF) = listOf(r.left, r.top, r.right, r.bottom).map { (it * 100).toInt() }
+        assertEquals(listOf(10, 20, 30, 40), RectF4(Ocr.regionInOriginal(c, 0)))
+        assertEquals(listOf(20, 70, 40, 90), RectF4(Ocr.regionInOriginal(c, 90)))
+        assertEquals(listOf(70, 60, 90, 80), RectF4(Ocr.regionInOriginal(c, 180)))
+        assertEquals(listOf(60, 10, 80, 30), RectF4(Ocr.regionInOriginal(c, 270)))
+    }
 }

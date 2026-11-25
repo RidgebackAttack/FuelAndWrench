@@ -1,1 +1,2 @@
-- Rettet: kvitteringsscanning kunne gøre hele telefonen langsom med kameraer i meget høj opløsning – billeder behandles nu mindre, genkendelsen kører med lav prioritet og stopper efter et minut eller ved udgang
+- Kvitteringsscanning: afgrænsning læser nu udsnittet fra originalfotoet i fuld opløsning – små kvitteringer i et foto genkendes skarpere
+- Rettet: kvitteringsscanning kunne gøre telefonen langsom – billeder behandles mindre, genkendelsen kører med lav prioritet og stopper efter et minut eller ved udgang

@@ -65,6 +65,50 @@ object Ocr {
         return out
     }
 
+    /**
+     * Liest nur den Ausschnitt [crop] (0…1, bezogen auf das gedrehte Bild) aus dem Originalfoto in voller
+     * Auflösung, begrenzt auf [maxSide]. So wird ein kleiner Bon in einem großen Foto scharf erkannt,
+     * ohne das ganze Foto in den Speicher zu laden.
+     */
+    fun loadRegion(ctx: Context, uri: Uri, crop: RectF, maxSide: Int): Bitmap {
+        val r = ctx.contentResolver
+        val rotation = runCatching { r.openInputStream(uri)?.use { ExifInterface(it).rotationDegrees } ?: 0 }.getOrDefault(0)
+        val c = RectF(crop.left.coerceIn(0f, 1f), crop.top.coerceIn(0f, 1f), crop.right.coerceIn(0f, 1f), crop.bottom.coerceIn(0f, 1f))
+        val o = regionInOriginal(c, rotation)
+        val bmp = r.openInputStream(uri)?.use { input ->
+            @Suppress("DEPRECATION")
+            val dec = if (android.os.Build.VERSION.SDK_INT >= 31) android.graphics.BitmapRegionDecoder.newInstance(input)
+            else android.graphics.BitmapRegionDecoder.newInstance(input, false)
+            try {
+                dec ?: error(str(R.string.err_image_read))
+                val w = dec.width
+                val h = dec.height
+                val rect = android.graphics.Rect(
+                    (o.left * w).toInt(), (o.top * h).toInt(),
+                    (o.right * w).toInt().coerceAtLeast((o.left * w).toInt() + 1), (o.bottom * h).toInt().coerceAtLeast((o.top * h).toInt() + 1),
+                )
+                var sample = 1
+                while (maxOf(rect.width(), rect.height()) / (sample * 2) >= maxSide) sample *= 2
+                dec.decodeRegion(rect, BitmapFactory.Options().apply { inSampleSize = sample })
+            } finally {
+                dec?.recycle()
+            }
+        } ?: error(str(R.string.err_image_read))
+        val scale = minOf(1f, maxSide.toFloat() / maxOf(bmp.width, bmp.height))
+        if (rotation == 0 && scale >= 1f) return bmp
+        val out = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postScale(scale, scale); postRotate(rotation.toFloat()) }, true)
+        if (out !== bmp) bmp.recycle()
+        return out
+    }
+
+    /** Ausschnitt im gedrehten Bild → Ausschnitt im Original (EXIF-Drehung 0/90/180/270), jeweils 0…1. */
+    fun regionInOriginal(c: RectF, rotation: Int): RectF = when ((rotation % 360 + 360) % 360) {
+        90 -> RectF(c.top, 1 - c.right, c.bottom, 1 - c.left)
+        180 -> RectF(1 - c.right, 1 - c.bottom, 1 - c.left, 1 - c.top)
+        270 -> RectF(1 - c.bottom, c.left, 1 - c.top, c.right)
+        else -> RectF(c)
+    }
+
     /** Ausschnitt (Koordinaten 0…1) und Aufbereitung: Graustufen, Kontrast strecken, kleine Schrift vergrößern. */
     fun prepare(src: Bitmap, crop: RectF?): Bitmap {
         val c = crop ?: RectF(0f, 0f, 1f, 1f)

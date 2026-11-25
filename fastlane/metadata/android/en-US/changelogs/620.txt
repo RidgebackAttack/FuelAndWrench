@@ -1,1 +1,2 @@
-- Fixed: receipt scanning could slow down the whole phone with very high-resolution cameras – images are now processed smaller, recognition runs at low priority and stops after a minute or when leaving
+- Receipt scan: narrowing the area now reads that part from the original photo at full resolution – small receipts in a photo are recognised more sharply
+- Fixed: receipt scanning could slow the phone down – images are processed smaller, recognition runs at low priority and stops after a minute or when leaving

@@ -115,6 +115,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var vehicleChoices by remember { mutableStateOf(listOf<Vehicle>()) }
     var cropSource by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
     var scanBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
+    // Originalfoto: beim Eingrenzen wird der Ausschnitt in voller Auflösung daraus gelesen
+    var scanUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var review by remember { mutableStateOf<ScanReview?>(null) }
     var scanStation by rememberSaveable { mutableStateOf<String?>(null) }
     var scanAddress by rememberSaveable { mutableStateOf<String?>(null) }
@@ -166,6 +168,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 .onSuccess { bmp ->
                     // Erst selbst auf dem ganzen Bild versuchen; eingrenzen nur, wenn das Ergebnis nicht stimmt
                     scanBitmap = bmp
+                    scanUri = uri
                     scanning = false
                     runScan(bmp, android.graphics.RectF(0f, 0f, 1f, 1f))
                 }
@@ -518,7 +521,15 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             onCancel = { cropSource = null },
         ) { rect ->
             cropSource = null
-            runScan(bmp, rect)
+            val src = scanUri
+            if (src == null) runScan(bmp, rect) else scope.launch {
+                scanning = true
+                // Ausschnitt aus dem Original statt aus dem verkleinerten Bild: ein kleiner Bon im Foto wird so scharf erkannt
+                val region = runCatching { withContext(Dispatchers.IO) { Ocr.loadRegion(ctx, src, rect, 2400) } }
+                    .onFailure { DebugLog.error("Ausschnitt laden fehlgeschlagen", it) }.getOrNull()
+                scanning = false
+                if (region != null) runScan(region, android.graphics.RectF(0f, 0f, 1f, 1f)) else runScan(bmp, rect)
+            }
         }
     }
 
