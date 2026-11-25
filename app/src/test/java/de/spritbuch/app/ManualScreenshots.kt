@@ -71,7 +71,7 @@ class ManualScreenshots {
 
         step("01-vehicles") { }
         step("02-overview") { go("vehicle/${DemoData.CAR}"); waitText(s(R.string.tab_overview)) }
-        step("03-overview-more") { scrollTo(s(R.string.specs)) }
+        step("03-overview-more") { click(s(R.string.tab_overview)); scrollTo(s(R.string.specs)) }
         step("04-refuels") { click(s(R.string.tab_refuels)); waitText("2026", true) }
         step("05-service") { click(s(R.string.tab_service)); waitText(s(R.string.filter_all)) }
         step("06-costs") { click(s(R.string.tab_costs)) }
@@ -123,7 +123,8 @@ class ManualScreenshots {
     private fun scrollTo(text: String) {
         rule.waitForIdle()
         if (runCatching { rule.onAllNodesWithText(text, substring = true).onFirst().performScrollTo() }.isSuccess) return
-        val lists = rule.onAllNodes(hasScrollToNodeAction())
+        // nur senkrechte Listen – sonst blättert die Suche durch die Reiter (HorizontalPager)
+        val lists = rule.onAllNodes(hasScrollToNodeAction() and SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
         val n = lists.fetchSemanticsNodes().size
         for (i in 0 until n) {
             if (runCatching { lists[i].performScrollToNode(hasText(text, substring = true)) }.isSuccess) { rule.waitForIdle(); return }
