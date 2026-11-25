@@ -48,6 +48,9 @@ Karten- und Tankstellendaten © OpenStreetMap-Mitwirkende (ODbL).
 
 Diese App wurde mit KI-Unterstützung (Claude, Anthropic) entwickelt.
 
+## Handbuch
+[Deutsch](docs/manual/de.md) · [English](docs/manual/en.md) · [Dansk](docs/manual/da.md) – mit Screenshots (erfundene Beispieldaten).
+
 ## Datenschutz
 Siehe [PRIVACY.md](PRIVACY.md).
 

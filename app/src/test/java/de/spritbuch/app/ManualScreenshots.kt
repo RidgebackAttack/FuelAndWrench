@@ -140,7 +140,10 @@ class ManualScreenshots {
                 rule.waitForIdle()
             }
         }
-        error("nicht gefunden: $text")
+        val info = vertical.fetchSemanticsNodes().map { it.config.getOrNull(SemanticsProperties.VerticalScrollAxisRange)?.let { r -> "${r.value()}/${r.maxValue()}" } }
+        val texts = rule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)).fetchSemanticsNodes().take(40)
+            .map { it.config.getOrNull(SemanticsProperties.Text)?.joinToString() }
+        error("nicht gefunden: $text – senkrecht: $info, Listen: $n, sichtbar: $texts")
     }
 
     private fun waitText(text: String, substring: Boolean = false) = rule.waitUntil(10_000) {

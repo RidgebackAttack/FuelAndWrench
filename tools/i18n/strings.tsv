@@ -747,3 +747,4 @@ detour_reference	Nearest station (reference)	Nächste Tankstelle (Vergleich)	Næ
 detour_worth	Worth the detour: saves about %1$s	Umweg lohnt sich: spart ca. %1$s	Omvejen kan betale sig: sparer ca. %1$s
 detour_not_worth	Not worth it (%1$s)	Lohnt sich nicht (%1$s)	Kan ikke betale sig (%1$s)
 csv_export	Export as CSV	Als CSV exportieren	Eksportér som CSV
+manual	User manual	Handbuch	Brugervejledning

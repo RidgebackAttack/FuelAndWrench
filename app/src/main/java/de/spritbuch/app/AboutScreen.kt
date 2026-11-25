@@ -111,6 +111,11 @@ fun AboutScreen(nav: NavController) {
                 str(R.string.about_license),
                 style = MaterialTheme.typography.bodySmall,
             )
+            // Handbuch mit Screenshots in der passenden Sprache (auf GitHub)
+            TextButton(onClick = {
+                val lang = appLocale().language.takeIf { it in setOf("de", "en", "da") } ?: "en"
+                open("$SOURCE_URL/blob/main/docs/manual/$lang.md")
+            }) { Text(str(R.string.manual)) }
             TextButton(onClick = { open(SOURCE_URL) }) { Text(str(R.string.source_code)) }
 
             Expandable(str(R.string.vibe_title)) {

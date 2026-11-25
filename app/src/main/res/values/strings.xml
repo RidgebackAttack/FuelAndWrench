@@ -716,6 +716,7 @@
     <string name="detour_worth">Worth the detour: saves about %1$s</string>
     <string name="detour_not_worth">Not worth it (%1$s)</string>
     <string name="csv_export">Export as CSV</string>
+    <string name="manual">User manual</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

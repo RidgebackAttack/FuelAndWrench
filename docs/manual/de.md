@@ -188,7 +188,7 @@ Mit einem eigenen, kostenlosen Schlüssel von Tankerkönig (Einstellungen → Sp
 
 <img src="img/de/17-settings.png" width="300" align="right">
 
-Unter **Einstellungen → Synchronisierung** verbindest du die App mit deiner eigenen Nextcloud oder einem anderen WebDAV-Server. Am besten nutzt du dafür ein App-Passwort. Alle Geräte, die denselben Ordner nutzen, haben denselben Stand, Fotos und Belege eingeschlossen.
+Unter **Einstellungen → Synchronisation** verbindest du die App mit deiner eigenen Nextcloud oder einem anderen WebDAV-Server. Am besten nutzt du dafür ein App-Passwort. Alle Geräte, die denselben Ordner nutzen, haben denselben Stand, Fotos und Belege eingeschlossen.
 
 Mit **Ende-zu-Ende-Verschlüsselung** liegen auf dem Server nur verschlüsselte Daten. Das Passwort braucht jedes Gerät, ohne Passwort sind die Daten nicht wiederherstellbar.
 
