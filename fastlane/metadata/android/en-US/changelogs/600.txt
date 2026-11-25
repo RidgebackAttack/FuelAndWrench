@@ -1,0 +1,1 @@
+- New: reorder data sheet entries freely – long-press and drag or use the arrows
