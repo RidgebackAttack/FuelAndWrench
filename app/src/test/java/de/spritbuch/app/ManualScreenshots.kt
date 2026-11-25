@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
@@ -124,6 +126,19 @@ class ManualScreenshots {
         val n = lists.fetchSemanticsNodes().size
         for (i in 0 until n) {
             if (runCatching { lists[i].performScrollToNode(hasText(text, substring = true)) }.isSuccess) { rule.waitForIdle(); return }
+        }
+        // Letzter Weg: senkrecht scrollbare Listen schrittweise weiterschieben, bis der Text erscheint
+        val vertical = rule.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
+        for (i in 0 until vertical.fetchSemanticsNodes().size) {
+            repeat(15) {
+                if (rule.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()) {
+                    runCatching { rule.onAllNodesWithText(text, substring = true).onFirst().performScrollTo() }
+                    rule.waitForIdle()
+                    return
+                }
+                runCatching { vertical[i].performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 600f) } }
+                rule.waitForIdle()
+            }
         }
         error("nicht gefunden: $text")
     }
@@ -250,8 +265,8 @@ object DemoData {
         svc("b3", BIKE, ts(2026, 5, 30), bodo - 2500, "Kettensatz", "Reparatur", 265.0)
 
         // Reifen mit Herstellungsdatum (DOT)
-        db.tireSets().upsert(TireSet(id = SUMMER, vehicleId = CAR, season = TireSeason.SUMMER, brandFront = "Michelin", modelFront = "Primacy 4", sizeFront = "225/55 R17", dotFront = "1223", dotRear = "1223"))
-        db.tireSets().upsert(TireSet(id = "demo-winter", vehicleId = CAR, season = TireSeason.WINTER, brandFront = "Continental", modelFront = "WinterContact", sizeFront = "225/55 R17", dotFront = "3818", dotRear = "4019"))
+        db.tireSets().upsert(TireSet(id = SUMMER, vehicleId = CAR, season = TireSeason.SUMMER, brandFront = "Michelin", modelFront = "Primacy 4", sizeFront = "225/55 R17", brandRear = "Michelin", modelRear = "Primacy 4", sizeRear = "225/55 R17", dotFront = "1223", dotRear = "1223"))
+        db.tireSets().upsert(TireSet(id = "demo-winter", vehicleId = CAR, season = TireSeason.WINTER, brandFront = "Continental", modelFront = "WinterContact", sizeFront = "225/55 R17", brandRear = "Continental", modelRear = "WinterContact", sizeRear = "225/55 R17", dotFront = "3818", dotRear = "4019"))
         db.tireSets().upsert(TireSet(id = "demo-bike-tires", vehicleId = BIKE, season = "Ganzjahresreifen", brandFront = "Pirelli", modelFront = "Diablo Rosso IV", sizeFront = "120/70 ZR17", brandRear = "Pirelli", modelRear = "Diablo Rosso IV", sizeRear = "180/55 ZR17", dotFront = "0825", dotRear = "2224"))
 
         // Erinnerungen und Kosten
