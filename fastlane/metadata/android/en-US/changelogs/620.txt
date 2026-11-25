@@ -1,2 +1,3 @@
+- New: before the receipt photo the app asks for the odometer – it is applied together with the receipt data
 - Receipt scan: narrowing the area now reads that part from the original photo at full resolution – small receipts in a photo are recognised more sharply
 - Fixed: receipt scanning could slow the phone down – images are processed smaller, recognition runs at low priority and stops after a minute or when leaving

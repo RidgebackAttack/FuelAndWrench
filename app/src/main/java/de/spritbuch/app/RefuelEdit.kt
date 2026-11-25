@@ -186,6 +186,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     val scanPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) loadForScan(uri)
     }
+    var askOdo by rememberSaveable { mutableStateOf(false) }
+    var odoInput by rememberSaveable { mutableStateOf("") }
     fun startScan() {
         runCatching { scanCamera.launch(AttachmentStore.uri(ctx, scanTarget)) }
             .onFailure { scanPicker.launch("image/*") }
@@ -359,7 +361,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { startScan() }, enabled = !scanning, modifier = Modifier.weight(1f)) {
+                // Erst den Kilometerstand abfragen (steht nicht auf dem Bon), dann fotografieren
+                OutlinedButton(onClick = { odoInput = odometer; askOdo = true }, enabled = !scanning, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.ReceiptLong, contentDescription = null)
                     Spacer(Modifier.width(6.dp))
                     Text(str(R.string.scan_receipt))
@@ -584,6 +587,29 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         }
     }
 
+    if (askOdo) {
+        AlertDialog(
+            onDismissRequest = { askOdo = false },
+            title = { Text(str(R.string.odometer)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(str(R.string.scan_odo_info), style = MaterialTheme.typography.bodySmall)
+                    NumberField(str(R.string.odometer), odoInput, { odoInput = it }, suffix = du, decimal = false)
+                    lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (odoInput.isNotBlank()) odometer = odoInput
+                    askOdo = false
+                    startScan()
+                }) { Text(str(R.string.scan_odo_continue)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { askOdo = false; startScan() }) { Text(str(R.string.scan_odo_skip)) }
+            },
+        )
+    }
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },

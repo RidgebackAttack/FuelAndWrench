@@ -1,2 +1,3 @@
+- Nyt: før kvitteringsfotoet spørger appen om kilometertallet – det overtages sammen med kvitteringsdata
 - Kvitteringsscanning: afgrænsning læser nu udsnittet fra originalfotoet i fuld opløsning – små kvitteringer i et foto genkendes skarpere
 - Rettet: kvitteringsscanning kunne gøre telefonen langsom – billeder behandles mindre, genkendelsen kører med lav prioritet og stopper efter et minut eller ved udgang

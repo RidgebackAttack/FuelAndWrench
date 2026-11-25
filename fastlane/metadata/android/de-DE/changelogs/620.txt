@@ -1,2 +1,3 @@
+- Neu: Vor dem Beleg-Foto fragt die App den Kilometerstand ab – er wird mit den Daten vom Bon übernommen
 - Beleg-Scan: Eingrenzen liest den Ausschnitt jetzt aus dem Originalfoto in voller Auflösung – kleine Bons im Foto werden schärfer erkannt
 - Behoben: Beleg-Scan konnte das Telefon ausbremsen – Bilder werden kleiner verarbeitet, die Erkennung läuft mit niedriger Priorität und bricht nach einer Minute oder beim Verlassen ab

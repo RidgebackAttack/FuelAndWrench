@@ -700,6 +700,9 @@
     <string name="tire_age_old">bitte erneuern</string>
     <string name="tire_age_overview">%1$s: Reifen %2$s Jahre alt</string>
     <string name="ocr_timeout">Die Erkennung hat zu lange gedauert und wurde abgebrochen – Bereich eingrenzen und erneut versuchen.</string>
+    <string name="scan_odo_info">Trag den Kilometerstand ein – danach öffnet sich die Kamera und die Daten vom Bon kommen dazu.</string>
+    <string name="scan_odo_continue">Zum Foto</string>
+    <string name="scan_odo_skip">Überspringen</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

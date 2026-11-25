@@ -731,3 +731,6 @@ tire_age_warn	consider replacing	Austausch erwägen	overvej udskiftning
 tire_age_old	please replace	bitte erneuern	bør udskiftes
 tire_age_overview	%1$s: tires %2$s years old	%1$s: Reifen %2$s Jahre alt	%1$s: dæk %2$s år gamle
 ocr_timeout	Recognition took too long and was cancelled – try narrowing the area.	Die Erkennung hat zu lange gedauert und wurde abgebrochen – Bereich eingrenzen und erneut versuchen.	Genkendelsen tog for lang tid og blev afbrudt – afgræns området og prøv igen.
+scan_odo_info	Enter the odometer reading – the camera opens next and the receipt data is added.	Trag den Kilometerstand ein – danach öffnet sich die Kamera und die Daten vom Bon kommen dazu.	Indtast kilometertallet – derefter åbner kameraet, og data fra kvitteringen tilføjes.
+scan_odo_continue	Take photo	Zum Foto	Til foto
+scan_odo_skip	Skip	Überspringen	Spring over
