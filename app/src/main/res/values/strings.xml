@@ -703,6 +703,19 @@
     <string name="scan_odo_info">Enter the odometer reading – the camera opens next and the receipt data is added.</string>
     <string name="scan_odo_continue">Take photo</string>
     <string name="scan_odo_skip">Skip</string>
+    <string name="fx_currency">Currency</string>
+    <string name="fx_rate">Rate (%1$s per 1 %2$s)</string>
+    <string name="fx_converted">= %1$s</string>
+    <string name="fx_loading">Fetching exchange rate …</string>
+    <string name="fx_source">ECB reference rate of %1$s</string>
+    <string name="fx_failed">Rate could not be fetched – please enter it manually.</string>
+    <string name="fx_manual">Rate entered manually</string>
+    <string name="fx_need_rate">Please enter the exchange rate.</string>
+    <string name="detour_info">Detour check based on your usual fill of %1$s %2$s and %3$s per 100 – there and back, by road.</string>
+    <string name="detour_reference">Nearest station (reference)</string>
+    <string name="detour_worth">Worth the detour: saves about %1$s</string>
+    <string name="detour_not_worth">Not worth it (%1$s)</string>
+    <string name="csv_export">Export as CSV</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

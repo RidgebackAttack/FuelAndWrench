@@ -19,6 +19,7 @@ Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronis
 - Fahrzeug-Steckbrief (Ölsorte, Reifendruck, Teilenummern, FIN, HSN/TSN, eigene Felder) – antippen zum Kopieren
 - Ölnachfüllungen mit Ölverbrauch (l/1000 km seit Ölwechsel, pro Jahr)
 - Saisonkennzeichen (Erinnerungen pausieren außerhalb), Gesamtkosten pro km und Monat
+- Tanken im Ausland in allen europäischen Währungen (EZB-Kurs), „Lohnt sich der Umweg?“ bei den Spritpreisen, CSV-Export pro Fahrzeug
 - Datenpflege: Datenprüfung auf Tippfehler, Speicher aufräumen, Sync-Protokoll, Absturzberichte nur lokal
 - Statistik: Kosten pro Monat/Jahr, Literpreis-Verlauf, Verbrauch nach Reifen, Strecke und Fahrstil
 - Beleg-Scan per Kamera (Tesseract, offline auf dem Gerät)

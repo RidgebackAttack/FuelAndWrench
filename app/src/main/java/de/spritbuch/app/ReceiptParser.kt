@@ -22,6 +22,26 @@ data class ReceiptData(
  * Reines Kotlin ohne Android-Abhängigkeiten, damit es sich testen lässt.
  */
 object ReceiptParser {
+    /**
+     * Währung auf dem Bon (ISO-Code), soweit eindeutig erkennbar: ausgeschriebene Codes und typische
+     * Zeichen (£, zł, Kč, Lei). „kr“ allein ist mehrdeutig (DKK/SEK/NOK/ISK) und wird nicht ausgewertet.
+     */
+    fun currency(raw: String): String? {
+        val t = raw.uppercase()
+        // „RON“ steht auf Bons meist für die Oktanzahl – Lei nur über „LEI“ erkennen
+        val codes = Fx.european.filter { it != "EUR" && it != "RON" } + "EUR"
+        val counts = codes.associateWith { c -> Regex("""(?<![A-Z])$c(?![A-Z])""").findAll(t).count() }.filterValues { it > 0 }
+        counts.maxByOrNull { it.value }?.let { return it.key }
+        return when {
+            raw.contains('£') -> "GBP"
+            Regex("""\d\s*ZŁ|ZŁ\s*\d|PLN""").containsMatchIn(t) -> "PLN"
+            Regex("""\d\s*KČ|KČ\s*\d""").containsMatchIn(t) -> "CZK"
+            Regex("""\d\s*LEI\b""").containsMatchIn(t) -> "RON"
+            raw.contains('€') -> "EUR"
+            else -> null
+        }
+    }
+
     private const val NUM = """(\d{1,4}(?:[.,]\d{3})*[.,]\d{2,3})"""
     private val amountRe = Regex("""$NUM\s*(?:l|ltr|liter|litre|lt)\b""", RegexOption.IGNORE_CASE)
     private val amountKeyRe = Regex("""(?:menge|mængde|volume|quantity)\D{0,12}$NUM""", RegexOption.IGNORE_CASE)

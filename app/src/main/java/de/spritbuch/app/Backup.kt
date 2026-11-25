@@ -181,3 +181,30 @@ object Csv {
         },
     )
 }
+
+/** CSV-Export eines Fahrzeugs (Betankungen, Service, Kosten) über das Teilen-Menü – z. B. für Excel oder die Steuer. */
+object CsvShare {
+    suspend fun vehicle(ctx: Context, v: Vehicle) {
+        val repo = ctx.repo
+        val byId = mapOf(v.id to v)
+        val files = withContext(Dispatchers.IO) {
+            val dir = File(ctx.cacheDir, "export").apply { mkdirs() }
+            val safe = v.name.replace(Regex("[^\\p{L}\\p{N}_-]+"), "_").trim('_').ifBlank { "fahrzeug" }
+            listOf(
+                "$safe-betankungen.csv" to Csv.refuels(repo.db.refuels().getAllRaw().filter { !it.deleted && it.vehicleId == v.id }, byId),
+                "$safe-service.csv" to Csv.services(repo.db.services().getAllRaw().filter { !it.deleted && it.vehicleId == v.id }, byId),
+                "$safe-kosten.csv" to Csv.expenses(repo.db.expenses().getAllRaw().filter { !it.deleted && it.vehicleId == v.id }, byId),
+            ).map { (name, text) ->
+                // BOM, damit Excel Umlaute richtig erkennt
+                File(dir, name).apply { writeText("\uFEFF" + text) }
+            }
+        }
+        val uris = ArrayList(files.map { AttachmentStore.uri(ctx, it) })
+        val send = android.content.Intent(android.content.Intent.ACTION_SEND_MULTIPLE)
+            .setType("text/csv")
+            .putParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM, uris)
+            .putExtra(android.content.Intent.EXTRA_SUBJECT, "Fuel & Wrench – ${v.name}")
+            .addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        ctx.startActivity(android.content.Intent.createChooser(send, null).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+}

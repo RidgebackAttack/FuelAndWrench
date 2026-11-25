@@ -202,6 +202,12 @@ data class Refuel(
     val socEnd: Int? = null,
     /** Datenprüfung: als „passt so“ markierte Auffälligkeiten (Namen von [DataCheck.Kind], kommagetrennt); wird synchronisiert. */
     val checkOk: String = "",
+    /** Bezahlt in Fremdwährung (ISO-Code, z. B. „DKK“); leer = Fahrzeugwährung. [totalPrice] ist immer umgerechnet. */
+    val payCurrency: String = "",
+    /** Betrag in der Fremdwährung, wie auf dem Bon. */
+    val payTotal: Double? = null,
+    /** Kurs: Fremdwährung je 1 Fahrzeugwährung (z. B. 7,46 DKK je 1 €). */
+    val fxRate: Double? = null,
 ) {
     val isCharge: Boolean get() = fuelType == ELECTRIC
 
@@ -554,7 +560,7 @@ data class VehicleImage(val version: Long, val thumbPos: String = "0,0,1", val l
     }
 }
 
-@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 15, exportSchema = false)
+@Database(entities = [Vehicle::class, Refuel::class, Reminder::class, ServiceEntry::class, TireSet::class, Expense::class], version = 16, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun vehicles(): VehicleDao
     abstract fun refuels(): RefuelDao
@@ -599,6 +605,15 @@ abstract class AppDatabase : RoomDatabase() {
                 for (c in listOf("tireSeason", "tireBrand", "tireModel", "tireSize")) {
                     db.execSQL("ALTER TABLE services ADD COLUMN $c TEXT NOT NULL DEFAULT ''")
                 }
+            }
+        }
+
+        /** 1.14: Betankungen in Fremdwährung. */
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE refuels ADD COLUMN payCurrency TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE refuels ADD COLUMN payTotal REAL")
+                db.execSQL("ALTER TABLE refuels ADD COLUMN fxRate REAL")
             }
         }
 
@@ -703,7 +718,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** Alle Datenbank-Updates; werden in MigrationTest mit den echten alten Schemas geprüft. */
         val MIGRATIONS: Array<Migration>
-            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
+            get() = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
 
         fun create(ctx: Context, name: String = "spritbuch.db"): AppDatabase =
             Room.databaseBuilder(ctx.applicationContext, AppDatabase::class.java, name)

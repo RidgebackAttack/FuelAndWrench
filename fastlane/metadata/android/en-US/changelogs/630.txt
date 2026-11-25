@@ -1,0 +1,3 @@
+- New: refuelling abroad – enter the amount in local currency (all European currencies), converted with the ECB rate of the day; the receipt scan detects the currency
+- New: fuel prices show whether a detour to a cheaper station pays off
+- New: CSV export per vehicle in statistics

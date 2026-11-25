@@ -83,6 +83,12 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var amount by rememberSaveable { mutableStateOf("") }
     var ppu by rememberSaveable { mutableStateOf("") }
     var total by rememberSaveable { mutableStateOf("") }
+    // Fremdwährung: Preis/Betrag stehen in payCur, gespeichert wird zusätzlich umgerechnet
+    var payCur by rememberSaveable { mutableStateOf("") }
+    var fxRate by rememberSaveable { mutableStateOf("") }
+    var fxKey by rememberSaveable { mutableStateOf("") }
+    var fxInfo by remember { mutableStateOf<String?>(null) }
+    var scanCurrency by rememberSaveable { mutableStateOf<String?>(null) }
     var fullTank by rememberSaveable { mutableStateOf(true) }
     var missed by rememberSaveable { mutableStateOf(false) }
     var fuelType by rememberSaveable { mutableStateOf("") }
@@ -128,6 +134,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             scanInfo = null
             try {
                 val text = Ocr.recognize(ctx, bitmap, crop)
+                scanCurrency = ReceiptParser.currency(text)
                 review = run {
                     // Eigene Betreiber (aus früheren Betankungen) mit durchsuchen
                     val own = repo.db.refuels().usedBrands()
@@ -265,6 +272,13 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         amount = if (r.amount > 0) r.amount.fmt(2) else ""
         total = if (r.totalPrice > 0) r.totalPrice.fmt(2) else ""
         ppu = if (r.amount > 0) r.pricePerUnit.fmt(3) else ""
+        if (r.payCurrency.isNotBlank() && r.payTotal != null) {
+            payCur = r.payCurrency
+            total = r.payTotal.fmt(2)
+            ppu = if (r.amount > 0) (r.payTotal / r.amount).fmt(3) else ""
+            fxRate = r.fxRate?.fmt(4) ?: ""
+            fxKey = r.payCurrency + "|" + (r.timestamp / 86_400_000L)
+        }
         fullTank = r.fullTank
         missed = r.missedPrevious
         fuelType = r.fuelType
@@ -291,7 +305,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
 
     val unit = Units.amount(veh, fuelType)
     val du = Units.dist(veh)
-    val cur = Units.cur(veh)
+    val cur = payCur.ifBlank { Units.cur(veh) }
 
     fun recalcTotal() {
         val a = amount.toDoubleDe()
@@ -318,13 +332,16 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                         if (odo == null || odo <= 0) { error = str(R.string.err_enter_odometer); return@IconButton }
                         if (a == null || a <= 0) { error = str(R.string.err_enter_amount); return@IconButton }
                         val t = total.toDoubleDe() ?: ((ppu.toDoubleDe() ?: 0.0) * a)
+                        val rate = if (payCur.isBlank()) null else fxRate.toDoubleDe()?.takeIf { it > 0 }
+                        if (payCur.isNotBlank() && rate == null) { error = str(R.string.fx_need_rate); return@IconButton }
                         val obcVal = obc.toDoubleDe()?.takeIf { it > 0 }?.let {
                             if (veh?.consumptionFormat == "perUnit") 100.0 / it else it
                         }
                         scope.launch {
                             repo.saveRefuel(
                                 b.copy(
-                                    timestamp = timestamp, odometer = odo, amount = a, totalPrice = t,
+                                    timestamp = timestamp, odometer = odo, amount = a, totalPrice = if (rate != null) t / rate else t,
+                                    payCurrency = payCur, payTotal = if (rate != null) t else null, fxRate = rate,
                                     fullTank = fullTank, missedPrevious = missed, fuelType = fuelType,
                                     stationBrand = brand.trim(), stationAddress = address.trim(),
                                     latitude = lat, longitude = lon,
@@ -403,6 +420,30 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     if (a != null && t != null && a > 0) ppu = (t / a).fmt(3)
                 }, suffix = cur, modifier = Modifier.weight(1f))
             }
+            // Währung: im Ausland in der Landeswährung eintragen, umgerechnet wird mit dem EZB-Kurs
+            val own = Fx.code(Units.cur(veh))
+            ChoiceField(str(R.string.fx_currency), payCur.ifBlank { own }, Fx.choices(veh)) { payCur = if (it == own) "" else it }
+            if (payCur.isNotBlank()) {
+                LaunchedEffect(payCur, timestamp / 86_400_000L) {
+                    val key = payCur + "|" + (timestamp / 86_400_000L)
+                    if (key == fxKey && fxRate.isNotBlank()) return@LaunchedEffect
+                    fxInfo = str(R.string.fx_loading)
+                    val r = runCatching { Fx.rate(ctx, payCur, Units.cur(veh), timestamp) }.getOrNull()
+                    if (r != null) {
+                        fxRate = r.first.fmt(4)
+                        fxKey = key
+                        fxInfo = str(R.string.fx_source, r.second)
+                    } else fxInfo = str(R.string.fx_failed)
+                }
+                NumberField(str(R.string.fx_rate, payCur, Units.cur(veh)), fxRate, { fxRate = it; fxInfo = str(R.string.fx_manual) }, decimal = true)
+                val rate = fxRate.toDoubleDe()
+                val t = total.toDoubleDe()
+                if (rate != null && rate > 0 && t != null) {
+                    Text(str(R.string.fx_converted, (t / rate).fmt(2) + " " + Units.cur(veh)), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary)
+                }
+                fxInfo?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            }
             // Plausibilitätsprüfung (z. B. Lesefehler beim Bon): aktueller Preis dieser Tankstelle laut Tankerkönig
             var reported by remember { mutableStateOf<Double?>(null) }
             LaunchedEffect(lat, lon, fuelType) {
@@ -416,7 +457,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             }
             val entered = ppu.toDoubleDe()
             val rep = reported
-            if (rep != null && entered != null && entered > 0 && FuelPrices.deviates(entered, rep)) {
+            if (payCur.isBlank() && rep != null && entered != null && entered > 0 && FuelPrices.deviates(entered, rep)) {
                 Text(
                     str(R.string.prices_check_hint, FuelPrices.price(rep)),
                     style = MaterialTheme.typography.bodySmall,
@@ -538,7 +579,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
 
     review?.let { rv ->
         val u = Units.amount(veh, fuelType)
-        val c = Units.cur(veh)
+        val c = scanCurrency ?: cur
         val extras = listOfNotNull(
             scanStation?.let { lbl(it) },
             scanAddress,
@@ -574,6 +615,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty()) total = (a * p).fmt(2)
             if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0) ppu = (t / a).fmt(3)
             run {
+                // Währung vom Bon (z. B. DKK in Dänemark)
+                scanCurrency?.let { sc -> val own = Fx.code(Units.cur(veh)); payCur = if (sc == own) "" else sc }
                 // Betreiber und Adresse vom Bon haben Vorrang vor den Kartendaten
                 scanStation?.let { brand = it }
                 scanAddress?.let { address = it }

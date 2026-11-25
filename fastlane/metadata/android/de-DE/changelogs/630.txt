@@ -1,0 +1,3 @@
+- Neu: Tanken im Ausland – Betrag in der Landeswährung eintragen (alle europäischen Währungen), umgerechnet mit dem EZB-Kurs vom Tag; der Bon-Scan erkennt die Währung
+- Neu: Spritpreise zeigen, ob sich der Umweg zu einer günstigeren Tankstelle lohnt
+- Neu: CSV-Export pro Fahrzeug in der Statistik

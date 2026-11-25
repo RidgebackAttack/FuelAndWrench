@@ -703,6 +703,19 @@
     <string name="scan_odo_info">Indtast kilometertallet – derefter åbner kameraet, og data fra kvitteringen tilføjes.</string>
     <string name="scan_odo_continue">Til foto</string>
     <string name="scan_odo_skip">Spring over</string>
+    <string name="fx_currency">Valuta</string>
+    <string name="fx_rate">Kurs (%1$s pr. 1 %2$s)</string>
+    <string name="fx_converted">= %1$s</string>
+    <string name="fx_loading">Henter kurs …</string>
+    <string name="fx_source">ECB-referencekurs fra %1$s</string>
+    <string name="fx_failed">Kursen kunne ikke hentes – indtast den manuelt.</string>
+    <string name="fx_manual">Kurs indtastet manuelt</string>
+    <string name="fx_need_rate">Indtast venligst vekselkursen.</string>
+    <string name="detour_info">Omvejsberegning ud fra din sædvanlige tankning på %1$s %2$s og %3$s pr. 100 – frem og tilbage ad vej.</string>
+    <string name="detour_reference">Nærmeste tank (sammenligning)</string>
+    <string name="detour_worth">Omvejen kan betale sig: sparer ca. %1$s</string>
+    <string name="detour_not_worth">Kan ikke betale sig (%1$s)</string>
+    <string name="csv_export">Eksportér som CSV</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

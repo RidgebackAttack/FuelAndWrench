@@ -1,0 +1,3 @@
+- Nyt: tankning i udlandet – indtast beløbet i lokal valuta (alle europæiske valutaer), omregnet med dagens ECB-kurs; kvitteringsscanningen genkender valutaen
+- Nyt: brændstofpriser viser, om en omvej til en billigere tank kan betale sig
+- Nyt: CSV-eksport pr. køretøj i statistik

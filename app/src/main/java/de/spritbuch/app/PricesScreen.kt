@@ -67,6 +67,7 @@ fun PricesScreen(nav: NavController, vehicleId: String) {
     val fuel = vehicle?.defaultFuelType ?: ""
     val type = FuelPrices.typeFor(fuel)
     var stations by remember { mutableStateOf<List<PriceStation>?>(null) }
+    val refuels by ctx.repo.refuels(vehicleId).collectAsStateWithLifecycle(emptyList())
     var info by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var reload by remember { mutableIntStateOf(0) }
@@ -125,7 +126,19 @@ fun PricesScreen(nav: NavController, vehicleId: String) {
                         contentPadding = PaddingValues(12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(stations.orEmpty(), key = { it.id }) { s -> StationRow(s) { navigateTo(ctx, s) } }
+                        // Lohnt sich der Umweg? Bezug ist die nächstgelegene geöffnete Tankstelle
+                        val detour = Detour.basis(vehicle, refuels)
+                        val ref = Detour.reference(stations.orEmpty())
+                        if (ref != null && detour != null) item {
+                            Text(
+                                str(R.string.detour_info, detour.fill.fmt(0), Units.amount(vehicle, fuel), detour.per100.fmt(1)),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        items(stations.orEmpty(), key = { it.id }) { s ->
+                            val saving = if (ref != null && detour != null && s.id != ref.id) Detour.saving(ref, s, detour, vehicle) else null
+                            StationRow(s, if (s.id == ref?.id) str(R.string.detour_reference) else null, saving) { navigateTo(ctx, s) }
+                        }
                         item {
                             Text(
                                 str(R.string.prices_attribution), style = MaterialTheme.typography.bodySmall,
@@ -145,7 +158,7 @@ private fun navigateTo(ctx: android.content.Context, s: PriceStation) {
 }
 
 @Composable
-private fun StationRow(s: PriceStation, onClick: () -> Unit) {
+private fun StationRow(s: PriceStation, refLabel: String?, saving: Double?, onClick: () -> Unit) {
     Card(
         Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = if (!s.isOpen) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant) else CardDefaults.cardColors(),
@@ -161,6 +174,15 @@ private fun StationRow(s: PriceStation, onClick: () -> Unit) {
                     str(R.string.prices_distance, s.dist.fmt(1)) + if (!s.isOpen) " · " + str(R.string.prices_closed) else "",
                     style = MaterialTheme.typography.bodySmall,
                 )
+                refLabel?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                saving?.let { sv ->
+                    val worth = sv >= Detour.MIN_SAVING
+                    Text(
+                        if (worth) str(R.string.detour_worth, sv.fmt(2) + " €") else str(R.string.detour_not_worth, sv.fmt(2) + " €"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (worth) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             Text(
                 s.price?.let { FuelPrices.price(it) } ?: "–",
@@ -231,4 +253,41 @@ private fun PriceMap(list: List<PriceStation>, modifier: Modifier) {
             if (mv.width > 0 && mv.height > 0) zoom() else mv.addOnFirstLayoutListener { _, _, _, _, _ -> zoom() }
         },
     )
+}
+
+/**
+ * „Lohnt sich der Umweg?“ – grobe Rechnung: Ersparnis durch den günstigeren Preis bei der üblichen
+ * Tankmenge minus Sprit für den Mehrweg (Hin und zurück, Luftlinie × 1,3 als Straßenzuschlag).
+ */
+object Detour {
+    /** Darunter lohnt sich der Weg nicht wirklich (Zeit, Unsicherheit der Rechnung). */
+    const val MIN_SAVING = 0.5
+    private const val ROAD_FACTOR = 1.3
+
+    /** Übliche Tankmenge (Median der letzten 10 Betankungen) und Durchschnittsverbrauch je 100 (Fahrzeugeinheiten). */
+    class Basis(val fill: Double, val per100: Double)
+
+    fun basis(v: Vehicle?, refuels: List<Refuel>): Basis? {
+        val fuel = refuels.filter { !it.isCharge && !it.deleted && it.amount > 0 }
+        val per100 = computeStats(fuel).avg ?: return null
+        val last = fuel.sortedByDescending { it.timestamp }.take(10).map { it.amount }.sorted()
+        val fill = if (last.isNotEmpty()) last[last.size / 2] else (v?.tankCapacity?.times(0.7) ?: return null)
+        return Basis(fill, per100)
+    }
+
+    fun reference(stations: List<PriceStation>): PriceStation? =
+        stations.filter { it.isOpen && it.price != null }.minByOrNull { it.dist }
+
+    /** Ersparnis in € gegenüber [ref] (negativ = teurer); Preise der Markttransparenzstelle sind €/Liter. */
+    fun saving(ref: PriceStation, s: PriceStation, b: Basis, v: Vehicle?): Double? {
+        val pr = ref.price ?: return null
+        val ps = s.price ?: return null
+        if (!s.isOpen) return null
+        val litresPerUnit = Units.volFactorToL(v?.volumeUnit ?: "l")
+        val kmPerUnit = Units.distFactorToKm(v?.distanceUnit ?: "km")
+        val fillL = b.fill * litresPerUnit
+        val extraKm = maxOf(0.0, s.dist - ref.dist) * 2 * ROAD_FACTOR
+        val litresPerKm = b.per100 * litresPerUnit / (100 * kmPerUnit)
+        return (pr - ps) * fillL - extraKm * litresPerKm * ps
+    }
 }

@@ -3,6 +3,10 @@ package de.spritbuch.app
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
@@ -71,7 +75,8 @@ private fun monthKey(ts: Long) = cal(ts).let { it.get(Calendar.YEAR) * 12 + it.g
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(nav: NavController, vehicleId: String) {
-    val repo = LocalContext.current.repo
+    val ctx = LocalContext.current
+    val repo = ctx.repo
     val vehicle by repo.vehicle(vehicleId).collectAsStateWithLifecycle(null)
     val refuels by repo.refuels(vehicleId).collectAsStateWithLifecycle(emptyList())
     val services by repo.services(vehicleId).collectAsStateWithLifecycle(emptyList())
@@ -84,7 +89,20 @@ fun StatsScreen(nav: NavController, vehicleId: String) {
     val serviceColor = if (dark) Color(0xFFFBBF24) else Color(0xFFD97706)
     val otherColor = if (dark) Color(0xFF34D399) else Color(0xFF059669)
 
-    Scaffold(topBar = { TopAppBar(title = { Text(str(R.string.stats_title, v?.name ?: "")) }, navigationIcon = { BackButton(nav) }) }) { pad ->
+    val exportScope = rememberCoroutineScope()
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text(str(R.string.stats_title, v?.name ?: "")) },
+            navigationIcon = { BackButton(nav) },
+            actions = {
+                v?.let { vv ->
+                    IconButton(onClick = { exportScope.launch { runCatching { CsvShare.vehicle(ctx, vv) } } }) {
+                        Icon(Icons.Default.Share, contentDescription = str(R.string.csv_export))
+                    }
+                }
+            },
+        )
+    }) { pad ->
         if (v == null) return@Scaffold
         val cur = v.currency
         val du = v.distanceUnit
