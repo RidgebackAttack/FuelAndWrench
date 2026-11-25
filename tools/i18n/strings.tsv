@@ -719,3 +719,8 @@ total_cost_title	Total cost	Gesamtkosten	Samlede udgifter
 total_cost_per_km	Per %1$s: %2$s	Pro %1$s: %2$s	Pr. %1$s: %2$s
 total_cost_per_100	Per 100 %1$s: %2$s	Pro 100 %1$s: %2$s	Pr. 100 %1$s: %2$s
 total_cost_per_month	Per month since the first entry: %1$s	Pro Monat seit dem ersten Eintrag: %1$s	Pr. måned siden første post: %1$s
+move_up	Move up	Nach oben	Flyt op
+move_down	Move down	Nach unten	Flyt ned
+specs_order	Order in the overview	Reihenfolge in der Übersicht	Rækkefølge i oversigten
+specs_order_info	Long-press and drag an entry, or use the arrows.	Eintrag lange drücken und ziehen oder die Pfeile nutzen.	Hold en post nede og træk, eller brug pilene.
+specs_move	Move	Verschieben	Flyt

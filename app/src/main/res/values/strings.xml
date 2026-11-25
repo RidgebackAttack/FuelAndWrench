@@ -688,6 +688,11 @@
     <string name="total_cost_per_km">Per %1$s: %2$s</string>
     <string name="total_cost_per_100">Per 100 %1$s: %2$s</string>
     <string name="total_cost_per_month">Per month since the first entry: %1$s</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="specs_order">Order in the overview</string>
+    <string name="specs_order_info">Long-press and drag an entry, or use the arrows.</string>
+    <string name="specs_move">Move</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

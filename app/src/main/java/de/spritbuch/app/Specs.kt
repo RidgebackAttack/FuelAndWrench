@@ -3,6 +3,21 @@ package de.spritbuch.app
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import android.content.ClipData
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.key
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.zIndex
 import android.content.ClipboardManager
 import android.os.Build
 import android.widget.Toast
@@ -110,14 +125,25 @@ object Specs {
     fun parse(s: String): List<SpecField> =
         if (s.isBlank()) emptyList() else runCatching { json.decodeFromString<List<SpecField>>(s) }.getOrDefault(emptyList())
 
-    fun encode(l: List<SpecField>): String = l.filter { it.v.isNotBlank() }.let { if (it.isEmpty()) "" else json.encodeToString(it) }
+    /** Markiert eine selbst festgelegte Reihenfolge (ältere Stände werden nach der Standardreihenfolge sortiert). */
+    private const val ORDERED = "#order"
 
-    /** Ausgefüllte Felder in fester Reihenfolge: vordefinierte zuerst (auch die der anderen Fahrzeugart), dann eigene. */
-    fun of(v: Vehicle): List<SpecField> {
-        val all = parse(v.specs).filter { it.v.isNotBlank() }
+    /** Speichert in der Reihenfolge der Liste – so erscheinen die Felder auch in der Übersicht. */
+    fun encode(l: List<SpecField>): String = l.filter { it.v.isNotBlank() && it.k != ORDERED }
+        .let { if (it.isEmpty()) "" else json.encodeToString(listOf(SpecField(ORDERED, "1")) + it) }
+
+    /** Standardreihenfolge: vordefinierte Felder der Fahrzeugart, dann die übrigen, dann eigene. */
+    fun defaultOrder(v: Vehicle, fields: List<SpecField>): List<SpecField> {
         val order = keys(v.vehicleType) + (car + motorcycle).distinct()
-        return all.filter { it.k != CUSTOM }.sortedBy { order.indexOf(it.k).let { i -> if (i < 0) Int.MAX_VALUE else i } } +
-            all.filter { it.k == CUSTOM }
+        return fields.filter { it.k != CUSTOM }.sortedBy { order.indexOf(it.k).let { i -> if (i < 0) Int.MAX_VALUE else i } } +
+            fields.filter { it.k == CUSTOM }
+    }
+
+    /** Ausgefüllte Felder in der gespeicherten Reihenfolge (frei verschiebbar). */
+    fun of(v: Vehicle): List<SpecField> {
+        val raw = parse(v.specs)
+        val all = raw.filter { it.v.isNotBlank() && it.k != ORDERED }
+        return if (raw.any { it.k == ORDERED }) all else defaultOrder(v, all)
     }
 
     fun value(v: Vehicle, key: String): String? = parse(v.specs).firstOrNull { it.k == key }?.v?.takeIf { it.isNotBlank() }
@@ -179,7 +205,10 @@ fun LazyListScope.specItems(nav: NavController, v: Vehicle) {
 
 private const val SEP = "\u001F"
 
-/** Steckbrief bearbeiten: vordefinierte Felder der Fahrzeugart plus beliebig viele eigene. */
+/**
+ * Steckbrief bearbeiten: vordefinierte Felder der Fahrzeugart plus beliebig viele eigene.
+ * Oben lassen sich die ausgefüllten Einträge per Ziehen am Griff frei anordnen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpecsEditScreen(nav: NavController, vehicleId: String) {
@@ -188,17 +217,45 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
     var vehicle by remember { mutableStateOf<Vehicle?>(null) }
     var loaded by rememberSaveable { mutableStateOf(false) }
     val values = rememberSaveable(saver = StringMapSaver) { mutableStateMapOf<String, String>() }
-    // eigene Felder als „Bezeichnung␟Wert“, damit sie den Neuaufbau der Activity überstehen
+    // eigene Felder als „Kennung␟Bezeichnung␟Wert“, damit sie den Neuaufbau der Activity überstehen
     var custom by rememberSaveable { mutableStateOf(listOf<String>()) }
+    // Reihenfolge als Kennungen: Schlüssel der vordefinierten Felder bzw. „c:…“ für eigene
+    var order by rememberSaveable { mutableStateOf(listOf<String>()) }
     LaunchedEffect(vehicleId) {
         val v = repo.getVehicle(vehicleId) ?: return@LaunchedEffect
         vehicle = v
         if (loaded) return@LaunchedEffect
         loaded = true
-        val all = Specs.parse(v.specs)
-        all.filter { it.k != Specs.CUSTOM }.forEach { values[it.k] = it.v }
-        custom = all.filter { it.k == Specs.CUSTOM }.map { it.label + SEP + it.v }
+        val ids = mutableListOf<String>()
+        val cs = mutableListOf<String>()
+        Specs.of(v).forEach { f ->
+            if (f.k == Specs.CUSTOM) {
+                val id = "c:" + java.util.UUID.randomUUID().toString().take(8)
+                cs += id + SEP + f.label + SEP + f.v
+                ids += id
+            } else {
+                values[f.k] = f.v
+                ids += f.k
+            }
+        }
+        custom = cs
+        order = ids
     }
+    fun customParts(e: String) = e.split(SEP, limit = 3).let { Triple(it[0], it.getOrElse(1) { "" }, it.getOrElse(2) { "" }) }
+    val v = vehicle
+    // Ausgefüllte Einträge in Anzeigereihenfolge: bekannte Reihenfolge, neu ausgefüllte hinten an
+    val filled: List<String> = run {
+        val keys = (if (v != null) Specs.keys(v.vehicleType) else emptyList()) + values.keys.sorted()
+        val all = keys.distinct().filter { (values[it] ?: "").isNotBlank() } +
+            custom.map { customParts(it) }.filter { it.third.isNotBlank() }.map { it.first }
+        order.filter { it in all } + all.filter { it !in order }
+    }
+    fun labelOf(id: String): String =
+        if (id.startsWith("c:")) custom.map { customParts(it) }.firstOrNull { it.first == id }?.second?.ifBlank { str(R.string.specs_custom) } ?: ""
+        else Specs.name(id)
+    fun valueOf(id: String): String =
+        if (id.startsWith("c:")) custom.map { customParts(it) }.firstOrNull { it.first == id }?.third ?: "" else values[id] ?: ""
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -206,14 +263,16 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
                 navigationIcon = { BackButton(nav) },
                 actions = {
                     IconButton(onClick = {
-                        val v = vehicle ?: return@IconButton
-                        val list = values.filter { it.value.isNotBlank() }.map { (k, x) -> SpecField(k, x.trim()) } +
-                            custom.map { it.split(SEP, limit = 2) }
-                                .filter { it.getOrElse(1) { "" }.isNotBlank() }
-                                .map { SpecField(Specs.CUSTOM, it[1].trim(), it[0].trim().ifBlank { str(R.string.specs_custom) }) }
+                        val cur0 = vehicle ?: return@IconButton
+                        val list = filled.map { id ->
+                            if (id.startsWith("c:")) {
+                                val (_, label, value) = customParts(custom.first { customParts(it).first == id })
+                                SpecField(Specs.CUSTOM, value.trim(), label.trim().ifBlank { str(R.string.specs_custom) })
+                            } else SpecField(id, (values[id] ?: "").trim())
+                        }
                         scope.launch {
                             // aktuellen Stand holen, damit parallel synchronisierte Änderungen am Fahrzeug erhalten bleiben
-                            val cur = repo.getVehicle(vehicleId) ?: v
+                            val cur = repo.getVehicle(vehicleId) ?: cur0
                             repo.saveVehicle(cur.copy(specs = Specs.encode(list), specsUpdatedAt = now()))
                             nav.popBackStack()
                         }
@@ -222,12 +281,18 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
             )
         },
     ) { pad ->
-        val v = vehicle ?: return@Scaffold
+        if (v == null) return@Scaffold
         Column(
             Modifier.padding(pad).consumeWindowInsets(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(str(R.string.specs_info), style = MaterialTheme.typography.bodySmall)
+            if (filled.size > 1) {
+                SectionTitle(str(R.string.specs_order))
+                Text(str(R.string.specs_order_info), style = MaterialTheme.typography.bodySmall)
+                ReorderList(filled, { labelOf(it) }, { valueOf(it) }) { order = it }
+                HorizontalDivider()
+            }
             // vordefinierte Felder; Werte der anderen Fahrzeugart (z. B. nach Umstellung) bleiben sichtbar
             val keys = Specs.keys(v.vehicleType) + values.keys.filter { it !in Specs.keys(v.vehicleType) }.sorted()
             keys.forEach { k ->
@@ -240,16 +305,16 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
             }
             SectionTitle(str(R.string.specs_custom))
             custom.forEachIndexed { i, entry ->
-                val (label, value) = entry.split(SEP, limit = 2).let { it[0] to it.getOrElse(1) { "" } }
+                val (id, label, value) = customParts(entry)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         OutlinedTextField(
-                            label, { n -> custom = custom.toMutableList().also { it[i] = n.replace(SEP, "") + SEP + value } },
+                            label, { n -> custom = custom.toMutableList().also { it[i] = id + SEP + n.replace(SEP, "") + SEP + value } },
                             singleLine = true, modifier = Modifier.fillMaxWidth(),
                             label = { Text(str(R.string.specs_custom_label)) },
                         )
                         OutlinedTextField(
-                            value, { n -> custom = custom.toMutableList().also { it[i] = label + SEP + n } },
+                            value, { n -> custom = custom.toMutableList().also { it[i] = id + SEP + label + SEP + n } },
                             singleLine = true, modifier = Modifier.fillMaxWidth(),
                             label = { Text(str(R.string.specs_value)) },
                         )
@@ -260,7 +325,76 @@ fun SpecsEditScreen(nav: NavController, vehicleId: String) {
                     }
                 }
             }
-            TextButton(onClick = { custom = custom + SEP }) { Text(str(R.string.specs_custom_add)) }
+            TextButton(onClick = { custom = custom + ("c:" + java.util.UUID.randomUUID().toString().take(8) + SEP + SEP) }) {
+                Text(str(R.string.specs_custom_add))
+            }
+        }
+    }
+}
+
+/**
+ * Einträge per Ziehen am Griff (oder lange drücken) verschieben. Keine Lazy-Liste, weil sie in einer
+ * scrollbaren Spalte steckt; der Steckbrief hat nur wenige Dutzend Einträge.
+ */
+@Composable
+private fun ReorderList(ids: List<String>, label: (String) -> String, value: (String) -> String, onMove: (List<String>) -> Unit) {
+    var dragging by remember { mutableStateOf<String?>(null) }
+    var offset by remember { mutableFloatStateOf(0f) }
+    val heights = remember { mutableStateMapOf<String, Int>() }
+    // aktuelle Liste für die Gesten (die Lambdas überleben Neukompositionen)
+    val current by rememberUpdatedState(ids)
+    Card(Modifier.fillMaxWidth()) {
+        Column {
+            ids.forEachIndexed { i, id -> key(id) {
+                val isDragged = dragging == id
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .zIndex(if (isDragged) 1f else 0f)
+                        .graphicsLayer { translationY = if (isDragged) offset else 0f }
+                        .background(if (isDragged) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                        .onGloballyPositioned { heights[id] = it.size.height }
+                        .pointerInput(id) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = { dragging = id; offset = 0f },
+                                onDragEnd = { dragging = null; offset = 0f },
+                                onDragCancel = { dragging = null; offset = 0f },
+                            ) { change, drag ->
+                                change.consume()
+                                offset += drag.y
+                                val list = current.toMutableList()
+                                val idx = list.indexOf(id)
+                                val next = list.getOrNull(idx + 1)
+                                val prev = list.getOrNull(idx - 1)
+                                if (next != null && offset > (heights[next] ?: 0) / 2f) {
+                                    offset -= heights[next] ?: 0
+                                    list.removeAt(idx); list.add(idx + 1, id); onMove(list)
+                                } else if (prev != null && offset < -(heights[prev] ?: 0) / 2f) {
+                                    offset += heights[prev] ?: 0
+                                    list.removeAt(idx); list.add(idx - 1, id); onMove(list)
+                                }
+                            }
+                        }
+                        .padding(horizontal = 4.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.DragHandle, contentDescription = str(R.string.specs_move),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                    Column(Modifier.weight(1f)) {
+                        Text(label(id), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(value(id), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                    }
+                    // Alternativ ohne Ziehen: Pfeile
+                    IconButton(enabled = i > 0, onClick = {
+                        onMove(ids.toMutableList().also { it.removeAt(i); it.add(i - 1, id) })
+                    }) { Icon(Icons.Default.KeyboardArrowUp, contentDescription = str(R.string.move_up)) }
+                    IconButton(enabled = i < ids.size - 1, onClick = {
+                        onMove(ids.toMutableList().also { it.removeAt(i); it.add(i + 1, id) })
+                    }) { Icon(Icons.Default.KeyboardArrowDown, contentDescription = str(R.string.move_down)) }
+                }
+            } }
         }
     }
 }

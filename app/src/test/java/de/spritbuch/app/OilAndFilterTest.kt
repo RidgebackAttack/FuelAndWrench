@@ -70,8 +70,12 @@ class OilAndFilterTest {
 
     @Test fun specsRoundTripAndOrder() {
         val fields = listOf(SpecField(Specs.CUSTOM, "123", "Schlüssel"), SpecField("oil_spec", "5W-30"), SpecField("vin", "WBA0TEST"), SpecField("hsn", " "))
+        // gespeicherte Reihenfolge bleibt (frei verschiebbar)
         val v = Vehicle(specs = Specs.encode(fields))
-        assertEquals(listOf("vin", "oil_spec", Specs.CUSTOM), Specs.of(v).map { it.k })
+        assertEquals(listOf(Specs.CUSTOM, "oil_spec", "vin"), Specs.of(v).map { it.k })
+        // ältere Stände ohne eigene Reihenfolge: Standardreihenfolge
+        val legacy = Vehicle(specs = kotlinx.serialization.json.Json.encodeToString(fields.filter { it.v.isNotBlank() }))
+        assertEquals(listOf("vin", "oil_spec", Specs.CUSTOM), Specs.of(legacy).map { it.k })
         assertEquals("5W-30", Specs.value(v, "oil_spec"))
         assertTrue("Kette" in Specs.keys("Motorrad").map { Specs.name(it) } || "chain" in Specs.keys("Motorrad"))
     }

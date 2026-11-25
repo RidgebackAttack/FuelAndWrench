@@ -688,6 +688,11 @@
     <string name="total_cost_per_km">Pr. %1$s: %2$s</string>
     <string name="total_cost_per_100">Pr. 100 %1$s: %2$s</string>
     <string name="total_cost_per_month">Pr. måned siden første post: %1$s</string>
+    <string name="move_up">Flyt op</string>
+    <string name="move_down">Flyt ned</string>
+    <string name="specs_order">Rækkefølge i oversigten</string>
+    <string name="specs_order_info">Hold en post nede og træk, eller brug pilene.</string>
+    <string name="specs_move">Flyt</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>
