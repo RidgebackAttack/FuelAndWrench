@@ -1,0 +1,57 @@
+# Screenshots fürs Handbuch erzeugen (Robolectric, erfundene Beispieldaten) und nach docs/manual/img übernehmen.
+# Läuft bei Bedarf (manuell) oder wenn sich dieser Workflow bzw. der Screenshot-Test auf einem Arbeitszweig ändert.
+name: Handbuch-Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - .github/workflows/manual.yml
+      - app/src/test/java/de/spritbuch/app/ManualScreenshots.kt
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.9.1
+
+      - name: Screenshots erzeugen
+        run: gradle :app:testReleaseUnitTest -Pmanual --tests '*ManualScreenshots*' --no-daemon -i | grep -E "Screenshot|Handbuch|PASSED|FAILED|SKIPPED" || true
+
+      - name: Ergebnis prüfen
+        run: |
+          ls -la app/build/manual/* || true
+          test -n "$(ls app/build/manual/de/*.png 2>/dev/null)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manual-screenshots
+          path: app/build/manual
+
+      - name: Bilder übernehmen
+        run: |
+          mkdir -p docs/manual/img
+          rm -rf docs/manual/img/*
+          cp -r app/build/manual/* docs/manual/img/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/manual/img
+          git diff --cached --quiet || git commit -m "Handbuch-Screenshots aktualisiert (automatisch erzeugt)"
+          git pull --rebase
+          git push

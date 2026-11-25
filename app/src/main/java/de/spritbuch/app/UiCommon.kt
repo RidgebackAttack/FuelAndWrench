@@ -109,6 +109,7 @@ class MainActivity : ComponentActivity() {
 fun AppNav(shortcut: kotlinx.coroutines.flow.MutableStateFlow<Pair<String, String?>?>? = null) {
     val nav = rememberNavController()
     val ctx = LocalContext.current
+    LaunchedEffect(nav) { NavHook.set(nav) }
     val pending = shortcut?.collectAsStateWithLifecycle()?.value
     LaunchedEffect(pending) {
         val (action, vehicleId) = pending ?: return@LaunchedEffect
@@ -296,4 +297,11 @@ fun LabeledSwitch(text: String, checked: Boolean, onChange: (Boolean) -> Unit) {
         Spacer(Modifier.width(8.dp))
         Switch(checked = checked, onCheckedChange = onChange)
     }
+}
+
+/** Zugriff auf die Navigation für automatische Screenshots des Handbuchs (Tests); hält nur eine schwache Referenz. */
+object NavHook {
+    private var ref: java.lang.ref.WeakReference<androidx.navigation.NavHostController>? = null
+    fun set(nav: androidx.navigation.NavHostController) { ref = java.lang.ref.WeakReference(nav) }
+    fun get(): androidx.navigation.NavHostController? = ref?.get()
 }

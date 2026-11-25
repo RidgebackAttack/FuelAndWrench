@@ -69,6 +69,14 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+        // Handbuch-Screenshots nur auf Anforderung (gradle … -Pmanual), sonst wird der Test übersprungen
+        val manualDir = layout.buildDirectory.dir("manual").get().asFile.absolutePath
+        val manual = project.hasProperty("manual")
+        unitTests.all {
+            it.systemProperty("fw.manual", manual.toString())
+            it.systemProperty("fw.manualDir", manualDir)
+            if (manual) it.maxHeapSize = "3g"
+        }
     }
 
     compileOptions {
