@@ -88,7 +88,7 @@ class MaintenanceTest {
 
     @Test fun cropRegionMapsToOriginalRotation() {
         val c = android.graphics.RectF(0.1f, 0.2f, 0.3f, 0.4f)
-        fun RectF4(r: android.graphics.RectF) = listOf(r.left, r.top, r.right, r.bottom).map { (it * 100).toInt() }
+        fun RectF4(r: android.graphics.RectF) = listOf(r.left, r.top, r.right, r.bottom).map { Math.round(it * 100) }
         assertEquals(listOf(10, 20, 30, 40), RectF4(Ocr.regionInOriginal(c, 0)))
         assertEquals(listOf(20, 70, 40, 90), RectF4(Ocr.regionInOriginal(c, 90)))
         assertEquals(listOf(70, 60, 90, 80), RectF4(Ocr.regionInOriginal(c, 180)))
