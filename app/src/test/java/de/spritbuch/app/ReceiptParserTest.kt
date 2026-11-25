@@ -72,12 +72,6 @@ class ReceiptParserTest {
         close(1.759, r.pricePerUnit)
     }
 
-    @Test
-    fun odometerPrefersPlausibleValue() {
-        assertEquals(123456, ReceiptParser.odometer("TRIP 345.6\n123456 km\n21:30", previous = 123100))
-        assertEquals(98765, ReceiptParser.odometer("98 765 km", previous = null))
-        assertNull(ReceiptParser.odometer("12:30", previous = null))
-    }
 
     @Test
     fun numbers() {

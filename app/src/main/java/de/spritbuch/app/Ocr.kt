@@ -20,18 +20,17 @@ import java.io.File
 
 /**
  * Texterkennung komplett auf dem Gerät (Tesseract, Apache-2.0). Es werden keine Bilder übertragen.
- * Sprachmodelle (tessdata_fast deu/dan, tessdata_ssd für 7-Segment-Ziffern) liegen in den Assets
+ * Sprachmodelle (tessdata_fast deu/dan) liegen in den Assets
  * und werden beim ersten Gebrauch entpackt.
  */
 object Ocr {
     private const val TEXT_LANGS = "deu+dan"
-    private const val SEGMENT_LANG = "ssd_int"
     private val mutex = Mutex()
 
     private fun dataDir(ctx: Context): File {
         val base = File(ctx.filesDir, "ocr")
         val td = File(base, "tessdata").apply { mkdirs() }
-        for (l in (TEXT_LANGS.split("+") + SEGMENT_LANG)) {
+        for (l in TEXT_LANGS.split("+")) {
             val f = File(td, "$l.traineddata")
             if (!f.exists() || f.length() == 0L) {
                 ctx.assets.open("tessdata/$l.traineddata").use { input -> f.outputStream().use { input.copyTo(it) } }
@@ -97,16 +96,11 @@ object Ocr {
         return out
     }
 
-    private fun run(ctx: Context, bmp: Bitmap, lang: String, digitsOnly: Boolean): String {
+    private fun run(ctx: Context, bmp: Bitmap, lang: String): String {
         val api = TessBaseAPI()
         try {
             if (!api.init(dataDir(ctx).absolutePath, lang)) error(str(R.string.ocr_failed))
-            if (digitsOnly) {
-                api.setVariable("tessedit_char_whitelist", "0123456789")
-                api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SPARSE_TEXT)
-            } else {
-                api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
-            }
+            api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
             api.setImage(bmp)
             return api.getUTF8Text() ?: ""
         } finally {
@@ -114,22 +108,8 @@ object Ocr {
         }
     }
 
-    /**
-     * Erkennt Text. Für den Kilometerstand (digitsOnly) laufen zwei Modelle: eins für
-     * 7-Segment-Anzeigen und das normale für gedruckte/Punktmatrix-Ziffern; beide Ergebnisse
-     * werden zurückgegeben, die Auswahl trifft ReceiptParser.odometer.
-     */
-    suspend fun recognize(ctx: Context, source: Bitmap, crop: RectF?, digitsOnly: Boolean): String = mutex.withLock {
-        withContext(Dispatchers.Default) {
-            val bmp = prepare(source, crop)
-            if (digitsOnly) {
-                listOf(
-                    runCatching { run(ctx, bmp, SEGMENT_LANG, true) }.getOrDefault(""),
-                    runCatching { run(ctx, bmp, TEXT_LANGS, true) }.getOrDefault(""),
-                ).joinToString("\n")
-            } else {
-                run(ctx, bmp, TEXT_LANGS, false)
-            }
-        }
+    /** Erkennt den Text eines Kassenbons. */
+    suspend fun recognize(ctx: Context, source: Bitmap, crop: RectF?): String = mutex.withLock {
+        withContext(Dispatchers.Default) { run(ctx, prepare(source, crop), TEXT_LANGS) }
     }
 }

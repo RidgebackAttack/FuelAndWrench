@@ -21,7 +21,7 @@ Android-App zum Erfassen von Betankungen und Kraftstoffverbrauch, mit Synchronis
 - Saisonkennzeichen (Erinnerungen pausieren außerhalb), Gesamtkosten pro km und Monat
 - Datenpflege: Datenprüfung auf Tippfehler, Speicher aufräumen, Sync-Protokoll, Absturzberichte nur lokal
 - Statistik: Kosten pro Monat/Jahr, Literpreis-Verlauf, Verbrauch nach Reifen, Strecke und Fahrstil
-- Beleg- und Tacho-Scan per Kamera (Tesseract, offline auf dem Gerät)
+- Beleg-Scan per Kamera (Tesseract, offline auf dem Gerät)
 - Backup als ZIP (inkl. Fotos, Belege, CSV-Tabellen) und Wiederherstellen
 - Sprachen: Deutsch, Englisch, Dänisch (Texte in `tools/i18n/strings.tsv`, `python3 tools/i18n/gen.py` erzeugt die strings.xml)
 - Update-Hinweis für direkt installierte APKs (abschaltbar)

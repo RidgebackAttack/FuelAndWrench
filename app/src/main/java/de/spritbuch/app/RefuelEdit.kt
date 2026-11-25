@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ReceiptLong
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
@@ -111,8 +110,6 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var confirmDelete by remember { mutableStateOf(false) }
     var scanning by remember { mutableStateOf(false) }
     var scanInfo by remember { mutableStateOf<String?>(null) }
-    var odoFromScan by rememberSaveable { mutableStateOf(false) }
-    var scanMode by rememberSaveable { mutableStateOf("") }
     val scanTarget = remember { AttachmentStore.cameraTarget(ctx) }
 
     var vehicleChoices by remember { mutableStateOf(listOf<Vehicle>()) }
@@ -123,17 +120,13 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     var scanAddress by rememberSaveable { mutableStateOf<String?>(null) }
 
 
-    fun runScan(bitmap: android.graphics.Bitmap, crop: android.graphics.RectF, mode: String) {
+    fun runScan(bitmap: android.graphics.Bitmap, crop: android.graphics.RectF) {
         scope.launch {
             scanning = true
             scanInfo = null
             try {
-                val text = Ocr.recognize(ctx, bitmap, crop, digitsOnly = mode == "odo")
-                review = if (mode == "odo") {
-                    val km = ReceiptParser.odometer(text, lastOdo)
-                    val nums = ReceiptParser.numbers(text).filter { it.second >= 100 && it.second % 1.0 == 0.0 }
-                    ScanReview(true, km?.let { mapOf(ScanTarget.ODOMETER to it.toDouble()) } ?: emptyMap(), null, null, nums)
-                } else {
+                val text = Ocr.recognize(ctx, bitmap, crop)
+                review = run {
                     // Eigene Betreiber (aus früheren Betankungen) mit durchsuchen
                     val own = repo.db.refuels().usedBrands()
                     val r = ReceiptParser.parse(text, ownStations = own)
@@ -154,7 +147,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     }
                     scanStation = r.station
                     scanAddress = r.address
-                    ScanReview(false, v, f, r.date, ReceiptParser.numbers(text))
+                    ScanReview(v, f, r.date, ReceiptParser.numbers(text))
                 }
             } catch (e: Throwable) {
                 DebugLog.error("Texterkennung fehlgeschlagen", e)
@@ -174,7 +167,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     // Erst selbst auf dem ganzen Bild versuchen; eingrenzen nur, wenn das Ergebnis nicht stimmt
                     scanBitmap = bmp
                     scanning = false
-                    runScan(bmp, android.graphics.RectF(0f, 0f, 1f, 1f), scanMode)
+                    runScan(bmp, android.graphics.RectF(0f, 0f, 1f, 1f))
                 }
                 .onFailure {
                     DebugLog.error("Foto laden fehlgeschlagen", it)
@@ -190,8 +183,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     val scanPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) loadForScan(uri)
     }
-    fun startScan(mode: String) {
-        scanMode = mode
+    fun startScan() {
         runCatching { scanCamera.launch(AttachmentStore.uri(ctx, scanTarget)) }
             .onFailure { scanPicker.launch("image/*") }
     }
@@ -364,15 +356,10 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { startScan("receipt") }, enabled = !scanning, modifier = Modifier.weight(1f)) {
+                OutlinedButton(onClick = { startScan() }, enabled = !scanning, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.ReceiptLong, contentDescription = null)
                     Spacer(Modifier.width(6.dp))
                     Text(str(R.string.scan_receipt))
-                }
-                OutlinedButton(onClick = { startScan("odo") }, enabled = !scanning, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.Speed, contentDescription = null)
-                    Spacer(Modifier.width(6.dp))
-                    Text(str(R.string.scan_odometer))
                 }
             }
             if (scanning) {
@@ -386,8 +373,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 Spacer(Modifier.width(8.dp))
                 Text(timestamp.dateTime())
             }
-            NumberField(str(R.string.odometer), odometer, { odometer = it; odoFromScan = false }, suffix = du, decimal = false)
-            if (odoFromScan) Text(str(R.string.scan_check_odo), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            NumberField(str(R.string.odometer), odometer, { odometer = it }, suffix = du, decimal = false)
             lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
             val charging = fuelType == ELECTRIC
             if (veh?.isPlugInHybrid == true) {
@@ -525,15 +511,14 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     }
 
     cropSource?.let { bmp ->
-        val odo = scanMode == "odo"
         CropDialog(
             bmp,
-            if (odo) android.graphics.RectF(0.15f, 0.35f, 0.85f, 0.65f) else android.graphics.RectF(0.03f, 0.03f, 0.97f, 0.97f),
-            str(if (odo) R.string.crop_hint_odo else R.string.crop_hint_receipt),
+            android.graphics.RectF(0.03f, 0.03f, 0.97f, 0.97f),
+            str(R.string.crop_hint_receipt),
             onCancel = { cropSource = null },
         ) { rect ->
             cropSource = null
-            runScan(bmp, rect, scanMode)
+            runScan(bmp, rect)
         }
     }
 
@@ -541,8 +526,8 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         val u = Units.amount(veh, fuelType)
         val c = Units.cur(veh)
         val extras = listOfNotNull(
-            scanStation?.takeIf { !rv.forOdometer }?.let { lbl(it) },
-            scanAddress?.takeIf { !rv.forOdometer },
+            scanStation?.let { lbl(it) },
+            scanAddress,
             rv.fuelType?.let { lbl(it) },
             rv.date?.let { (y, m, d) -> String.format(appLocale(), "%02d.%02d.%d", d, m, y) },
         ).joinToString(" · ").ifBlank { null }
@@ -550,7 +535,6 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             rv,
             label = { t ->
                 when (t) {
-                    ScanTarget.ODOMETER -> str(R.string.odometer)
                     ScanTarget.AMOUNT -> str(if (fuelType == ELECTRIC) R.string.energy else R.string.amount)
                     ScanTarget.PRICE -> str(R.string.price_per_unit, u)
                     ScanTarget.TOTAL -> str(R.string.total)
@@ -558,7 +542,6 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             },
             format = { t, v ->
                 when (t) {
-                    ScanTarget.ODOMETER -> v.toInt().dist(du)
                     ScanTarget.AMOUNT -> "${v.fmt(2)} $u"
                     ScanTarget.PRICE -> "${v.fmt(3)} $c"
                     ScanTarget.TOTAL -> "${v.fmt(2)} $c"
@@ -569,15 +552,14 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             onCrop = scanBitmap?.let { bmp -> { review = null; cropSource = bmp } },
         ) { values ->
             review = null
-            values[ScanTarget.ODOMETER]?.let { odometer = it.toInt().toString(); odoFromScan = true }
             values[ScanTarget.AMOUNT]?.let { amount = it.fmt(2) }
             values[ScanTarget.PRICE]?.let { ppu = it.fmt(3) }
             values[ScanTarget.TOTAL]?.let { total = it.fmt(2) }
             // Fehlender Wert aus den anderen beiden berechnen
             val a = amount.toDoubleDe(); val p = ppu.toDoubleDe(); val t = total.toDoubleDe()
-            if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty() && !rv.forOdometer) total = (a * p).fmt(2)
-            if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0 && !rv.forOdometer) ppu = (t / a).fmt(3)
-            if (!rv.forOdometer) {
+            if (values[ScanTarget.TOTAL] == null && a != null && p != null && values.isNotEmpty()) total = (a * p).fmt(2)
+            if (values[ScanTarget.PRICE] == null && a != null && t != null && a > 0) ppu = (t / a).fmt(3)
+            run {
                 // Betreiber und Adresse vom Bon haben Vorrang vor den Kartendaten
                 scanStation?.let { brand = it }
                 scanAddress?.let { address = it }

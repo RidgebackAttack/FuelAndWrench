@@ -392,10 +392,8 @@
     <string name="backup_read_error">File could not be read</string>
     <string name="backup_invalid">This is not a Fuel &amp; Wrench backup</string>
     <string name="scan_receipt">Scan receipt</string>
-    <string name="scan_odometer">Scan odometer</string>
     <string name="scan_running">Recognizing text on the device …</string>
     <string name="scan_nothing">Nothing recognized. Try again with more light and the receipt filling the picture.</string>
-    <string name="scan_check_odo">Read from the photo – please compare with the display.</string>
     <string name="ocr_failed">Text recognition failed</string>
     <string name="import_empty">File is empty</string>
     <string name="import_no_entries">No entries found</string>
@@ -446,7 +444,6 @@
     <string name="shortcuts_info">Long-press the app icon for quick entries. You can also drag them onto the home screen.</string>
     <string name="shortcuts_generic">New refuel + vehicle choice</string>
     <string name="shortcuts_per_vehicle">One entry per vehicle</string>
-    <string name="crop_hint_odo">Frame the odometer reading as tightly as possible.</string>
     <string name="crop_hint_receipt">Frame the part with amount, price and total.</string>
     <string name="crop_all">Whole image</string>
     <string name="crop_recognize">Recognize</string>

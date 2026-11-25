@@ -392,10 +392,8 @@
     <string name="backup_read_error">Datei konnte nicht gelesen werden</string>
     <string name="backup_invalid">Das ist kein Fuel-&amp;-Wrench-Backup</string>
     <string name="scan_receipt">Beleg scannen</string>
-    <string name="scan_odometer">Tacho scannen</string>
     <string name="scan_running">Texterkennung läuft auf dem Gerät …</string>
     <string name="scan_nothing">Nichts erkannt. Nochmal mit mehr Licht versuchen, der Beleg sollte das Bild füllen.</string>
-    <string name="scan_check_odo">Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.</string>
     <string name="ocr_failed">Texterkennung fehlgeschlagen</string>
     <string name="import_empty">Datei ist leer</string>
     <string name="import_no_entries">Keine Einträge gefunden</string>
@@ -446,7 +444,6 @@
     <string name="shortcuts_info">App-Icon lange drücken für Schnelleinträge. Du kannst sie auch auf den Startbildschirm ziehen.</string>
     <string name="shortcuts_generic">Neue Betankung + Fahrzeugwahl</string>
     <string name="shortcuts_per_vehicle">Ein Eintrag je Fahrzeug</string>
-    <string name="crop_hint_odo">Den Kilometerstand möglichst eng einrahmen.</string>
     <string name="crop_hint_receipt">Den Teil mit Menge, Preis und Summe einrahmen.</string>
     <string name="crop_all">Ganzes Bild</string>
     <string name="crop_recognize">Erkennen</string>

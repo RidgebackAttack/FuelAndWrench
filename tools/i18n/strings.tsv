@@ -389,10 +389,8 @@ backup_write_error	File could not be written	Datei konnte nicht geschrieben werd
 backup_read_error	File could not be read	Datei konnte nicht gelesen werden	Filen kunne ikke læses
 backup_invalid	This is not a Fuel & Wrench backup	Das ist kein Fuel-&-Wrench-Backup	Dette er ikke en Fuel & Wrench-sikkerhedskopi
 scan_receipt	Scan receipt	Beleg scannen	Scan kvittering
-scan_odometer	Scan odometer	Tacho scannen	Scan kilometertæller
 scan_running	Recognizing text on the device …	Texterkennung läuft auf dem Gerät …	Tekstgenkendelse kører på enheden …
 scan_nothing	Nothing recognized. Try again with more light and the receipt filling the picture.	Nichts erkannt. Nochmal mit mehr Licht versuchen, der Beleg sollte das Bild füllen.	Intet genkendt. Prøv igen med mere lys, og lad kvitteringen fylde billedet.
-scan_check_odo	Read from the photo – please compare with the display.	Aus dem Foto gelesen – bitte mit der Anzeige vergleichen.	Aflæst fra fotoet – sammenlign venligst med displayet.
 ocr_failed	Text recognition failed	Texterkennung fehlgeschlagen	Tekstgenkendelse mislykkedes
 import_empty	File is empty	Datei ist leer	Filen er tom
 import_no_entries	No entries found	Keine Einträge gefunden	Ingen poster fundet
@@ -443,7 +441,6 @@ shortcuts_title	App icon menu	Menü am App-Icon	Menu på app-ikonet
 shortcuts_info	Long-press the app icon for quick entries. You can also drag them onto the home screen.	App-Icon lange drücken für Schnelleinträge. Du kannst sie auch auf den Startbildschirm ziehen.	Hold app-ikonet nede for hurtige poster. Du kan også trække dem til startskærmen.
 shortcuts_generic	New refuel + vehicle choice	Neue Betankung + Fahrzeugwahl	Ny tankning + valg af køretøj
 shortcuts_per_vehicle	One entry per vehicle	Ein Eintrag je Fahrzeug	Én post pr. køretøj
-crop_hint_odo	Frame the odometer reading as tightly as possible.	Den Kilometerstand möglichst eng einrahmen.	Indram kilometerstanden så tæt som muligt.
 crop_hint_receipt	Frame the part with amount, price and total.	Den Teil mit Menge, Preis und Summe einrahmen.	Indram delen med mængde, pris og total.
 crop_all	Whole image	Ganzes Bild	Hele billedet
 crop_recognize	Recognize	Erkennen	Genkend

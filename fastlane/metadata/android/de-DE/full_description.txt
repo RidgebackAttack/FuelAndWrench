@@ -4,7 +4,7 @@ Fuel & Wrench ist das Logbuch für Auto und Motorrad: Betankungen, Verbrauch, Se
 • Betankungen mit Kraftstoffart, Tankstelle, Position, Fahrstil, Strecke, Reifen und Zusatzverbrauchern (Standheizung, Anhänger …)
 • Verbrauch nach der Voll-zu-Voll-Methode, Kosten pro 100 km, Verbrauchsverlauf
 • Einheiten pro Fahrzeug: km/Meilen, Liter/Gallonen, l/100 km, km/l oder mpg, beliebige Währung
-• Beleg und Tacho per Kamera scannen – Texterkennung komplett auf dem Gerät
+• Beleg per Kamera scannen – Texterkennung komplett auf dem Gerät
 • Vergleich mit dem Bordcomputer, Statistik nach Monat, Jahr, Reifen, Strecke und Fahrstil
 • Tankstellen auf der Karte (OpenStreetMap)
 

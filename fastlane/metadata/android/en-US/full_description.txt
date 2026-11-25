@@ -4,7 +4,7 @@ Fuel & Wrench is the logbook for cars and motorcycles: fuel-ups, consumption, se
 • Fuel-ups with fuel type, station, location, driving style, route, tyres and extra consumers
 • Full-to-full consumption, cost per 100 km, consumption chart
 • Per-vehicle units: km/miles, litres/gallons, l/100 km, km/l or mpg, any currency
-• Scan receipt and odometer with the camera – text recognition entirely on the device
+• Scan receipts with the camera – text recognition entirely on the device
 • Comparison with the on-board computer, statistics by month, year, tires, route and driving style
 • Fuel stations on a map (OpenStreetMap)
 

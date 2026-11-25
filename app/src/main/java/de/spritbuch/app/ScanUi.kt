@@ -155,10 +155,9 @@ fun CropDialog(bitmap: Bitmap, initial: RectF, hint: String, onCancel: () -> Uni
     }
 }
 
-enum class ScanTarget { ODOMETER, AMOUNT, PRICE, TOTAL }
+enum class ScanTarget { AMOUNT, PRICE, TOTAL }
 
 data class ScanReview(
-    val forOdometer: Boolean,
     val values: Map<ScanTarget, Double>,
     val fuelType: String?,
     val date: Triple<Int, Int, Int>?,
@@ -180,7 +179,7 @@ fun ScanReviewDialog(
     onCrop: (() -> Unit)? = null,
     onApply: (Map<ScanTarget, Double>) -> Unit,
 ) {
-    val targets = if (review.forOdometer) listOf(ScanTarget.ODOMETER) else listOf(ScanTarget.AMOUNT, ScanTarget.PRICE, ScanTarget.TOTAL)
+    val targets = listOf(ScanTarget.AMOUNT, ScanTarget.PRICE, ScanTarget.TOTAL)
     val values = remember { mutableStateMapOf<ScanTarget, Double>().apply { putAll(review.values) } }
     var correcting by remember { mutableStateOf(review.values.isEmpty()) }
 

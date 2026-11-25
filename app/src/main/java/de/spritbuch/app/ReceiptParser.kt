@@ -173,20 +173,4 @@ object ReceiptParser {
             .take(max)
     }
 
-    /**
-     * Kilometerstand aus einem Tachofoto: längste Ziffernfolge (4–7 Stellen), bevorzugt
-     * knapp über dem bisherigen Stand.
-     */
-    fun odometer(raw: String, previous: Int?): Int? {
-        val candidates = Regex("""\d[\d .]{2,9}\d""").findAll(cleanDigits(raw))
-            .map { it.value.filter { c -> c.isDigit() } }
-            .filter { it.length in 4..7 }
-            .mapNotNull { it.toIntOrNull() }
-            .toList()
-        if (candidates.isEmpty()) return null
-        if (previous != null && previous > 0) {
-            candidates.filter { it >= previous && it - previous <= 5000 }.minOrNull()?.let { return it }
-        }
-        return candidates.maxByOrNull { it.toString().length * 10_000_000L + it }
-    }
 }

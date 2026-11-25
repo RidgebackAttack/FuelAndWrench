@@ -392,10 +392,8 @@
     <string name="backup_read_error">Filen kunne ikke læses</string>
     <string name="backup_invalid">Dette er ikke en Fuel &amp; Wrench-sikkerhedskopi</string>
     <string name="scan_receipt">Scan kvittering</string>
-    <string name="scan_odometer">Scan kilometertæller</string>
     <string name="scan_running">Tekstgenkendelse kører på enheden …</string>
     <string name="scan_nothing">Intet genkendt. Prøv igen med mere lys, og lad kvitteringen fylde billedet.</string>
-    <string name="scan_check_odo">Aflæst fra fotoet – sammenlign venligst med displayet.</string>
     <string name="ocr_failed">Tekstgenkendelse mislykkedes</string>
     <string name="import_empty">Filen er tom</string>
     <string name="import_no_entries">Ingen poster fundet</string>
@@ -446,7 +444,6 @@
     <string name="shortcuts_info">Hold app-ikonet nede for hurtige poster. Du kan også trække dem til startskærmen.</string>
     <string name="shortcuts_generic">Ny tankning + valg af køretøj</string>
     <string name="shortcuts_per_vehicle">Én post pr. køretøj</string>
-    <string name="crop_hint_odo">Indram kilometerstanden så tæt som muligt.</string>
     <string name="crop_hint_receipt">Indram delen med mængde, pris og total.</string>
     <string name="crop_all">Hele billedet</string>
     <string name="crop_recognize">Genkend</string>
