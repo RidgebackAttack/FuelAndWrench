@@ -730,3 +730,4 @@ tire_age_years	%1$s yrs	%1$s J.	%1$s år
 tire_age_warn	consider replacing	Austausch erwägen	overvej udskiftning
 tire_age_old	please replace	bitte erneuern	bør udskiftes
 tire_age_overview	%1$s: tires %2$s years old	%1$s: Reifen %2$s Jahre alt	%1$s: dæk %2$s år gamle
+ocr_timeout	Recognition took too long and was cancelled – try narrowing the area.	Die Erkennung hat zu lange gedauert und wurde abgebrochen – Bereich eingrenzen und erneut versuchen.	Genkendelsen tog for lang tid og blev afbrudt – afgræns området og prøv igen.

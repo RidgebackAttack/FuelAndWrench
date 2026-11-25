@@ -699,6 +699,7 @@
     <string name="tire_age_warn">overvej udskiftning</string>
     <string name="tire_age_old">bør udskiftes</string>
     <string name="tire_age_overview">%1$s: dæk %2$s år gamle</string>
+    <string name="ocr_timeout">Genkendelsen tog for lang tid og blev afbrudt – afgræns området og prøv igen.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

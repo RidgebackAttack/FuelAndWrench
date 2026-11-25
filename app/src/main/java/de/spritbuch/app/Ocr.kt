@@ -12,7 +12,11 @@ import android.graphics.RectF
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import com.googlecode.tesseract.android.TessBaseAPI
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -39,7 +43,10 @@ object Ocr {
         return base
     }
 
-    /** Lädt ein Foto (gedreht nach EXIF), verkleinert auf maxSide. */
+    /**
+     * Lädt ein Foto (gedreht nach EXIF) und verkleinert es auf höchstens [maxSide] – auch bei 50-MP-Kameras.
+     * Drehen und Verkleinern passieren in einem Schritt, Zwischenbilder werden sofort freigegeben.
+     */
     fun load(ctx: Context, uri: Uri, maxSide: Int): Bitmap {
         val r = ctx.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -50,9 +57,12 @@ object Ocr {
             BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
         } ?: error(str(R.string.err_image_read))
         val rotation = runCatching { r.openInputStream(uri)?.use { ExifInterface(it).rotationDegrees } ?: 0 }.getOrDefault(0)
-        return if (rotation != 0) {
-            Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postRotate(rotation.toFloat()) }, true)
-        } else bmp
+        val scale = minOf(1f, maxSide.toFloat() / maxOf(bmp.width, bmp.height))
+        if (rotation == 0 && scale >= 1f) return bmp
+        val m = Matrix().apply { postScale(scale, scale); postRotate(rotation.toFloat()) }
+        val out = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
+        if (out !== bmp) bmp.recycle()
+        return out
     }
 
     /** Ausschnitt (Koordinaten 0…1) und Aufbereitung: Graustufen, Kontrast strecken, kleine Schrift vergrößern. */
@@ -71,6 +81,7 @@ object Ocr {
         val canvas = Canvas(out)
         val gray = Paint(Paint.FILTER_BITMAP_FLAG).apply { colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) }) }
         canvas.drawBitmap(cut, null, android.graphics.Rect(0, 0, out.width, out.height), gray)
+        if (cut !== src) cut.recycle()
 
         // Kontrast: 2 %- und 98 %-Helligkeit auf Schwarz/Weiß strecken (hilft bei blassem Thermopapier)
         val px = IntArray(out.width * out.height)
@@ -96,20 +107,43 @@ object Ocr {
         return out
     }
 
-    private fun run(ctx: Context, bmp: Bitmap, lang: String): String {
-        val api = TessBaseAPI()
-        try {
-            if (!api.init(dataDir(ctx).absolutePath, lang)) error(str(R.string.ocr_failed))
-            api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
-            api.setImage(bmp)
-            return api.getUTF8Text() ?: ""
-        } finally {
-            api.recycle()
-        }
-    }
+    /** Längstens so lange darf die Erkennung dauern, danach wird sie abgebrochen. */
+    private const val TIMEOUT_MS = 60_000L
 
-    /** Erkennt den Text eines Kassenbons. */
+    /**
+     * Erkennt den Text eines Kassenbons. Läuft mit niedriger Priorität, damit das Telefon bedienbar bleibt,
+     * und lässt sich abbrechen: Zeitlimit oder Verlassen der Eingabe stoppen Tesseract sofort, statt es
+     * im Hintergrund weiterrechnen zu lassen.
+     */
     suspend fun recognize(ctx: Context, source: Bitmap, crop: RectF?): String = mutex.withLock {
-        withContext(Dispatchers.Default) { run(ctx, prepare(source, crop), TEXT_LANGS) }
+        val img = withContext(Dispatchers.Default) { prepare(source, crop) }
+        val api = TessBaseAPI()
+        if (!api.init(dataDir(ctx).absolutePath, TEXT_LANGS)) {
+            api.recycle()
+            img.recycle()
+            error(str(R.string.ocr_failed))
+        }
+        api.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO)
+        api.setImage(img)
+        val done = java.util.concurrent.atomic.AtomicBoolean(false)
+        // Eigener Thread, damit ein Abbruch nicht auf das Ende der nativen Erkennung warten muss
+        val work = CoroutineScope(Dispatchers.IO).async {
+            val t = android.os.Process.getThreadPriority(android.os.Process.myTid())
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+            try {
+                api.getHOCRText(0) // unterbrechbar über stop()
+                api.getUTF8Text() ?: "" // liefert nur noch das schon erkannte Ergebnis
+            } finally {
+                synchronized(done) { done.set(true); api.recycle() }
+                img.recycle()
+                android.os.Process.setThreadPriority(t)
+            }
+        }
+        try {
+            withTimeout(TIMEOUT_MS) { work.await() }
+        } catch (e: Throwable) {
+            synchronized(done) { if (!done.get()) api.stop() }
+            if (e is TimeoutCancellationException) error(str(R.string.ocr_timeout)) else throw e
+        }
     }
 }

@@ -162,7 +162,7 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
         scope.launch {
             scanning = true
             scanInfo = null
-            runCatching { withContext(Dispatchers.IO) { Ocr.load(ctx, uri, 2400) } }
+            runCatching { withContext(Dispatchers.IO) { Ocr.load(ctx, uri, 2000) } }
                 .onSuccess { bmp ->
                     // Erst selbst auf dem ganzen Bild versuchen; eingrenzen nur, wenn das Ergebnis nicht stimmt
                     scanBitmap = bmp

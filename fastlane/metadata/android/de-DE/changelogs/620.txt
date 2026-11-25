@@ -1,0 +1,1 @@
+- Behoben: Beleg-Scan konnte bei Kameras mit sehr hoher Auflösung das ganze Telefon ausbremsen – Bilder werden jetzt kleiner verarbeitet, die Erkennung läuft mit niedriger Priorität und bricht nach einer Minute oder beim Verlassen ab

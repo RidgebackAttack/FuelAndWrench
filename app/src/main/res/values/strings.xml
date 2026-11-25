@@ -699,6 +699,7 @@
     <string name="tire_age_warn">consider replacing</string>
     <string name="tire_age_old">please replace</string>
     <string name="tire_age_overview">%1$s: tires %2$s years old</string>
+    <string name="ocr_timeout">Recognition took too long and was cancelled – try narrowing the area.</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>
