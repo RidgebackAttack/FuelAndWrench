@@ -464,6 +464,7 @@ private fun LazyListScope.overviewItems(
         }
     }
     item(key = "tire-season") { TireSeasonBanner(nav, v, services) }
+    item(key = "tire-age") { TireAgeWarning(v) }
     item(key = "kpi") {
         val otherCost = services.sumOf { it.cost } + expenses.sumOf { it.amount }
         KpiSection(v, stats, otherCost, currentOdo, onEditOdometer) {

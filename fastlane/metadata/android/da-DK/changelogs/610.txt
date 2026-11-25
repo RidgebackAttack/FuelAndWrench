@@ -1,2 +1,3 @@
-- Fjernet: aflæsning af kilometertal fra foto (for upålidelig) – appen er nu mindre
+- Nyt: dækalder ud fra DOT-nummeret pr. aksel/hjul – hint fra 6, advarsel fra 8 år
 - Datatjek: “Det passer” synkroniseres nu til alle enheder
+- Fjernet: aflæsning af kilometertal fra foto (for upålidelig) – appen er mindre

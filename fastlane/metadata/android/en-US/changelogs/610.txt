@@ -1,2 +1,3 @@
-- Removed: reading the odometer from a photo (too unreliable) – the app is smaller now
+- New: tire age from the DOT number per axle/wheel – hint from 6, warning from 8 years
 - Data check: “It’s fine” is now synced to all devices
+- Removed: reading the odometer from a photo (too unreliable) – the app is smaller

@@ -721,3 +721,12 @@ move_down	Move down	Nach unten	Flyt ned
 specs_order	Order in the overview	Reihenfolge in der Übersicht	Rækkefølge i oversigten
 specs_order_info	Long-press and drag an entry, or use the arrows.	Eintrag lange drücken und ziehen oder die Pfeile nutzen.	Hold en post nede og træk, eller brug pilene.
 specs_move	Move	Verschieben	Flyt
+tire_dot_title	Tire age (DOT)	Reifenalter (DOT)	Dækalder (DOT)
+tire_dot_info	Last 4 digits of the DOT number on the sidewall, e.g. 2321 = week 23/2021.	Die letzten 4 Ziffern der DOT-Nummer auf der Reifenflanke, z. B. 2321 = Woche 23/2021.	De sidste 4 cifre i DOT-nummeret på dæksiden, f.eks. 2321 = uge 23/2021.
+tire_dot_parsed	Week %1$s/%2$s · %3$s years old	Woche %1$s/%2$s · %3$s Jahre alt	Uge %1$s/%2$s · %3$s år gammelt
+tire_dot_invalid	Not a valid DOT date (week 01–53, not in the future)	Kein gültiges DOT-Datum (Woche 01–53, nicht in der Zukunft)	Ikke en gyldig DOT-dato (uge 01–53, ikke i fremtiden)
+tire_age	Age: %1$s	Alter: %1$s	Alder: %1$s
+tire_age_years	%1$s yrs	%1$s J.	%1$s år
+tire_age_warn	consider replacing	Austausch erwägen	overvej udskiftning
+tire_age_old	please replace	bitte erneuern	bør udskiftes
+tire_age_overview	%1$s: tires %2$s years old	%1$s: Reifen %2$s Jahre alt	%1$s: dæk %2$s år gamle

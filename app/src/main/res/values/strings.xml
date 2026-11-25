@@ -690,6 +690,15 @@
     <string name="specs_order">Order in the overview</string>
     <string name="specs_order_info">Long-press and drag an entry, or use the arrows.</string>
     <string name="specs_move">Move</string>
+    <string name="tire_dot_title">Tire age (DOT)</string>
+    <string name="tire_dot_info">Last 4 digits of the DOT number on the sidewall, e.g. 2321 = week 23/2021.</string>
+    <string name="tire_dot_parsed">Week %1$s/%2$s · %3$s years old</string>
+    <string name="tire_dot_invalid">Not a valid DOT date (week 01–53, not in the future)</string>
+    <string name="tire_age">Age: %1$s</string>
+    <string name="tire_age_years">%1$s yrs</string>
+    <string name="tire_age_warn">consider replacing</string>
+    <string name="tire_age_old">please replace</string>
+    <string name="tire_age_overview">%1$s: tires %2$s years old</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

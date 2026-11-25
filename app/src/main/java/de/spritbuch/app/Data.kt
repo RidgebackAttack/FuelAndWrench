@@ -320,6 +320,9 @@ data class TireSet(
     val note: String = "",
     val updatedAt: Long = now(),
     val deleted: Boolean = false,
+    /** Herstellungsdatum aus der DOT-Nummer („WWJJ“, z. B. 2321 = Woche 23/2021), je Achse bzw. Rad. */
+    val dotFront: String = "",
+    val dotRear: String = "",
 ) {
     private fun tire(b: String, m: String) = listOf(b, m).filter { it.isNotBlank() }.joinToString(" ")
     val frontTire: String get() = tire(brandFront, modelFront)
@@ -599,10 +602,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        /** 1.13.2: „passt so“ der Datenprüfung an der Betankung (synchronisiert). */
+        /** 1.13.2: „passt so“ der Datenprüfung an der Betankung (synchronisiert), Reifenalter (DOT). */
         private val MIGRATION_14_15 = object : Migration(14, 15) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE refuels ADD COLUMN checkOk TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE tire_sets ADD COLUMN dotFront TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE tire_sets ADD COLUMN dotRear TEXT NOT NULL DEFAULT ''")
             }
         }
 

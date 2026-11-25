@@ -75,4 +75,14 @@ class MaintenanceTest {
         assertTrue(Registration.isActive(Vehicle(), day(2026, Calendar.JULY, 5)))
         assertNull(Registration.parse("13-02"))
     }
+
+    @Test fun tireAgeFromDot() {
+        val now = day(2027, Calendar.JUNE, 1)
+        assertEquals(6.0, TireAge.years("2321", now)!!, 0.1)
+        assertNull(TireAge.years("5421", now)) // Woche 54 gibt es nicht
+        assertNull(TireAge.years("0130", now)) // Zukunft
+        assertNull(TireAge.years("21", now))
+        val set = TireSet(dotFront = "0525", dotRear = "1018")
+        assertEquals(2, TireAge.level(TireAge.max(set, now)!!))
+    }
 }

@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
@@ -83,6 +84,16 @@ fun TireSetCard(v: Vehicle, set: TireSet, mounted: Boolean, tread: SetTread?, on
                 Text(str(R.string.front_prefix) + listOf(set.frontTire, set.sizeFront).filter { it.isNotBlank() }.joinToString(" · "))
                 Text(str(R.string.rear_prefix) + listOf(set.rearTire, set.sizeRear).filter { it.isNotBlank() }.joinToString(" · "))
             }
+            TireAge.cardLine(set)?.let { (text, level) ->
+                Text(
+                    text, style = MaterialTheme.typography.bodySmall,
+                    color = when (level) {
+                        2 -> MaterialTheme.colorScheme.error
+                        1 -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
             if (tread != null) {
                 Text(
                     str(
@@ -124,6 +135,8 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
     var sizeR by rememberSaveable { mutableStateOf("") }
     var same by rememberSaveable { mutableStateOf(true) }
     var note by rememberSaveable { mutableStateOf("") }
+    var dotF by rememberSaveable { mutableStateOf("") }
+    var dotR by rememberSaveable { mutableStateOf("") }
     var confirmDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(setId) {
@@ -137,6 +150,7 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
         brandF = t.brandFront; modelF = t.modelFront; sizeF = t.sizeFront
         brandR = t.brandRear; modelR = t.modelRear; sizeR = t.sizeRear
         note = t.note
+        dotF = t.dotFront; dotR = t.dotRear
         // Motorrad: Vorder- und Hinterreifen sind praktisch immer verschieden
         same = if (isNew) v?.vehicleType != "Motorrad" else t.sameAxles
     }
@@ -161,6 +175,7 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
                                     modelRear = if (same) modelF.trim() else modelR.trim(),
                                     sizeRear = if (same) sizeF.trim() else sizeR.trim(),
                                     note = note.trim(),
+                                    dotFront = dotF.filter { it.isDigit() }, dotRear = dotR.filter { it.isDigit() },
                                 )
                             )
                             nav.popBackStack()
@@ -193,6 +208,11 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
                 OutlinedTextField(modelR, { modelR = it }, label = { Text(str(R.string.tire_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(sizeR, { sizeR = it }, label = { Text(str(R.string.tire_size_hint_rear)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
             }
+            // Reifenalter: DOT je Achse bzw. Rad – auch bei gleichen Reifen können sie unterschiedlich alt sein
+            SectionTitle(str(R.string.tire_dot_title))
+            Text(str(R.string.tire_dot_info), style = MaterialTheme.typography.bodySmall)
+            DotField(str(if (moto) R.string.front_wheel else R.string.front_axle), dotF) { dotF = it }
+            DotField(str(if (moto) R.string.rear_wheel else R.string.rear_axle), dotR) { dotR = it }
             OutlinedTextField(
                 note, { note = it }, label = { Text(str(R.string.tire_note_hint)) }, minLines = 2,
                 modifier = Modifier.fillMaxWidth(),
@@ -213,5 +233,102 @@ fun TireSetEditScreen(nav: NavController, vehicleId: String, setId: String) {
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
+    }
+}
+
+/** Reifenalter aus der DOT-Nummer: ab 6 Jahren Hinweis, ab 8 Jahren Warnung. */
+object TireAge {
+    const val WARN_YEARS = 6.0
+    const val OLD_YEARS = 8.0
+
+    /** „WWJJ“ (die letzten 4 Ziffern der DOT-Nummer) → Montag der Herstellungswoche, sonst null. */
+    fun produced(dot: String, now: Long = now()): Long? {
+        val d = dot.filter { it.isDigit() }
+        if (d.length != 4) return null
+        val week = d.take(2).toInt()
+        val year = 2000 + d.drop(2).toInt()
+        if (week !in 1..53) return null
+        val cal = java.util.Calendar.getInstance().apply {
+            clear()
+            firstDayOfWeek = java.util.Calendar.MONDAY
+            minimalDaysInFirstWeek = 4
+            set(java.util.Calendar.YEAR, year)
+            set(java.util.Calendar.WEEK_OF_YEAR, week)
+            set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
+        }
+        return cal.timeInMillis.takeIf { it <= now }
+    }
+
+    fun years(dot: String, now: Long = now()): Double? =
+        produced(dot, now)?.let { (now - it) / (365.25 * 24 * 3600 * 1000) }
+
+    fun level(years: Double): Int = when {
+        years >= OLD_YEARS -> 2
+        years >= WARN_YEARS -> 1
+        else -> 0
+    }
+
+    /** Höchstes Alter eines Satzes (vorne/hinten) oder null ohne gültige DOT. */
+    fun max(set: TireSet, now: Long = now()): Double? = listOfNotNull(years(set.dotFront, now), years(set.dotRear, now)).maxOrNull()
+
+    private fun fmt(y: Double) = str(R.string.tire_age_years, y.fmt(1))
+
+    /** Zeile für die Reifensatz-Karte, z. B. „Alter: vorne 3,1 J. · hinten 6,4 J. – Austausch erwägen“, und die Stufe. */
+    fun cardLine(set: TireSet, now: Long = now()): Pair<String, Int>? {
+        val f = years(set.dotFront, now)
+        val r = years(set.dotRear, now)
+        if (f == null && r == null) return null
+        val parts = if (f != null && r != null && kotlin.math.abs(f - r) < 0.05) listOf(fmt(f))
+        else listOfNotNull(f?.let { str(R.string.front_prefix) + fmt(it) }, r?.let { str(R.string.rear_prefix) + fmt(it) })
+        val lv = level(listOfNotNull(f, r).max())
+        val suffix = when (lv) {
+            2 -> " – " + str(R.string.tire_age_old)
+            1 -> " – " + str(R.string.tire_age_warn)
+            else -> ""
+        }
+        return str(R.string.tire_age, parts.joinToString(" · ")) + suffix to lv
+    }
+}
+
+/** DOT-Eingabe mit sofortiger Anzeige von Herstellungswoche und Alter. */
+@Composable
+private fun DotField(label: String, value: String, onChange: (String) -> Unit) {
+    val digits = value.filter { it.isDigit() }
+    val years = TireAge.years(digits)
+    OutlinedTextField(
+        value, { onChange(it.filter { c -> c.isDigit() }.take(4)) },
+        label = { Text(label) },
+        placeholder = { Text("2321") },
+        singleLine = true,
+        isError = digits.isNotEmpty() && years == null && digits.length == 4,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+        supportingText = when {
+            years != null -> { { Text(str(R.string.tire_dot_parsed, digits.take(2), "20" + digits.drop(2), years.fmt(1))) } }
+            digits.length == 4 -> { { Text(str(R.string.tire_dot_invalid)) } }
+            else -> null
+        },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+/** Warnung in der Übersicht, wenn ein Reifensatz 6 Jahre oder älter ist. */
+@Composable
+fun TireAgeWarning(v: Vehicle) {
+    val sets by LocalContext.current.repo.tireSets(v.id).collectAsStateWithLifecycle(emptyList())
+    val old = sets.filter { !it.deleted }.mapNotNull { s -> TireAge.max(s)?.takeIf { it >= TireAge.WARN_YEARS }?.let { s to it } }
+    if (old.isEmpty()) return
+    val worst = old.maxOf { it.second }
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (TireAge.level(worst) == 2) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer,
+        ),
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            old.forEach { (s, y) ->
+                Text(str(R.string.tire_age_overview, s.label(), y.fmt(1)), style = MaterialTheme.typography.bodyMedium)
+            }
+            Text(str(if (TireAge.level(worst) == 2) R.string.tire_age_old else R.string.tire_age_warn), style = MaterialTheme.typography.bodySmall)
+        }
     }
 }

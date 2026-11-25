@@ -690,6 +690,15 @@
     <string name="specs_order">Rækkefølge i oversigten</string>
     <string name="specs_order_info">Hold en post nede og træk, eller brug pilene.</string>
     <string name="specs_move">Flyt</string>
+    <string name="tire_dot_title">Dækalder (DOT)</string>
+    <string name="tire_dot_info">De sidste 4 cifre i DOT-nummeret på dæksiden, f.eks. 2321 = uge 23/2021.</string>
+    <string name="tire_dot_parsed">Uge %1$s/%2$s · %3$s år gammelt</string>
+    <string name="tire_dot_invalid">Ikke en gyldig DOT-dato (uge 01–53, ikke i fremtiden)</string>
+    <string name="tire_age">Alder: %1$s</string>
+    <string name="tire_age_years">%1$s år</string>
+    <string name="tire_age_warn">overvej udskiftning</string>
+    <string name="tire_age_old">bør udskiftes</string>
+    <string name="tire_age_overview">%1$s: dæk %2$s år gamle</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

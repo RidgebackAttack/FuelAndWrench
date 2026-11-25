@@ -690,6 +690,15 @@
     <string name="specs_order">Reihenfolge in der Übersicht</string>
     <string name="specs_order_info">Eintrag lange drücken und ziehen oder die Pfeile nutzen.</string>
     <string name="specs_move">Verschieben</string>
+    <string name="tire_dot_title">Reifenalter (DOT)</string>
+    <string name="tire_dot_info">Die letzten 4 Ziffern der DOT-Nummer auf der Reifenflanke, z. B. 2321 = Woche 23/2021.</string>
+    <string name="tire_dot_parsed">Woche %1$s/%2$s · %3$s Jahre alt</string>
+    <string name="tire_dot_invalid">Kein gültiges DOT-Datum (Woche 01–53, nicht in der Zukunft)</string>
+    <string name="tire_age">Alter: %1$s</string>
+    <string name="tire_age_years">%1$s J.</string>
+    <string name="tire_age_warn">Austausch erwägen</string>
+    <string name="tire_age_old">bitte erneuern</string>
+    <string name="tire_age_overview">%1$s: Reifen %2$s Jahre alt</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

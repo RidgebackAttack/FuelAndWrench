@@ -1,2 +1,3 @@
-- Entfernt: Kilometerstand per Foto ablesen (zu unzuverlässig) – die App wird dadurch kleiner
+- Neu: Reifenalter aus der DOT-Nummer je Achse bzw. Rad – Hinweis ab 6, Warnung ab 8 Jahren
 - Datenprüfung: „Passt so“ wird jetzt auf alle Geräte synchronisiert
+- Entfernt: Kilometerstand per Foto ablesen (zu unzuverlässig) – die App wird kleiner
