@@ -39,6 +39,12 @@ jobs:
           ls -la app/build/manual/* || true
           test -n "$(ls app/build/manual/de/*.png 2>/dev/null)"
 
+      - name: Bilder verkleinern (256 Farben, kaum sichtbarer Unterschied)
+        run: |
+          sudo apt-get install -y pngquant >/dev/null
+          find app/build/manual -name '*.png' -exec pngquant --force --ext .png --quality 75-95 --skip-if-larger {} \; || true
+          du -sh app/build/manual
+
       - uses: actions/upload-artifact@v4
         with:
           name: manual-screenshots
