@@ -81,10 +81,15 @@ class ManualScreenshots {
                 .performSemanticsAction(SemanticsActions.OnClick)
             // Auf das Dialogfenster warten; nicht auf „idle“, das ein blinkender Cursor verhindern kann
             val deadline = System.currentTimeMillis() + 10_000
+            val looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
+            // Compose-Uhr und Hauptschleife abwechselnd weiterdrehen, bis das Dialogfenster steht
             while (org.robolectric.shadows.ShadowDialog.getLatestDialog()?.isShowing != true && System.currentTimeMillis() < deadline) {
-                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(100))
+                rule.mainClock.advanceTimeBy(100)
+                looper.idleFor(java.time.Duration.ofMillis(100))
             }
-            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(600))
+            repeat(6) { rule.mainClock.advanceTimeBy(100); looper.idleFor(java.time.Duration.ofMillis(100)) }
+            val d = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+            println("Dialog: ${d != null} showing=${d?.isShowing} size=${d?.window?.decorView?.width}x${d?.window?.decorView?.height} roots=${rule.onAllNodes(isRoot()).fetchSemanticsNodes(false).size}")
             dialogShot = true
         }
         step("09-refuel-foreign") { go("refuelEdit/${DemoData.CAR}/${DemoData.DK_REFUEL}"); waitText(s(R.string.fx_currency)) }
