@@ -1,1 +1,1 @@
-- Refuel list: consumption, distance and price per litre are now stacked as chips on the right
+- Refuel list: two columns of chips on the right – conditions (driving style coloured) and consumption, distance and price per litre

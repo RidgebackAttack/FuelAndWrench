@@ -75,8 +75,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -421,7 +419,6 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null, distance: Int? = null, onClick: () -> Unit) {
     val unit = Units.amount(v, r.fuelType)
@@ -448,6 +445,19 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                     if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
                     if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
                 }
+                // Rechts zwei Spalten Chips: zuerst die Bedingungen (Fahrstil farbig), dann Verbrauch, Strecke, Literpreis
+                val cond = (listOf(r.drivingStyle, r.routeType, r.tireType) + r.extrasList()).filter { it.isNotBlank() }
+                if (cond.isNotEmpty() || !r.fullTank || r.missedPrevious) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(start = 8.dp),
+                    ) {
+                        cond.forEach { InfoChip(lbl(it), drivingStyleColor(it), small = true) }
+                        if (!r.fullTank) InfoChip(str(if (r.isCharge) R.string.partial_charge else R.string.partial_refuel), MaterialTheme.colorScheme.tertiary, small = true)
+                        if (r.missedPrevious) InfoChip(str(R.string.previous_missing), MaterialTheme.colorScheme.tertiary, small = true)
+                    }
+                }
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -456,19 +466,6 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
                     if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
                     distance?.let { InfoChip("+" + it.dist(v.distanceUnit)) }
                     if (r.amount > 0 && r.totalPrice > 0) InfoChip("${r.pricePerUnit.fmt(3)} $cur/$unit")
-                }
-            }
-            // Bedingungen als Chips am unteren Rand; Fahrstil farbig (sparsam grün … sportlich rot)
-            val cond = (listOf(r.drivingStyle, r.routeType, r.tireType) + r.extrasList()).filter { it.isNotBlank() }
-            if (cond.isNotEmpty() || !r.fullTank || r.missedPrevious) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(top = 4.dp),
-                ) {
-                    cond.forEach { InfoChip(lbl(it), drivingStyleColor(it), small = true) }
-                    if (!r.fullTank) InfoChip(str(if (r.isCharge) R.string.partial_charge else R.string.partial_refuel), MaterialTheme.colorScheme.tertiary, small = true)
-                    if (r.missedPrevious) InfoChip(str(R.string.previous_missing), MaterialTheme.colorScheme.tertiary, small = true)
                 }
             }
         }

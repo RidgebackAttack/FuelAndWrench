@@ -1,1 +1,1 @@
-- Tankningsliste: forbrug, kørt strækning og literpris står nu som chips under hinanden i højre side
+- Tankningsliste: to kolonner chips i højre side – forhold (kørestil i farver) samt forbrug, kørt strækning og literpris

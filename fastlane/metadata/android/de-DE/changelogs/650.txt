@@ -1,1 +1,1 @@
-- Betankungsliste: Verbrauch, gefahrene Strecke und Literpreis stehen jetzt als Chips untereinander am rechten Rand
+- Betankungsliste: rechts zwei Spalten Chips – Bedingungen (Fahrstil farbig) sowie Verbrauch, gefahrene Strecke und Literpreis
