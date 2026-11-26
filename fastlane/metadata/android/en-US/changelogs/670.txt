@@ -1,0 +1,1 @@
+New look: fixed tabs with icon and count, yearly totals as chips, driving style/route/tires as segmented bar, date with weekday, colored service categories, colored chips on the vehicle list (consumption trend, due items), empty lists with a button for the first entry.

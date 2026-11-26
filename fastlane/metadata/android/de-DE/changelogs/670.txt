@@ -1,0 +1,1 @@
+Neue Optik: feste Reiter mit Symbol und Anzahl, Jahreswerte als Chips, Fahrstil/Strecke/Reifen als Auswahlleiste, Datum mit Wochentag, farbige Service-Kategorien, farbige Chips auf der Startliste (Verbrauchstrend, Fälligkeit), leere Listen mit Knopf zum ersten Eintrag.

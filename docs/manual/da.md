@@ -35,7 +35,7 @@ Et køretøj, du ikke længere kører, kan **arkiveres**: dataene bevares, men d
 
 <img src="img/da/02-overview.png" width="300" align="right">
 
-Et køretøj har fire faner: **Oversigt**, **Tankninger**, **Service** og **Omkostninger**. Ikonerne øverst fører til brændstofpriser, statistik og redigering.
+Et køretøj har fire faner: **Oversigt**, **Tankning**, **Service** og **Omkostninger**. Ikonerne øverst fører til brændstofpriser, statistik og redigering.
 
 Oversigten viser det, der er vigtigt lige nu:
 
@@ -94,7 +94,7 @@ Har din bank brugt en anden kurs, ændrer du den bare. Kvitteringsscanningen gen
 
 <img src="img/da/04-refuels.png" width="300" align="right">
 
-Fanen **Tankninger** viser alle poster grupperet efter år med forbrug og kørt strækning siden forrige tankning. Tryk på en post for at redigere den.
+Fanen **Tankning** viser alle poster grupperet efter år med forbrug og kørt strækning siden forrige tankning. Tryk på en post for at redigere den.
 
 <br clear="right">
 

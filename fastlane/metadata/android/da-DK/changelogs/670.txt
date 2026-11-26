@@ -1,0 +1,1 @@
+Nyt udseende: faste faner med ikon og antal, årstal som chips, kørestil/strækning/dæk som valgbjælke, dato med ugedag, farvede servicekategorier, farvede chips på køretøjslisten (forbrugstendens, forfald), tomme lister med knap til første post.

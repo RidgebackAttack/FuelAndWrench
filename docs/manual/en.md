@@ -35,7 +35,7 @@ A vehicle you no longer drive can be **archived**: its data stays, but it no lon
 
 <img src="img/en/02-overview.png" width="300" align="right">
 
-A vehicle has four tabs: **Overview**, **Refuels**, **Service** and **Costs**. The icons at the top lead to fuel prices, statistics and editing.
+A vehicle has four tabs: **Overview**, **Fuel**, **Service** and **Costs**. The icons at the top lead to fuel prices, statistics and editing.
 
 The overview shows what matters right now:
 
@@ -94,7 +94,7 @@ If your bank charged a different rate, simply change it. The receipt scan detect
 
 <img src="img/en/04-refuels.png" width="300" align="right">
 
-The **Refuels** tab lists all entries grouped by year, with consumption and distance since the previous refuel. Tap an entry to edit it.
+The **Fuel** tab lists all entries grouped by year, with consumption and distance since the previous refuel. Tap an entry to edit it.
 
 <br clear="right">
 

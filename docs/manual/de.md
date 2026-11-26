@@ -35,7 +35,7 @@ Ein Fahrzeug, das du nicht mehr fährst, kannst du **archivieren**: Die Daten bl
 
 <img src="img/de/02-overview.png" width="300" align="right">
 
-Ein Fahrzeug hat vier Reiter: **Übersicht**, **Betankungen**, **Service** und **Kosten**. Oben rechts geht es zu den Spritpreisen, zur Statistik und zum Bearbeiten.
+Ein Fahrzeug hat vier Reiter: **Übersicht**, **Tanken**, **Service** und **Kosten**. Oben rechts geht es zu den Spritpreisen, zur Statistik und zum Bearbeiten.
 
 Die Übersicht zeigt, was gerade wichtig ist:
 
@@ -94,7 +94,7 @@ Hat deine Bank anders abgerechnet, änderst du den Kurs einfach von Hand. Der Bo
 
 <img src="img/de/04-refuels.png" width="300" align="right">
 
-Der Reiter **Betankungen** zeigt alle Einträge nach Jahren gruppiert, mit Verbrauch und gefahrener Strecke seit der vorherigen Betankung. Antippen öffnet einen Eintrag zum Bearbeiten.
+Der Reiter **Tanken** zeigt alle Einträge nach Jahren gruppiert, mit Verbrauch und gefahrener Strecke seit der vorherigen Betankung. Antippen öffnet einen Eintrag zum Bearbeiten.
 
 <br clear="right">
 
