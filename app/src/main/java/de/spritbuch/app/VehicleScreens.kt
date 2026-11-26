@@ -429,7 +429,9 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall)
-                    Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur")
+                    // kurze Zeilen, damit rechts Platz für zwei Chip-Spalten bleibt
+                    Text(r.odometer.dist(v.distanceUnit))
+                    Text("${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur")
                     r.obcConsumption?.let { o ->
                         val diff = consumption?.takeIf { it > 0 }?.let { c ->
                             val d = (o / c - 1.0) * 100

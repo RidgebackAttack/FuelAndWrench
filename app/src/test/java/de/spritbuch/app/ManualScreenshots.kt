@@ -261,6 +261,10 @@ object DemoData {
                 Refuel(
                     id = id, vehicleId = CAR, timestamp = t, odometer = odo, amount = amount,
                     totalPrice = Math.round(amount * price * 100) / 100.0, fuelType = "Diesel", stationBrand = brands[n % brands.size],
+                    // Bedingungen wie im Alltag: Fahrstil, Strecke, im Winter Standheizung
+                    drivingStyle = Options.drivingStyles[(n * 7 + 1) % Options.drivingStyles.size],
+                    routeType = Options.routeTypes[n % Options.routeTypes.size],
+                    extras = if (Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.MONTH) in listOf(0, 1, 10, 11)) "Standheizung" else "",
                 )
             }
             db.refuels().upsert(r)
