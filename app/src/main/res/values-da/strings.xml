@@ -718,6 +718,10 @@
     <string name="csv_export">Eksportér som CSV</string>
     <string name="manual">Brugervejledning</string>
     <string name="scan_prompt_title">Før fotoet</string>
+    <string name="empty_add_vehicle">Opret køretøj</string>
+    <string name="empty_add_refuel">Registrér første tankning</string>
+    <string name="empty_add_service">Opret servicepost</string>
+    <string name="empty_add_expense">Registrér omkostning</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

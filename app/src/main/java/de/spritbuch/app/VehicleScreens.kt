@@ -134,6 +134,7 @@ fun VehicleListScreen(nav: NavController) {
                 EmptyState(
                     Icons.Default.DirectionsCar, str(R.string.welcome_title),
                     str(R.string.welcome_text),
+                    action = str(R.string.empty_add_vehicle) to { nav.navigate("vehicleEdit/new") },
                 )
             }
         } else {
@@ -428,7 +429,7 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
             // Links die Angaben, rechts untereinander die Chips: Verbrauch, gefahrene Strecke, Literpreis
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall)
+                    Text(r.timestamp.dayDateTime(), style = MaterialTheme.typography.titleSmall)
                     // kurze Zeilen, damit rechts Platz für zwei Chip-Spalten bleibt
                     Text(r.odometer.dist(v.distanceUnit))
                     // geschützte Leerzeichen: Zahl und Einheit bleiben zusammen

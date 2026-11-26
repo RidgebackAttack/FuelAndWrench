@@ -534,11 +534,11 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             SectionTitle(str(R.string.extras))
             MultiChips(Options.extras, extras) { extras = it }
             SectionTitle(str(R.string.driving_style))
-            SingleChips(Options.drivingStyles, style) { style = it }
+            SegmentedChoice(Options.drivingStyles, style) { style = it }
             SectionTitle(str(R.string.route))
-            SingleChips(Options.routeTypes, route) { route = it }
+            SegmentedChoice(Options.routeTypes, route) { route = it }
             SectionTitle(str(R.string.tires))
-            SingleChips(Options.tireTypes, tires) { tires = it }
+            SegmentedChoice(Options.tireTypes, tires) { tires = it }
 
             OutlinedTextField(note, { note = it }, label = { Text(str(R.string.note)) }, modifier = Modifier.fillMaxWidth())
         }
@@ -642,9 +642,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                     NumberField(str(R.string.odometer), odoInput, { odoInput = it }, suffix = du, decimal = false)
                     lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
                     Text(str(R.string.driving_style), style = MaterialTheme.typography.labelLarge)
-                    SingleChips(Options.drivingStyles, style) { style = it }
+                    SegmentedChoice(Options.drivingStyles, style) { style = it }
                     Text(str(R.string.route), style = MaterialTheme.typography.labelLarge)
-                    SingleChips(Options.routeTypes, route) { route = it }
+                    SegmentedChoice(Options.routeTypes, route) { route = it }
                     Text(str(R.string.extras), style = MaterialTheme.typography.labelLarge)
                     MultiChips(Options.extras, extras) { extras = it }
                 }

@@ -10,6 +10,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -287,7 +289,7 @@ fun drivingStyleColor(style: String): Color? = when (style) {
 
 /** Leerer Zustand mit großem Symbol. */
 @Composable
-fun EmptyState(icon: ImageVector, title: String, text: String) {
+fun EmptyState(icon: ImageVector, title: String, text: String, action: Pair<String, () -> Unit>? = null) {
     Column(
         Modifier.fillMaxWidth().padding(vertical = 32.dp, horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -305,5 +307,42 @@ fun EmptyState(icon: ImageVector, title: String, text: String) {
             text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
+        action?.let { (label, onClick) ->
+            Spacer(Modifier.height(4.dp))
+            androidx.compose.material3.Button(onClick = onClick) { Text(label) }
+        }
+    }
+}
+
+/**
+ * Segmentierte Auswahl (eine Leiste, gleich breite Felder) statt umbrechender Chips. Nochmal tippen hebt die
+ * Auswahl auf. Lange Begriffe dürfen zweizeilig werden, damit auch „Landstraße“ oder „Ganzjahresreifen“ passen.
+ */
+@Composable
+fun SegmentedChoice(options: List<String>, selected: String, onSelect: (String) -> Unit) {
+    val outline = MaterialTheme.colorScheme.outline
+    Row(
+        Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .clip(RoundedCornerShape(50))
+            .border(1.dp, outline, RoundedCornerShape(50)),
+    ) {
+        options.forEachIndexed { i, o ->
+            val sel = o == selected
+            if (i > 0) Box(Modifier.width(1.dp).fillMaxHeight().background(outline))
+            Box(
+                Modifier.weight(1f).fillMaxHeight()
+                    .background(if (sel) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                    .clickable { onSelect(if (sel) "" else o) }
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    lbl(o), style = MaterialTheme.typography.labelMedium, maxLines = 2,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    color = if (sel) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                    fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
+                )
+            }
+        }
     }
 }

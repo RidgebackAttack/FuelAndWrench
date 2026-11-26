@@ -43,6 +43,8 @@ import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -104,6 +106,19 @@ fun serviceIcon(category: String): ImageVector = when (category) {
 }
 
 private fun yearOf(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts }.get(Calendar.YEAR)
+
+/** Feste Farbe je Service-Kategorie (Liste, Zeitstrahl, Filter). */
+fun categoryColor(category: String): Color? = when (category) {
+    "Wartung" -> Color(0xFF1E88E5)
+    "Reparatur" -> Color(0xFFE53935)
+    "Reifen" -> Color(0xFF546E7A)
+    HU_CATEGORY -> Color(0xFF8E24AA)
+    OIL_TOPUP -> Color(0xFFF9A825)
+    "Pflege" -> Color(0xFF00897B)
+    "Zubehör" -> Color(0xFF6D4C41)
+    "Sonstiges" -> Color(0xFF757575)
+    else -> null
+}
 
 /** Farbiges Ergebnis der HU: grün bestanden, gelb geringe Mängel, rot erhebliche Mängel. */
 @Composable
@@ -170,7 +185,8 @@ fun ServiceFilterChips(services: List<ServiceEntry>, filter: Map<String, Boolean
                     leadingIcon = when (state) {
                         true -> { { Icon(Icons.Default.Check, contentDescription = str(R.string.filter_only), Modifier.size(18.dp)) } }
                         false -> { { Icon(Icons.Default.Remove, contentDescription = str(R.string.filter_without), Modifier.size(18.dp)) } }
-                        null -> null
+                        // sonst ein Farbpunkt der Kategorie
+                        null -> categoryColor(c)?.let { col -> { Box(Modifier.size(10.dp).clip(CircleShape).background(col)) } }
                     },
                     colors = if (state == false) FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
@@ -200,7 +216,11 @@ fun ServiceCard(v: Vehicle, s: ServiceEntry, modifier: Modifier = Modifier.fillM
                     ) { Text("+${files.size - 1}", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 4.dp)) }
                 }
             } else {
-                Icon(serviceIcon(s.category), contentDescription = lbl(s.category), tint = MaterialTheme.colorScheme.primary)
+                // Symbol im Kreis in der Farbe der Kategorie
+                val cc = categoryColor(s.category) ?: MaterialTheme.colorScheme.primary
+                Box(Modifier.size(40.dp).clip(CircleShape).background(cc.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                    Icon(serviceIcon(s.category), contentDescription = lbl(s.category), tint = cc, modifier = Modifier.size(22.dp))
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

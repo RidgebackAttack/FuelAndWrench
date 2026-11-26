@@ -718,6 +718,10 @@
     <string name="csv_export">Export as CSV</string>
     <string name="manual">User manual</string>
     <string name="scan_prompt_title">Before the photo</string>
+    <string name="empty_add_vehicle">Add vehicle</string>
+    <string name="empty_add_refuel">Add first refuel</string>
+    <string name="empty_add_service">Add service entry</string>
+    <string name="empty_add_expense">Add cost</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

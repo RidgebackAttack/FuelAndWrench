@@ -47,7 +47,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -358,15 +362,20 @@ fun VehicleDetailContent(
     ) { pad ->
         if (v == null || v.deleted) return@Scaffold
         Column(Modifier.padding(pad).fillMaxSize()) {
-            ScrollableTabRow(selectedTabIndex = pager.currentPage, edgePadding = 8.dp) {
+            // Feste Reiter: Symbol mit Anzahl als Abzeichen, darunter der Name – alle vier passen nebeneinander
+            TabRow(selectedTabIndex = pager.currentPage) {
+                val icons = listOf(Icons.Default.Dashboard, Icons.Default.LocalGasStation, Icons.Default.Build, Icons.Default.Payments)
                 tabs.forEachIndexed { i, t ->
+                    val count = when (i) { 1 -> refuels.size; 2 -> services.size; 3 -> expenses.size; else -> 0 }
                     Tab(
                         selected = pager.currentPage == i,
                         onClick = { scope.launch { pager.animateScrollToPage(i) } },
-                        text = {
-                            val count = when (i) { 1 -> refuels.size; 2 -> services.size; 3 -> expenses.size; else -> 0 }
-                            Text(if (count > 0) "$t ($count)" else t, maxLines = 1)
+                        icon = {
+                            BadgedBox(badge = { if (count > 0) Badge { Text(if (count > 999) "999+" else count.toString()) } }) {
+                                Icon(icons[i], contentDescription = null)
+                            }
                         },
+                        text = { Text(t, maxLines = 1, style = MaterialTheme.typography.labelMedium, overflow = TextOverflow.Ellipsis) },
                     )
                 }
             }
@@ -566,7 +575,7 @@ private fun LazyListScope.overviewItems(
 }
 
 /** Ein Jahr in der Betankungsliste mit fertiger Zusammenfassung (einmal berechnet, nicht bei jedem Neuzeichnen). */
-class RefuelYear(val year: Int, val list: List<Refuel>, val summary: String)
+class RefuelYear(val year: Int, val list: List<Refuel>, val summary: String, val chips: List<String> = emptyList())
 
 fun groupRefuelsByYear(v: Vehicle, refuels: List<Refuel>, stats: Stats, distances: Map<String, Int> = emptyMap()): List<RefuelYear> {
     val unit = Units.amount(v, v.defaultFuelType)
@@ -579,6 +588,13 @@ fun groupRefuelsByYear(v: Vehicle, refuels: List<Refuel>, stats: Stats, distance
                 (list.sumOf { distances[it.id] ?: 0 }.takeIf { it > 0 }?.let { it.dist(v.distanceUnit) + " · " } ?: "") +
                 "${list.sumOf { it.amount }.fmt(1)} $unit · " +
                 "${list.sumOf { it.totalPrice }.fmt()} ${v.currency} · Ø $avg",
+            listOfNotNull(
+                plural(R.plurals.pl_refuels, list.size),
+                list.sumOf { distances[it.id] ?: 0 }.takeIf { it > 0 }?.dist(v.distanceUnit),
+                "${list.sumOf { it.amount }.fmt(1)}\u00A0$unit",
+                "${list.sumOf { it.totalPrice }.fmt()}\u00A0${v.currency}",
+                "Ø $avg",
+            ),
         )
     }
 }
@@ -589,15 +605,16 @@ private fun LazyListScope.refuelItems(nav: NavController, v: Vehicle, years: Lis
             EmptyState(
                 Icons.Default.LocalGasStation, str(R.string.empty_refuels_title),
                 str(R.string.empty_refuels_text),
+                action = str(R.string.empty_add_refuel) to { nav.navigate("refuelEdit/${v.id}/new") },
             )
         }
         return
     }
     years.forEach { y ->
         item(key = "y-${y.year}", contentType = "year") {
-            Column(Modifier.padding(top = 8.dp)) {
+            Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(y.year.toString(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                Text(y.summary, style = MaterialTheme.typography.bodySmall)
+                YearChips(y.chips)
             }
         }
         // Nur die sichtbaren Karten werden gezeichnet; gleiche Art (contentType) wird beim Scrollen wiederverwendet
@@ -675,6 +692,7 @@ private fun LazyListScope.serviceItems(
             EmptyState(
                 Icons.Default.Build, str(R.string.empty_services_title),
                 str(R.string.empty_services_text),
+                action = str(R.string.empty_add_service) to { nav.navigate("serviceEdit/${v.id}/new") },
             )
         }
         return
@@ -704,6 +722,7 @@ private fun LazyListScope.serviceItems(
             }
         }
         item(key = "s-" + s.id) {
+            val catColor = categoryColor(s.category)
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                 Canvas(Modifier.width(28.dp).fillMaxHeight()) {
                     val cx = size.width / 2f
@@ -712,11 +731,21 @@ private fun LazyListScope.serviceItems(
                     if (i < services.lastIndex) {
                         drawLine(lineColor, Offset(cx, dotY), Offset(cx, size.height + 12.dp.toPx()), strokeWidth = 2.dp.toPx())
                     }
-                    drawCircle(dotColor, radius = 6.dp.toPx(), center = Offset(cx, dotY))
+                    drawCircle(catColor ?: dotColor, radius = 6.dp.toPx(), center = Offset(cx, dotY))
                 }
                 Spacer(Modifier.width(4.dp))
                 ServiceCard(v, s, Modifier.weight(1f)) { nav.navigate("serviceEdit/${v.id}/${s.id}") }
             }
         }
     }
+}
+
+/** Kennzahlen eines Jahres als Chips (brechen sauber zwischen den Werten um). */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun YearChips(chips: List<String>) {
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) { chips.forEach { InfoChip(it, small = true) } }
 }

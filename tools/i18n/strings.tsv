@@ -749,3 +749,7 @@ detour_not_worth	Not worth it (%1$s)	Lohnt sich nicht (%1$s)	Kan ikke betale sig
 csv_export	Export as CSV	Als CSV exportieren	Eksportér som CSV
 manual	User manual	Handbuch	Brugervejledning
 scan_prompt_title	Before the photo	Vor dem Foto	Før fotoet
+empty_add_vehicle	Add vehicle	Fahrzeug anlegen	Opret køretøj
+empty_add_refuel	Add first refuel	Erste Betankung eintragen	Registrér første tankning
+empty_add_service	Add service entry	Service-Eintrag anlegen	Opret servicepost
+empty_add_expense	Add cost	Kosten eintragen	Registrér omkostning

@@ -718,6 +718,10 @@
     <string name="csv_export">Als CSV exportieren</string>
     <string name="manual">Handbuch</string>
     <string name="scan_prompt_title">Vor dem Foto</string>
+    <string name="empty_add_vehicle">Fahrzeug anlegen</string>
+    <string name="empty_add_refuel">Erste Betankung eintragen</string>
+    <string name="empty_add_service">Service-Eintrag anlegen</string>
+    <string name="empty_add_expense">Kosten eintragen</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

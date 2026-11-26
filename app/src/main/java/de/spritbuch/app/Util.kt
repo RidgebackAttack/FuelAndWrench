@@ -59,6 +59,8 @@ private fun pattern(skeleton: String) = android.text.format.DateFormat.getBestDa
 fun Long.time(): String = SimpleDateFormat(pattern("HHmm"), appLocale()).format(Date(this))
 fun Long.dateTime(): String = SimpleDateFormat(pattern("ddMMyyyyHHmm"), appLocale()).format(Date(this))
 fun Long.date(): String = SimpleDateFormat(pattern("ddMMyyyy"), appLocale()).format(Date(this))
+/** z. B. „Do., 19.11.2026 · 12:00“ */
+fun Long.dayDateTime(): String = SimpleDateFormat(pattern("EEEddMMyyyy"), appLocale()).format(Date(this)) + " · " + time()
 
 /** Liest Zahlen mit Komma oder Punkt als Dezimaltrenner (auch mit Tausendertrennern). */
 fun String.toDoubleDe(): Double? {

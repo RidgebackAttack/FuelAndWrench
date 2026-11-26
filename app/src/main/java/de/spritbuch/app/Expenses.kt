@@ -74,7 +74,10 @@ private fun yearOf(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts 
 fun LazyListScope.expenseItems(nav: NavController, v: Vehicle, expenses: List<Expense>) {
     if (expenses.isEmpty()) {
         item {
-            EmptyState(Icons.Default.Payments, str(R.string.empty_expenses_title), str(R.string.empty_expenses_text))
+            EmptyState(
+                Icons.Default.Payments, str(R.string.empty_expenses_title), str(R.string.empty_expenses_text),
+                action = str(R.string.empty_add_expense) to { nav.navigate("expenseEdit/${v.id}/new") },
+            )
         }
         return
     }
