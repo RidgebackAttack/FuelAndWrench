@@ -429,7 +429,12 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
             // Links die Angaben, rechts untereinander die Chips: Verbrauch, gefahrene Strecke, Literpreis
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(r.timestamp.dayDateTime(), style = MaterialTheme.typography.titleSmall)
+                    // Wochentag + Datum, daneben die Uhrzeit; wird es eng, rutscht die Uhrzeit als Ganzes in die nächste Zeile
+                    @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(r.timestamp.dayDate(), style = MaterialTheme.typography.titleSmall)
+                        Text(r.timestamp.time(), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                     // kurze Zeilen, damit rechts Platz für zwei Chip-Spalten bleibt
                     Text(r.odometer.dist(v.distanceUnit))
                     // geschützte Leerzeichen: Zahl und Einheit bleiben zusammen

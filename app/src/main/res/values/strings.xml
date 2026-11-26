@@ -722,6 +722,7 @@
     <string name="empty_add_refuel">Add first refuel</string>
     <string name="empty_add_service">Add service entry</string>
     <string name="empty_add_expense">Add cost</string>
+    <string name="tab_refuels_short">Fuel</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

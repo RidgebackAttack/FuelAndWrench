@@ -72,7 +72,7 @@ class ManualScreenshots {
         step("01-vehicles") { }
         step("02-overview") { go("vehicle/${DemoData.CAR}"); waitText(s(R.string.tab_overview)) }
         step("03-overview-more") { click(s(R.string.tab_overview)); scrollTo(s(R.string.specs)) }
-        step("04-refuels") { click(s(R.string.tab_refuels)); waitText("2026", true) }
+        step("04-refuels") { click(s(R.string.tab_refuels_short)); waitText("2026", true) }
         step("05-service") { click(s(R.string.tab_service)); waitText(s(R.string.filter_all)) }
         step("06-costs") { click(s(R.string.tab_costs)) }
         step("07-refuel-new") { go("refuelEdit/${DemoData.CAR}/new"); waitText(s(R.string.scan_receipt)) }

@@ -722,6 +722,7 @@
     <string name="empty_add_refuel">Registrér første tankning</string>
     <string name="empty_add_service">Opret servicepost</string>
     <string name="empty_add_expense">Registrér omkostning</string>
+    <string name="tab_refuels_short">Tankning</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

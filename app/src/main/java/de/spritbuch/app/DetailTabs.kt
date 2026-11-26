@@ -280,7 +280,7 @@ fun VehicleDetailContent(
 ) {
     val repo = LocalContext.current.repo
     val scope = rememberCoroutineScope()
-    val tabs = listOf(str(R.string.tab_overview), str(R.string.tab_refuels), str(R.string.tab_service), str(R.string.tab_costs))
+    val tabs = listOf(str(R.string.tab_overview), str(R.string.tab_refuels_short), str(R.string.tab_service), str(R.string.tab_costs))
     val expenses by repo.expenses(vehicleId).collectAsStateWithLifecycle(emptyList())
     val pager = rememberPagerState { tabs.size }
     val importServices = rememberServiceImporter(vehicleId, vehicle, snackbar)
