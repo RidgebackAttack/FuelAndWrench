@@ -1,0 +1,3 @@
+- Betankungsliste übersichtlicher: gefahrene Strecke und Literpreis als Chips neben dem Verbrauch
+- Bedingungen als Chips am unteren Rand, Fahrstil farbig (sparsam grün, normal gelb, zügig orange, sportlich rot)
+- Handbuch unter „Über“ verlinkt

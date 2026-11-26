@@ -81,7 +81,6 @@ class ManualScreenshots {
             rule.mainClock.autoAdvance = false
             click(s(R.string.scan_receipt))
             repeat(5) { rule.mainClock.advanceTimeBy(200) }
-            dialogShot = true
         }
         rule.mainClock.autoAdvance = true
         step("09-refuel-foreign") { go("refuelEdit/${DemoData.CAR}/${DemoData.DK_REFUEL}"); waitText(s(R.string.fx_currency)) }
@@ -153,34 +152,7 @@ class ManualScreenshots {
         rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty()
     }
 
-    /** Nächste Aufnahme zeigt einen Dialog: Fenster des Dialogs über den abgedunkelten Bildschirm legen. */
-    private var dialogShot = false
-
-    private fun captureDialog(): Bitmap? {
-        val d = org.robolectric.shadows.ShadowDialog.getLatestDialog() ?: return null
-        var out: Bitmap? = null
-        scenario!!.onActivity { a ->
-            val base = a.window.decorView
-            val dv = d.window?.decorView ?: return@onActivity
-            if (dv.width == 0 || dv.height == 0) return@onActivity
-            val b = Bitmap.createBitmap(base.width, base.height, Bitmap.Config.ARGB_8888)
-            val c = Canvas(b)
-            base.draw(c)
-            c.drawColor(android.graphics.Color.argb(110, 0, 0, 0))
-            c.save()
-            c.translate((base.width - dv.width) / 2f, (base.height - dv.height) / 2f)
-            dv.draw(c)
-            c.restore()
-            out = b
-        }
-        return out
-    }
-
     private fun capture(name: String) {
-        if (dialogShot) {
-            dialogShot = false
-            captureDialog()?.let { bmp -> File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }; return }
-        }
         val bmp = runCatching { rule.onAllNodes(isRoot()).onLast().captureToImage().asAndroidBitmap() }.getOrElse {
             // Ersatz: Fensterinhalt direkt zeichnen
             var out: Bitmap? = null

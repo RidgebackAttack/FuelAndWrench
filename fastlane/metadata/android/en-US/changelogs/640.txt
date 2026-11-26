@@ -1,0 +1,3 @@
+- Clearer refuel list: distance and price per litre as chips next to the consumption
+- Conditions as chips at the bottom, driving style coloured (economical green, normal yellow, brisk orange, sporty red)
+- User manual linked under “About”
