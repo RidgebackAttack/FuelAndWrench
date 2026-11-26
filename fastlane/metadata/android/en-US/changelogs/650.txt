@@ -1,0 +1,1 @@
+- Refuel list: consumption, distance and price per litre are now stacked as chips on the right

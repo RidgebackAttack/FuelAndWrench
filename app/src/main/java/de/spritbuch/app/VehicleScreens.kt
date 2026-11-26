@@ -428,34 +428,36 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
     val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // Links die Angaben, rechts untereinander die Chips: Verbrauch, gefahrene Strecke, Literpreis
             Row(verticalAlignment = Alignment.Top) {
-                Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(top = 4.dp))
-                // Rechts als Chips: gefahrene Strecke, Literpreis und Verbrauch – brechen bei Platzmangel um
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall)
+                    Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur")
+                    r.obcConsumption?.let { o ->
+                        val diff = consumption?.takeIf { it > 0 }?.let { c ->
+                            val d = (o / c - 1.0) * 100
+                            " (" + (if (d >= 0) "+" else "−") + kotlin.math.abs(d).fmt(1) + " %)"
+                        } ?: ""
+                        Text(str(R.string.obc_value, Units.consumption(v, r.fuelType, o) + diff), style = MaterialTheme.typography.bodySmall)
+                    }
+                    val station = (if (r.isCharge) listOf("⚡ " + str(R.string.charge), r.stationBrand, r.chargeLocation) else listOf(r.stationBrand, r.fuelType))
+                        .filter { it.isNotBlank() }.joinToString(" · ") { lbl(it) }
+                    if (r.socStart != null || r.socEnd != null) {
+                        Text(str(R.string.soc_range, r.socStart?.toString() ?: "?", r.socEnd?.toString() ?: "?"), style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
+                    if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
+                }
+                Column(
+                    horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(start = 8.dp),
                 ) {
+                    if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
                     distance?.let { InfoChip("+" + it.dist(v.distanceUnit)) }
                     if (r.amount > 0 && r.totalPrice > 0) InfoChip("${r.pricePerUnit.fmt(3)} $cur/$unit")
-                    if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
                 }
             }
-            Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur")
-            r.obcConsumption?.let { o ->
-                val diff = consumption?.takeIf { it > 0 }?.let { c ->
-                    val d = (o / c - 1.0) * 100
-                    " (" + (if (d >= 0) "+" else "−") + kotlin.math.abs(d).fmt(1) + " %)"
-                } ?: ""
-                Text(str(R.string.obc_value, Units.consumption(v, r.fuelType, o) + diff), style = MaterialTheme.typography.bodySmall)
-            }
-            val station = (if (r.isCharge) listOf("⚡ " + str(R.string.charge), r.stationBrand, r.chargeLocation) else listOf(r.stationBrand, r.fuelType))
-                .filter { it.isNotBlank() }.joinToString(" · ") { lbl(it) }
-            if (r.socStart != null || r.socEnd != null) {
-                Text(str(R.string.soc_range, r.socStart?.toString() ?: "?", r.socEnd?.toString() ?: "?"), style = MaterialTheme.typography.bodySmall)
-            }
-            if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
-            if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
             // Bedingungen als Chips am unteren Rand; Fahrstil farbig (sparsam grün … sportlich rot)
             val cond = (listOf(r.drivingStyle, r.routeType, r.tireType) + r.extrasList()).filter { it.isNotBlank() }
             if (cond.isNotEmpty() || !r.fullTank || r.missedPrevious) {
