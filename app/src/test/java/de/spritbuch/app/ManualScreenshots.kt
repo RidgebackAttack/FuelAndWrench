@@ -77,13 +77,16 @@ class ManualScreenshots {
         step("06-costs") { click(s(R.string.tab_costs)) }
         step("07-refuel-new") { go("refuelEdit/${DemoData.CAR}/new"); waitText(s(R.string.scan_receipt)) }
         step("08-odometer-prompt", idle = false) {
-            // Dialog mit Eingabefeld: blinkender Cursor hält Compose nie still – Uhr von Hand weiterdrehen
-            rule.mainClock.autoAdvance = false
-            click(s(R.string.scan_receipt))
-            repeat(5) { rule.mainClock.advanceTimeBy(200) }
+            rule.onAllNodes(hasText(s(R.string.scan_receipt), substring = true) and hasClickAction()).onFirst()
+                .performSemanticsAction(SemanticsActions.OnClick)
+            // Auf das Dialogfenster warten; nicht auf „idle“, das ein blinkender Cursor verhindern kann
+            val deadline = System.currentTimeMillis() + 10_000
+            while (org.robolectric.shadows.ShadowDialog.getLatestDialog()?.isShowing != true && System.currentTimeMillis() < deadline) {
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(100))
+            }
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(600))
             dialogShot = true
         }
-        rule.mainClock.autoAdvance = true
         step("09-refuel-foreign") { go("refuelEdit/${DemoData.CAR}/${DemoData.DK_REFUEL}"); waitText(s(R.string.fx_currency)) }
         step("10-service-hu") { go("serviceEdit/${DemoData.CAR}/${DemoData.HU}"); waitText(s(R.string.hu_result)) }
         step("11-tire-set") { go("tireSetEdit/${DemoData.CAR}/${DemoData.SUMMER}"); scrollTo(s(R.string.tire_dot_title)) }
