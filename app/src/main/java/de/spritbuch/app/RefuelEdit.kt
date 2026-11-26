@@ -256,8 +256,9 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
                 stationBrand = last?.stationBrand ?: "",
                 drivingStyle = last?.drivingStyle ?: "Normal",
                 routeType = last?.routeType ?: "Gemischt",
-                tireType = repo.db.services().lastTireChange(vehicleId)
-                    ?.takeIf { it.timestamp > (last?.timestamp ?: 0L) }?.tireSeason
+                // Reifenart: zuerst der montierte Reifensatz (letzter Radwechsel bzw. einziger Satz), dann ältere Angaben
+                tireType = mountedTireType(repo, vehicleId)
+                    ?: repo.db.services().lastTireChange(vehicleId)?.takeIf { it.timestamp > (last?.timestamp ?: 0L) }?.tireSeason
                     ?: last?.tireType ?: "",
             )
         } else repo.getRefuel(refuelId) ?: return@LaunchedEffect
@@ -633,12 +634,19 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
     if (askOdo) {
         AlertDialog(
             onDismissRequest = { askOdo = false },
-            title = { Text(str(R.string.odometer)) },
+            title = { Text(str(R.string.scan_prompt_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Was nicht auf dem Bon steht: Kilometerstand und die Bedingungen der Fahrt
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(str(R.string.scan_odo_info), style = MaterialTheme.typography.bodySmall)
                     NumberField(str(R.string.odometer), odoInput, { odoInput = it }, suffix = du, decimal = false)
                     lastOdo?.let { if (it > 0) Text(str(R.string.previously, it.dist(du)), style = MaterialTheme.typography.bodySmall) }
+                    Text(str(R.string.driving_style), style = MaterialTheme.typography.labelLarge)
+                    SingleChips(Options.drivingStyles, style) { style = it }
+                    Text(str(R.string.route), style = MaterialTheme.typography.labelLarge)
+                    SingleChips(Options.routeTypes, route) { route = it }
+                    Text(str(R.string.extras), style = MaterialTheme.typography.labelLarge)
+                    MultiChips(Options.extras, extras) { extras = it }
                 }
             },
             confirmButton = {
@@ -666,4 +674,14 @@ fun RefuelEditScreen(nav: NavController, vehicleId: String, refuelId: String) {
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(str(R.string.cancel)) } },
         )
     }
+}
+
+/**
+ * Reifenart der montierten Reifen: Satz aus dem letzten Radwechsel, sonst – gibt es nur einen
+ * Satz (z. B. Motorrad mit Ganzjahresreifen) – dieser. Null, wenn nichts bekannt ist.
+ */
+internal suspend fun mountedTireType(repo: Repository, vehicleId: String): String? {
+    val sets = repo.db.tireSets().forVehicle(vehicleId).filter { !it.deleted }
+    val mounted = repo.mountedTireSetId(vehicleId)?.let { id -> sets.firstOrNull { it.id == id } } ?: sets.singleOrNull()
+    return mounted?.season?.takeIf { it in Options.tireTypes }
 }

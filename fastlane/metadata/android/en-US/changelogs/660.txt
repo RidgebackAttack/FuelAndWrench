@@ -1,0 +1,2 @@
+- Before the receipt photo, driving style, route and extras (air conditioning, auxiliary heating …) are asked along with the odometer
+- Tire type is preselected from the mounted tires

@@ -700,7 +700,7 @@
     <string name="tire_age_old">please replace</string>
     <string name="tire_age_overview">%1$s: tires %2$s years old</string>
     <string name="ocr_timeout">Recognition took too long and was cancelled – try narrowing the area.</string>
-    <string name="scan_odo_info">Enter the odometer reading – the camera opens next and the receipt data is added.</string>
+    <string name="scan_odo_info">Enter the odometer and how you drove – the camera opens next and the receipt data is added.</string>
     <string name="scan_odo_continue">Take photo</string>
     <string name="scan_odo_skip">Skip</string>
     <string name="fx_currency">Currency</string>
@@ -717,6 +717,7 @@
     <string name="detour_not_worth">Not worth it (%1$s)</string>
     <string name="csv_export">Export as CSV</string>
     <string name="manual">User manual</string>
+    <string name="scan_prompt_title">Before the photo</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

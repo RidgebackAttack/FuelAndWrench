@@ -74,7 +74,7 @@ For et præcist forbrug:
 
 <img src="img/da/08-odometer-prompt.png" width="300" align="right">
 
-**Scan kvittering** spørger først om kilometertallet, som ikke står på kvitteringen, og åbner derefter kameraet. Tekstgenkendelsen kører helt på telefonen og læser mængde, pris, beløb, brændstof, tankstation og dato. Du kontrollerer værdierne og overtager dem.
+**Scan kvittering** spørger først om det, der ikke står på kvitteringen: kilometertal, kørestil, strækning og ekstra som aircondition eller parkeringsvarmer. Derefter åbner kameraet. Tekstgenkendelsen kører helt på telefonen og læser mængde, pris, beløb, brændstof, tankstation og dato. Du kontrollerer værdierne og overtager dem.
 
 Hvis det ikke lykkes med det samme, kan du **afgrænse området**. Udsnittet læses så fra originalfotoet i fuld opløsning, hvilket især hjælper ved fotos taget i hånden, hvor kvitteringen kun fylder en del af billedet.
 

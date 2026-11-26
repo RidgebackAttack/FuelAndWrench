@@ -700,7 +700,7 @@
     <string name="tire_age_old">bør udskiftes</string>
     <string name="tire_age_overview">%1$s: dæk %2$s år gamle</string>
     <string name="ocr_timeout">Genkendelsen tog for lang tid og blev afbrudt – afgræns området og prøv igen.</string>
-    <string name="scan_odo_info">Indtast kilometertallet – derefter åbner kameraet, og data fra kvitteringen tilføjes.</string>
+    <string name="scan_odo_info">Indtast kilometertal og kørsel – derefter åbner kameraet, og data fra kvitteringen tilføjes.</string>
     <string name="scan_odo_continue">Til foto</string>
     <string name="scan_odo_skip">Spring over</string>
     <string name="fx_currency">Valuta</string>
@@ -717,6 +717,7 @@
     <string name="detour_not_worth">Kan ikke betale sig (%1$s)</string>
     <string name="csv_export">Eksportér som CSV</string>
     <string name="manual">Brugervejledning</string>
+    <string name="scan_prompt_title">Før fotoet</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

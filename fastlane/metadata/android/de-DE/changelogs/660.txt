@@ -1,0 +1,2 @@
+- Vor dem Beleg-Foto werden neben dem Kilometerstand auch Fahrstil, Strecke und Extras (Klimaanlage, Standheizung …) abgefragt
+- Reifenart wird automatisch nach den montierten Reifen vorausgewählt

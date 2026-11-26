@@ -74,7 +74,7 @@ Mit **Aktuelle Position** erkennt die App die Tankstelle. Das ist abschaltbar, s
 
 <img src="img/de/08-odometer-prompt.png" width="300" align="right">
 
-**Beleg scannen** fragt zuerst den Kilometerstand ab, der nicht auf dem Bon steht. Danach öffnet sich die Kamera. Die Texterkennung läuft vollständig auf dem Telefon und liest Menge, Preis, Betrag, Sorte, Tankstelle und Datum. Du prüfst die Werte und übernimmst sie.
+**Beleg scannen** fragt zuerst ab, was nicht auf dem Bon steht: Kilometerstand, Fahrstil, Strecke und Extras wie Klimaanlage oder Standheizung. Danach öffnet sich die Kamera. Die Texterkennung läuft vollständig auf dem Telefon und liest Menge, Preis, Betrag, Sorte, Tankstelle und Datum. Du prüfst die Werte und übernimmst sie.
 
 Klappt es nicht auf Anhieb, kannst du den **Bereich eingrenzen**. Der Ausschnitt wird dann aus dem Originalfoto in voller Auflösung gelesen. Das hilft gerade bei Fotos aus der Hand, auf denen der Bon nur einen Teil des Bildes ausmacht.
 

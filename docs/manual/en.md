@@ -74,7 +74,7 @@ For accurate consumption:
 
 <img src="img/en/08-odometer-prompt.png" width="300" align="right">
 
-**Scan receipt** first asks for the odometer, which is not on the receipt, then opens the camera. Text recognition runs entirely on the phone and reads amount, price, total, fuel type, station and date. You check the values and apply them.
+**Scan receipt** first asks for what is not on the receipt: odometer, driving style, route and extras such as air conditioning or auxiliary heating. Then the camera opens. Text recognition runs entirely on the phone and reads amount, price, total, fuel type, station and date. You check the values and apply them.
 
 If it doesn't work right away, **narrow the area**. The selected part is then read from the original photo at full resolution, which helps especially with hand-held photos where the receipt fills only part of the picture.
 

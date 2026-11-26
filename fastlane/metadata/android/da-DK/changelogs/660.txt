@@ -1,0 +1,2 @@
+- Før kvitteringsfotoet spørges der ud over kilometertal også om kørestil, strækning og ekstra (aircondition, parkeringsvarmer …)
+- Dæktype vælges automatisk ud fra de monterede dæk
