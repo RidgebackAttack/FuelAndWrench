@@ -264,6 +264,27 @@ fun ConsumptionBadge(text: String, value: Double, avg: Double?) {
     }
 }
 
+/** Neutraler Info-Chip im Stil des Verbrauchs-Badges (z. B. Strecke, Literpreis). */
+@Composable
+fun InfoChip(text: String, color: Color? = null, small: Boolean = false) {
+    val c = color ?: MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(shape = RoundedCornerShape(50), color = c.copy(alpha = if (color == null) 0.10f else 0.18f), contentColor = color ?: MaterialTheme.colorScheme.onSurface) {
+        Text(
+            text, style = if (small) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = if (small) 8.dp else 10.dp, vertical = if (small) 2.dp else 4.dp),
+        )
+    }
+}
+
+/** Farbe für den Fahrstil: sparsam grün, normal gelb, zügig orange, sportlich rot. */
+fun drivingStyleColor(style: String): Color? = when (style) {
+    "Sparsam" -> Color(0xFF2E7D32)
+    "Normal" -> Color(0xFFB8860B)
+    "Zügig" -> Color(0xFFE65100)
+    "Sportlich" -> Color(0xFFC62828)
+    else -> null
+}
+
 /** Leerer Zustand mit großem Symbol. */
 @Composable
 fun EmptyState(icon: ImageVector, title: String, text: String) {

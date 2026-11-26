@@ -75,6 +75,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -419,19 +421,27 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null, distance: Int? = null, onClick: () -> Unit) {
     val unit = Units.amount(v, r.fuelType)
     val cur = Units.cur(v)
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row {
-                Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
+            Row(verticalAlignment = Alignment.Top) {
+                Text(r.timestamp.dateTime(), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(top = 4.dp))
+                // Rechts als Chips: gefahrene Strecke, Literpreis und Verbrauch – brechen bei Platzmangel um
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(start = 8.dp),
+                ) {
+                    distance?.let { InfoChip("+" + it.dist(v.distanceUnit)) }
+                    if (r.amount > 0 && r.totalPrice > 0) InfoChip("${r.pricePerUnit.fmt(3)} $cur/$unit")
+                    if (consumption != null) ConsumptionBadge(Units.consumption(v, r.fuelType, consumption), consumption, avg)
+                }
             }
-            // Kilometerstand und (in Klammern) gefahrene Strecke seit der vorherigen Betankung
-            val driven = distance?.let { " (+" + it.dist(v.distanceUnit) + ")" } ?: ""
-            Text("${r.odometer.dist(v.distanceUnit)}$driven · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur (${r.pricePerUnit.fmt(3)} $cur/$unit)")
+            Text("${r.odometer.dist(v.distanceUnit)} · ${r.amount.fmt(2)} $unit · ${r.totalPrice.fmt(2)} $cur")
             r.obcConsumption?.let { o ->
                 val diff = consumption?.takeIf { it > 0 }?.let { c ->
                     val d = (o / c - 1.0) * 100
@@ -446,10 +456,19 @@ fun RefuelCard(v: Vehicle, r: Refuel, consumption: Double?, avg: Double? = null,
             }
             if (station.isNotBlank()) Text(station, style = MaterialTheme.typography.bodyMedium)
             if (r.stationAddress.isNotBlank()) Text(r.stationAddress, style = MaterialTheme.typography.bodySmall)
-            val cond = (listOf(r.tireType, r.drivingStyle, r.routeType) + r.extrasList()).filter { it.isNotBlank() }
-            if (cond.isNotEmpty()) Text(cond.joinToString(" · ") { lbl(it) }, style = MaterialTheme.typography.bodySmall)
-            if (!r.fullTank) Text(str(if (r.isCharge) R.string.partial_charge else R.string.partial_refuel), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
-            if (r.missedPrevious) Text(str(R.string.previous_missing), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
+            // Bedingungen als Chips am unteren Rand; Fahrstil farbig (sparsam grün … sportlich rot)
+            val cond = (listOf(r.drivingStyle, r.routeType, r.tireType) + r.extrasList()).filter { it.isNotBlank() }
+            if (cond.isNotEmpty() || !r.fullTank || r.missedPrevious) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(top = 4.dp),
+                ) {
+                    cond.forEach { InfoChip(lbl(it), drivingStyleColor(it), small = true) }
+                    if (!r.fullTank) InfoChip(str(if (r.isCharge) R.string.partial_charge else R.string.partial_refuel), MaterialTheme.colorScheme.tertiary, small = true)
+                    if (r.missedPrevious) InfoChip(str(R.string.previous_missing), MaterialTheme.colorScheme.tertiary, small = true)
+                }
+            }
         }
     }
 }
