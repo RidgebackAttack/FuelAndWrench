@@ -77,12 +77,20 @@ class ManualScreenshots {
         step("06-costs") { click(s(R.string.tab_costs)) }
         step("07-refuel-new") { go("refuelEdit/${DemoData.CAR}/new"); waitText(s(R.string.scan_receipt)) }
         step("08-odometer-prompt", idle = false) {
-            // Dialog mit Eingabefeld: blinkender Cursor hält Compose nie still – Uhr von Hand weiterdrehen
-            rule.mainClock.autoAdvance = false
-            click(s(R.string.scan_receipt))
-            repeat(5) { rule.mainClock.advanceTimeBy(200) }
+            rule.onAllNodes(hasText(s(R.string.scan_receipt), substring = true) and hasClickAction()).onFirst()
+                .performSemanticsAction(SemanticsActions.OnClick)
+            // Auf das Dialogfenster warten; nicht auf „idle“, das ein blinkender Cursor verhindern kann
+            val deadline = System.currentTimeMillis() + 10_000
+            val looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
+            // Compose-Uhr und Hauptschleife abwechselnd weiterdrehen, bis das Dialogfenster steht
+            while (org.robolectric.shadows.ShadowDialog.getLatestDialog()?.isShowing != true && System.currentTimeMillis() < deadline) {
+                rule.mainClock.advanceTimeBy(100)
+                looper.idleFor(java.time.Duration.ofMillis(100))
+            }
+            repeat(6) { rule.mainClock.advanceTimeBy(100); looper.idleFor(java.time.Duration.ofMillis(100)) }
+            val d = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+            dialogShot = true
         }
-        rule.mainClock.autoAdvance = true
         step("09-refuel-foreign") { go("refuelEdit/${DemoData.CAR}/${DemoData.DK_REFUEL}"); waitText(s(R.string.fx_currency)) }
         step("10-service-hu") { go("serviceEdit/${DemoData.CAR}/${DemoData.HU}"); waitText(s(R.string.hu_result)) }
         step("11-tire-set") { go("tireSetEdit/${DemoData.CAR}/${DemoData.SUMMER}"); scrollTo(s(R.string.tire_dot_title)) }
@@ -152,7 +160,34 @@ class ManualScreenshots {
         rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty()
     }
 
+    /** Nächste Aufnahme zeigt einen Dialog: Fenster des Dialogs über den abgedunkelten Bildschirm legen. */
+    private var dialogShot = false
+
+    private fun captureDialog(): Bitmap? {
+        val d = org.robolectric.shadows.ShadowDialog.getLatestDialog() ?: return null
+        var out: Bitmap? = null
+        scenario!!.onActivity { a ->
+            val base = a.window.decorView
+            val dv = d.window?.decorView ?: return@onActivity
+            if (dv.width == 0 || dv.height == 0) return@onActivity
+            val b = Bitmap.createBitmap(base.width, base.height, Bitmap.Config.ARGB_8888)
+            val c = Canvas(b)
+            base.draw(c)
+            c.drawColor(android.graphics.Color.argb(110, 0, 0, 0))
+            c.save()
+            c.translate((base.width - dv.width) / 2f, (base.height - dv.height) / 2f)
+            dv.draw(c)
+            c.restore()
+            out = b
+        }
+        return out
+    }
+
     private fun capture(name: String) {
+        if (dialogShot) {
+            dialogShot = false
+            captureDialog()?.let { bmp -> File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }; return }
+        }
         val bmp = runCatching { rule.onAllNodes(isRoot()).onLast().captureToImage().asAndroidBitmap() }.getOrElse {
             // Ersatz: Fensterinhalt direkt zeichnen
             var out: Bitmap? = null
