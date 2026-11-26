@@ -102,12 +102,19 @@ fun VehicleHero(v: Vehicle, modifier: Modifier = Modifier, overlay: @Composable 
 }
 
 @Composable
-fun StatChip(icon: ImageVector, text: String, warn: Boolean = false) {
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = if (warn) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = if (warn) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
-    ) {
+fun StatChip(icon: ImageVector, text: String, warn: Boolean = false, tone: Color? = null) {
+    // tone: eigene Farbe (grün/gelb/rot), sonst neutral bzw. Fehlerfarbe bei warn
+    val bg = when {
+        tone != null -> tone.copy(alpha = 0.16f)
+        warn -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val fg = when {
+        tone != null -> tone
+        warn -> MaterialTheme.colorScheme.onErrorContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(shape = RoundedCornerShape(50), color = bg, contentColor = fg) {
         Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
@@ -146,7 +153,20 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            StatChip(Icons.Default.LocalGasStation, stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: "Ø –")
+            // Verbrauch farbig nach Trend: letzte drei Werte gegen den Gesamtschnitt
+            val trend = remember(mine, stats) {
+                val avg = stats.avg ?: return@remember null
+                val recent = mine.sortedByDescending { it.timestamp }.mapNotNull { stats.perRefuel[it.id] }.take(3)
+                if (recent.isEmpty() || avg <= 0) null else recent.average() / avg
+            }
+            StatChip(
+                Icons.Default.LocalGasStation, stats.avg?.let { "Ø " + Units.consumption(v, v.defaultFuelType, it) } ?: "Ø –",
+                tone = when {
+                    trend == null -> null
+                    trend <= 1.03 -> Color(0xFF2E7D32)
+                    else -> Color(0xFFEF6C00)
+                },
+            )
             if (odo > 0) StatChip(Icons.Default.Speed, odo.dist(v.distanceUnit))
             if (next != null && !v.archived) {
                 val st = next.state(odo)
@@ -160,7 +180,11 @@ fun VehicleHeroCard(nav: NavController, v: Vehicle, refuels: List<Refuel>, remin
                         kmFirst && st.remainingKm != null -> str(R.string.chip_due_in, next.title, st.remainingKm.dist(v.distanceUnit))
                         else -> str(R.string.chip_due_in, next.title, plural(R.plurals.pl_days_in, st.remainingDays ?: 0))
                     },
-                    warn = warn,
+                    tone = when {
+                        st.overdue -> Color(0xFFC62828)
+                        st.warn -> Color(0xFFEF6C00)
+                        else -> Color(0xFF1E88E5)
+                    },
                 )
             }
         }
