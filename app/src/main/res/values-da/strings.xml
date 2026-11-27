@@ -61,9 +61,9 @@
     <string name="loc_need_precise">GPS kræver den præcise placering (ikke „omtrentlig“)</string>
     <string name="refuel_new">Ny tankning</string>
     <string name="refuel">Tankning</string>
-    <string name="err_enter_odometer">Indtast venligst kilometerstand</string>
+    <string name="err_enter_odometer">Indtast venligst kilometertal</string>
     <string name="err_enter_amount">Indtast venligst den tankede mængde</string>
-    <string name="odometer">Kilometerstand</string>
+    <string name="odometer">Kilometertal</string>
     <string name="previously">Hidtil: %1$s</string>
     <string name="fuel_type">Brændstoftype</string>
     <string name="amount">Mængde</string>
@@ -131,7 +131,7 @@
     <string name="privacy_network_info">Fra = kun GPS, uden netværkstrafik (kræver frit udsyn til himlen). Til = hurtigere positionering også under tage; på telefoner med Google-tjenester går den via Google.</string>
     <string name="privacy_tiles_info">Kortet henter kortfliser fra tile.openstreetmap.org; serveren ser det viste kortudsnit.</string>
     <string name="default_reminders">Standardpåmindelser</string>
-    <string name="default_reminders_info">Oprettes automatisk for hvert køretøj, så snart en kilometerstand kendes, og synkroniseres med alle enheder. Kilometerstanden ved oprettelsen gælder som sidst udført; det kan justeres i påmindelsen.</string>
+    <string name="default_reminders_info">Oprettes automatisk for hvert køretøj, så snart en kilometertal kendes, og synkroniseres med alle enheder. Kilometertallet ved oprettelsen gælder som sidst udført; det kan justeres i påmindelsen.</string>
     <string name="add_template">Tilføj skabelon</string>
     <string name="sync_now">Synkronisér</string>
     <string name="vehicle">Køretøj</string>
@@ -146,7 +146,7 @@
     <string name="import_found">%1$s fundet (%2$s til %3$s)</string>
     <string name="import_skipped">, %1$s uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)</string>
     <string name="import_confirm">Importér til „%1$s“? Eksisterende poster oprettes ikke to gange.</string>
-    <string name="import_hint_derived">%1$d× manglende kilometerstand beregnet ud fra turdistancen</string>
+    <string name="import_hint_derived">%1$d× manglende kilometertal beregnet ud fra turdistancen</string>
     <string name="import_hint_corrected">%1$d× literpris i stedet for samlet beløb fundet og rettet</string>
     <string name="import_hint_noprice">%1$s uden pris</string>
     <string name="import_codes_info">Spritmonitor gemmer nogle oplysninger som tal. Kontrollér venligst, hvad hvert tal betyder:</string>
@@ -173,13 +173,13 @@
     <string name="vehicle_type">Køretøjstype</string>
     <string name="default_fuel">Standardbrændstof</string>
     <string name="tank_capacity">Tankstørrelse</string>
-    <string name="initial_odometer">Kilometerstand ved registreringsstart</string>
+    <string name="initial_odometer">Kilometertal ved registreringsstart</string>
     <string name="units">Enheder</string>
     <string name="distance">Afstand</string>
     <string name="volume">Volumen (flydende brændstoffer)</string>
     <string name="consumption_display">Forbrugsvisning</string>
     <string name="currency">Valuta</string>
-    <string name="units_convert_info">Ved gemning omregnes alle tankninger, kilometerstande og påmindelser for dette køretøj til de nye enheder.</string>
+    <string name="units_convert_info">Ved gemning omregnes alle tankninger, kilometertal og påmindelser for dette køretøj til de nye enheder.</string>
     <string name="currency_info">Bemærk: beløb omregnes ikke, kun valutabetegnelsen ændres.</string>
     <string name="archived_switch">Arkiveret (f.eks. solgt)</string>
     <string name="archived_info">Arkiverede køretøjer beholder alle data, men vises i arkivet nederst og udløser ingen påmindelser.</string>
@@ -188,7 +188,7 @@
     <string name="service_import">Serviceimport</string>
     <string name="svc_import_found">%1$s fundet</string>
     <string name="svc_import_skipped">, %1$s sprunget over</string>
-    <string name="svc_import_info">Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.</string>
+    <string name="svc_import_info">Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometertal.</string>
     <string name="already_present">, %1$d findes allerede</string>
     <string name="chart_title">Forbrugshistorik (%1$s)</string>
     <string name="chart_min">min %1$s</string>
@@ -225,7 +225,7 @@
     <string name="sizes_front_rear">f %1$s · b %2$s</string>
     <string name="chip_due">%1$s forfalden</string>
     <string name="chip_due_in">%1$s om %2$s</string>
-    <string name="kpi_odometer_tap">Kilometerstand (tryk)</string>
+    <string name="kpi_odometer_tap">Kilometertal (tryk)</string>
     <string name="kpi_total_cost">Samlede omkostninger</string>
     <string name="all_figures">Alle nøgletal</string>
     <string name="tread_stored">Mønster opbevaret: %1$s mm</string>
@@ -254,7 +254,7 @@
     <string name="new_">Ny</string>
     <string name="workshop">Værksted</string>
     <string name="service_note_hint">Note (dele, fakturanummer …)</string>
-    <string name="service_reminder_info">Hvis der findes en påmindelse med samme navn (f.eks. olieskift), markeres den som udført ved denne kilometerstand.</string>
+    <string name="service_reminder_info">Hvis der findes en påmindelse med samme navn (f.eks. olieskift), markeres den som udført ved denne kilometertal.</string>
     <string name="service_delete_q">Slet servicepost?</string>
     <string name="tread_depth">Mønsterdybde</string>
     <string name="mounted_lower">monteret</string>

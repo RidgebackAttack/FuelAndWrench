@@ -58,9 +58,9 @@ loc_no_station	No station found nearby – please check the operator	Keine Tanks
 loc_need_precise	GPS needs the precise location (not “approximate”)	Für GPS wird der genaue Standort benötigt (nicht „ungefähr“)	GPS kræver den præcise placering (ikke „omtrentlig“)
 refuel_new	New refuel	Neue Betankung	Ny tankning
 refuel	Refuel	Betankung	Tankning
-err_enter_odometer	Please enter the odometer reading	Bitte Kilometerstand eingeben	Indtast venligst kilometerstand
+err_enter_odometer	Please enter the odometer reading	Bitte Kilometerstand eingeben	Indtast venligst kilometertal
 err_enter_amount	Please enter the amount refueled	Bitte getankte Menge eingeben	Indtast venligst den tankede mængde
-odometer	Odometer	Kilometerstand	Kilometerstand
+odometer	Odometer	Kilometerstand	Kilometertal
 previously	Previously: %1$s	Bisher: %1$s	Hidtil: %1$s
 fuel_type	Fuel type	Kraftstoffart	Brændstoftype
 amount	Amount	Menge	Mængde
@@ -128,7 +128,7 @@ privacy_network	Allow network location (Wi-Fi/mobile)	Netzwerk-Ortung (WLAN/Mobi
 privacy_network_info	Off = GPS only, without network traffic (needs a clear view of the sky). On = faster positioning even under roofs; on phones with Google services it goes through Google.	Aus = nur GPS, ohne Netzverkehr (braucht freie Sicht zum Himmel). An = schnellere Ortung auch unter Dächern; auf Handys mit Google-Diensten läuft sie über Google.	Fra = kun GPS, uden netværkstrafik (kræver frit udsyn til himlen). Til = hurtigere positionering også under tage; på telefoner med Google-tjenester går den via Google.
 privacy_tiles_info	The map loads tiles from tile.openstreetmap.org; the server sees the map area displayed.	Die Karte lädt Kartenkacheln von tile.openstreetmap.org; dabei sieht der Server den angezeigten Kartenausschnitt.	Kortet henter kortfliser fra tile.openstreetmap.org; serveren ser det viste kortudsnit.
 default_reminders	Default reminders	Standard-Erinnerungen	Standardpåmindelser
-default_reminders_info	Created automatically for every vehicle as soon as an odometer reading is known, and synced to all devices. The odometer reading at creation counts as last done; you can adjust it in the reminder.	Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist, und mit allen Geräten synchronisiert. Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.	Oprettes automatisk for hvert køretøj, så snart en kilometerstand kendes, og synkroniseres med alle enheder. Kilometerstanden ved oprettelsen gælder som sidst udført; det kan justeres i påmindelsen.
+default_reminders_info	Created automatically for every vehicle as soon as an odometer reading is known, and synced to all devices. The odometer reading at creation counts as last done; you can adjust it in the reminder.	Werden für jedes Fahrzeug automatisch angelegt, sobald ein Kilometerstand bekannt ist, und mit allen Geräten synchronisiert. Als zuletzt erledigt gilt der Kilometerstand beim Anlegen, das lässt sich in der Erinnerung anpassen.	Oprettes automatisk for hvert køretøj, så snart et kilometertal kendes, og synkroniseres med alle enheder. Kilometertallet ved oprettelsen gælder som sidst udført; det kan justeres i påmindelsen.
 add_template	Add template	Vorlage hinzufügen	Tilføj skabelon
 sync_now	Sync	Synchronisieren	Synkronisér
 vehicle	Vehicle	Fahrzeug	Køretøj
@@ -143,7 +143,7 @@ import_missing_cols	The file could not be read. Missing columns: %1$s	Die Datei 
 import_found	%1$s found (%2$s to %3$s)	%1$s gefunden (%2$s bis %3$s)	%1$s fundet (%2$s til %3$s)
 import_skipped	, %1$s without refuel data skipped (e.g. costs, maintenance)	, %1$s ohne Tankdaten übersprungen (z. B. Kosten, Wartung)	, %1$s uden tankdata sprunget over (f.eks. omkostninger, vedligeholdelse)
 import_confirm	Import into “%1$s”? Existing entries are not created twice.	In „%1$s“ importieren? Bereits vorhandene Einträge werden nicht doppelt angelegt.	Importér til „%1$s“? Eksisterende poster oprettes ikke to gange.
-import_hint_derived	%1$d× missing odometer reading calculated from the trip distance	%1$d× fehlender Kilometerstand aus der Teilstrecke berechnet	%1$d× manglende kilometerstand beregnet ud fra turdistancen
+import_hint_derived	%1$d× missing odometer reading calculated from the trip distance	%1$d× fehlender Kilometerstand aus der Teilstrecke berechnet	%1$d× manglende kilometertal beregnet ud fra turdistancen
 import_hint_corrected	%1$d× unit price instead of total detected and corrected	%1$d× Literpreis statt Gesamtbetrag erkannt und korrigiert	%1$d× literpris i stedet for samlet beløb fundet og rettet
 import_hint_noprice	%1$s without price	%1$s ohne Preis	%1$s uden pris
 import_codes_info	Spritmonitor stores some details as numbers. Please check what each number means:	Spritmonitor speichert einige Angaben als Nummern. Bitte prüfen, was jede Nummer bedeutet:	Spritmonitor gemmer nogle oplysninger som tal. Kontrollér venligst, hvad hvert tal betyder:
@@ -170,13 +170,13 @@ plate	License plate	Kennzeichen	Nummerplade
 vehicle_type	Vehicle type	Fahrzeugart	Køretøjstype
 default_fuel	Default fuel	Standard-Kraftstoff	Standardbrændstof
 tank_capacity	Tank capacity	Tankinhalt	Tankstørrelse
-initial_odometer	Odometer at start of logging	Kilometerstand bei Erfassungsbeginn	Kilometerstand ved registreringsstart
+initial_odometer	Odometer at start of logging	Kilometerstand bei Erfassungsbeginn	Kilometertal ved registreringsstart
 units	Units	Einheiten	Enheder
 distance	Distance	Entfernung	Afstand
 volume	Volume (liquid fuels)	Volumen (flüssige Kraftstoffe)	Volumen (flydende brændstoffer)
 consumption_display	Consumption display	Verbrauchsanzeige	Forbrugsvisning
 currency	Currency	Währung	Valuta
-units_convert_info	When saving, all refuels, odometer readings and reminders of this vehicle are converted to the new units.	Beim Speichern werden alle Betankungen, Kilometerstände und Erinnerungen dieses Fahrzeugs in die neuen Einheiten umgerechnet.	Ved gemning omregnes alle tankninger, kilometerstande og påmindelser for dette køretøj til de nye enheder.
+units_convert_info	When saving, all refuels, odometer readings and reminders of this vehicle are converted to the new units.	Beim Speichern werden alle Betankungen, Kilometerstände und Erinnerungen dieses Fahrzeugs in die neuen Einheiten umgerechnet.	Ved gemning omregnes alle tankninger, kilometertal og påmindelser for dette køretøj til de nye enheder.
 currency_info	Note: amounts are not converted, only the currency label changes.	Hinweis: Beträge werden nicht umgerechnet, nur die Währungsangabe ändert sich.	Bemærk: beløb omregnes ikke, kun valutabetegnelsen ændres.
 archived_switch	Archived (e.g. sold)	Archiviert (z. B. verkauft)	Arkiveret (f.eks. solgt)
 archived_info	Archived vehicles keep all their data but appear in the archive at the bottom and trigger no reminders.	Archivierte Fahrzeuge bleiben mit allen Daten erhalten, erscheinen aber unten im Archiv und lösen keine Erinnerungen aus.	Arkiverede køretøjer beholder alle data, men vises i arkivet nederst og udløser ingen påmindelser.
@@ -185,7 +185,7 @@ vehicle_delete_info	All refuels and reminders of this vehicle will be deleted on
 service_import	Service import	Service-Import	Serviceimport
 svc_import_found	%1$s found	%1$s gefunden	%1$s fundet
 svc_import_skipped	, %1$s skipped	, %1$s übersprungen	, %1$s sprunget over
-svc_import_info	Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.	Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.	Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til den seneste kilometerstand.
+svc_import_info	Existing entries are not created twice. Matching reminders (e.g. oil change) are set to the latest odometer reading.	Bereits vorhandene Einträge werden nicht doppelt angelegt. Passende Erinnerungen (z. B. Ölwechsel) werden auf den letzten km-Stand gesetzt.	Eksisterende poster oprettes ikke to gange. Passende påmindelser (f.eks. olieskift) sættes til det seneste kilometertal.
 already_present	, %1$d already present	, %1$d bereits vorhanden	, %1$d findes allerede
 chart_title	Consumption history (%1$s)	Verbrauchsverlauf (%1$s)	Forbrugshistorik (%1$s)
 chart_min	min %1$s	min %1$s	min %1$s
@@ -222,7 +222,7 @@ tire_set	Wheel set	Radsatz	Hjulsæt
 sizes_front_rear	f %1$s · r %2$s	v %1$s · h %2$s	f %1$s · b %2$s
 chip_due	%1$s due	%1$s fällig	%1$s forfalden
 chip_due_in	%1$s in %2$s	%1$s in %2$s	%1$s om %2$s
-kpi_odometer_tap	Odometer (tap)	Kilometerstand (antippen)	Kilometerstand (tryk)
+kpi_odometer_tap	Odometer (tap)	Kilometerstand (antippen)	Kilometertal (tryk)
 kpi_total_cost	Total cost	Gesamtkosten	Samlede omkostninger
 all_figures	All figures	Alle Kennzahlen	Alle nøgletal
 tread_stored	Tread stored: %1$s mm	Profil eingelagert: %1$s mm	Mønster opbevaret: %1$s mm
@@ -251,7 +251,7 @@ old	Old	Alt	Gammel
 new_	New	Neu	Ny
 workshop	Workshop	Werkstatt	Værksted
 service_note_hint	Note (parts, invoice number …)	Notiz (Teile, Rechnungsnummer …)	Note (dele, fakturanummer …)
-service_reminder_info	If there is a reminder with the same name (e.g. oil change), it is marked as done at this odometer reading.	Gibt es eine Erinnerung mit gleichem Namen (z. B. Ölwechsel), wird sie mit diesem Kilometerstand als erledigt markiert.	Hvis der findes en påmindelse med samme navn (f.eks. olieskift), markeres den som udført ved denne kilometerstand.
+service_reminder_info	If there is a reminder with the same name (e.g. oil change), it is marked as done at this odometer reading.	Gibt es eine Erinnerung mit gleichem Namen (z. B. Ölwechsel), wird sie mit diesem Kilometerstand als erledigt markiert.	Hvis der findes en påmindelse med samme navn (f.eks. olieskift), markeres den som udført ved dette kilometertal.
 service_delete_q	Delete service entry?	Service-Eintrag löschen?	Slet servicepost?
 tread_depth	Tread depth	Profiltiefe	Mønsterdybde
 mounted_lower	mounted	montiert	monteret
