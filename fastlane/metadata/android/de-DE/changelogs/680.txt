@@ -1,0 +1,1 @@
+Suche in Service und Kosten: Lupe oben in der Kopfzeile, sucht in Titel, Notiz, Werkstatt, Kategorie, Datum, Kilometerstand und Betrag. Zähler an den Reitern dezent statt rot.

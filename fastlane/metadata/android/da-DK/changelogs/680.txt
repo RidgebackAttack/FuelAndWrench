@@ -1,0 +1,1 @@
+Søgning i Service og Omkostninger: lup i topbjælken, søger i titel, note, værksted, kategori, dato, kilometertal og beløb. Tællere på fanerne nu diskrete i stedet for røde.

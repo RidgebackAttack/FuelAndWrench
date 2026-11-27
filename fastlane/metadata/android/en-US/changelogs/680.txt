@@ -1,0 +1,1 @@
+Search in Service and Costs: magnifier in the top bar, searches title, note, workshop, category, date, odometer and amount. Tab counters now subtle instead of red.
