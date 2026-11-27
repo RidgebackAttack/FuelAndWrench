@@ -1,0 +1,1 @@
+Dansk oversættelse: "kilometertal" i stedet for "kilometerstand".
