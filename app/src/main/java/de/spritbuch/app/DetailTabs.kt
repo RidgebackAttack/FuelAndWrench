@@ -297,6 +297,9 @@ fun VehicleDetailContent(
     val refuelYears = remember(v, refuels, stats, distances) { if (v == null) emptyList() else groupRefuelsByYear(v, refuels, stats, distances) }
     val ctx = LocalContext.current
     var serviceFilter by remember(vehicleId) { mutableStateOf(ServiceFilter.load(ctx, vehicleId)) }
+    // Suchbegriffe je Reiter (nur für diese Sitzung, nicht gespeichert)
+    var serviceQuery by remember(vehicleId) { mutableStateOf("") }
+    var expenseQuery by remember(vehicleId) { mutableStateOf("") }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -371,7 +374,13 @@ fun VehicleDetailContent(
                         selected = pager.currentPage == i,
                         onClick = { scope.launch { pager.animateScrollToPage(i) } },
                         icon = {
-                            BadgedBox(badge = { if (count > 0) Badge { Text(if (count > 999) "999+" else count.toString()) } }) {
+                            // dezente Zählmarke in Reiterfarbe – rot wirkte wie „ungelesen“
+                            BadgedBox(badge = {
+                                if (count > 0) Badge(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                ) { Text(if (count > 999) "999+" else count.toString()) }
+                            }) {
                                 Icon(icons[i], contentDescription = null)
                             }
                         },
@@ -405,12 +414,12 @@ fun VehicleDetailContent(
                         1 -> refuelItems(nav, v, refuelYears, stats, distances)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)
-                            serviceItems(nav, v, services, serviceFilter, lineColor, dotColor) {
+                            serviceItems(nav, v, services, serviceFilter, serviceQuery, { serviceQuery = it }, lineColor, dotColor) {
                                 serviceFilter = it
                                 ServiceFilter.save(ctx, vehicleId, it)
                             }
                         }
-                        3 -> expenseItems(nav, v, expenses)
+                        3 -> expenseItems(nav, v, expenses, expenseQuery) { expenseQuery = it }
                     }
                 }
             }
@@ -683,6 +692,8 @@ private fun LazyListScope.serviceItems(
     v: Vehicle,
     all: List<ServiceEntry>,
     filter: Map<String, Boolean>,
+    query: String,
+    onQuery: (String) -> Unit,
     lineColor: Color,
     dotColor: Color,
     onFilter: (Map<String, Boolean>) -> Unit,
@@ -697,10 +708,13 @@ private fun LazyListScope.serviceItems(
         }
         return
     }
+    item(key = "svc-search") { SearchField(query, onQuery) }
     item(key = "svc-filter") { ServiceFilterChips(all, filter, onFilter) }
-    val services = ServiceFilter.apply(all, filter)
+    val services = ServiceFilter.apply(all, filter).filter { Search.service(it, query, v.currency) }
     if (services.isEmpty()) {
-        item(key = "svc-none") { Text(str(R.string.filter_none), style = MaterialTheme.typography.bodyMedium) }
+        item(key = "svc-none") {
+            Text(str(if (query.isBlank()) R.string.filter_none else R.string.search_none), style = MaterialTheme.typography.bodyMedium)
+        }
         return
     }
     item {

@@ -723,6 +723,9 @@
     <string name="empty_add_service">Service-Eintrag anlegen</string>
     <string name="empty_add_expense">Kosten eintragen</string>
     <string name="tab_refuels_short">Tanken</string>
+    <string name="search_hint">Suchen</string>
+    <string name="search_clear">Suche leeren</string>
+    <string name="search_none">Keine Treffer</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>

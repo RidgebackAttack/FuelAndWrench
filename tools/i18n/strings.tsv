@@ -754,3 +754,6 @@ empty_add_refuel	Add first refuel	Erste Betankung eintragen	Registrér første t
 empty_add_service	Add service entry	Service-Eintrag anlegen	Opret servicepost
 empty_add_expense	Add cost	Kosten eintragen	Registrér omkostning
 tab_refuels_short	Fuel	Tanken	Tankning
+search_hint	Search	Suchen	Søg
+search_clear	Clear search	Suche leeren	Ryd søgning
+search_none	No matches	Keine Treffer	Ingen resultater
