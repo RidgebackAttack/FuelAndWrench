@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
@@ -100,6 +101,24 @@ class UiFlowTest {
         assertEquals(1500, r.odometer)
         assertEquals(40.0, r.amount, 0.001)
         assertEquals(70.0, r.totalPrice, 0.001)
+    }
+
+    /** Lupe in der Kopfzeile des Kosten-Reiters: Suchbegriff blendet nicht passende Einträge aus. */
+    @Test fun searchCostsFromTopBar() {
+        seed(withHistory = true)
+        runBlocking { db.expenses().upsert(Expense(id = "e2", vehicleId = "v1", timestamp = ts(2025, 7), title = "Parkhaus", amount = 12.0)) }
+        launch()
+        waitForText("Testwagen")
+        rule.onAllNodesWithText("Testwagen").onFirst().performClick()
+        waitForText(s(R.string.tab_costs))
+        rule.onAllNodesWithText(s(R.string.tab_costs)).onFirst()
+            .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        waitForText("Parkhaus")
+        rule.onNodeWithContentDescription(s(R.string.search_hint)).performClick()
+        rule.waitUntil(10_000) { rule.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
+        rule.onNode(hasSetTextAction()).performTextInput("versich")
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Parkhaus").fetchSemanticsNodes().isEmpty() }
+        waitForText("Versicherung")
     }
 
     /** Einstellungen öffnen; über die Übersicht ist die Verschlüsselung erreichbar. */

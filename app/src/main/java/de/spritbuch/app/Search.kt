@@ -2,19 +2,19 @@ package de.spritbuch.app
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.foundation.shape.RoundedCornerShape
 
 /**
  * Freitextsuche für Listen: jedes Wort der Eingabe muss irgendwo in den Feldern vorkommen (Groß-/Kleinschreibung
@@ -40,23 +40,27 @@ object Search {
     )
 }
 
-/** Suchzeile über einer Liste; das Kreuz leert sie, „Fertig“ auf der Tastatur schließt die Tastatur. */
+/**
+ * Suchfeld für die Kopfzeile: erscheint nach Tippen auf die Lupe anstelle des Titels und holt sich sofort den
+ * Fokus, damit die Tastatur aufgeht. „Suchen“ auf der Tastatur schließt nur die Tastatur, der Begriff bleibt.
+ */
 @Composable
-fun SearchField(query: String, onQuery: (String) -> Unit, modifier: Modifier = Modifier) {
+fun TopBarSearchField(query: String, onQuery: (String) -> Unit) {
     val focus = LocalFocusManager.current
-    OutlinedTextField(
+    val requester = remember { FocusRequester() }
+    LaunchedEffect(Unit) { requester.requestFocus() }
+    TextField(
         value = query,
         onValueChange = onQuery,
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().focusRequester(requester),
         singleLine = true,
-        shape = RoundedCornerShape(50),
         placeholder = { Text(str(R.string.search_hint)) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-        trailingIcon = {
-            if (query.isNotEmpty()) IconButton(onClick = { onQuery(""); focus.clearFocus() }) {
-                Icon(Icons.Default.Close, contentDescription = str(R.string.search_clear))
-            }
-        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
     )

@@ -30,6 +30,9 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Map
@@ -300,14 +303,39 @@ fun VehicleDetailContent(
     // Suchbegriffe je Reiter (nur für diese Sitzung, nicht gespeichert)
     var serviceQuery by remember(vehicleId) { mutableStateOf("") }
     var expenseQuery by remember(vehicleId) { mutableStateOf("") }
+    // Lupe in der Kopfzeile (nur bei Service und Kosten); offen = Kopfzeile wird zum Suchfeld
+    var searchOpen by remember(vehicleId) { mutableStateOf(false) }
+    val searchable = pager.currentPage == 2 || pager.currentPage == 3
+    fun closeSearch() { searchOpen = false; serviceQuery = ""; expenseQuery = "" }
+    LaunchedEffect(pager.currentPage) { if (!searchable) closeSearch() }
+    androidx.activity.compose.BackHandler(enabled = searchOpen) { closeSearch() }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
-            TopAppBar(
+            if (searchOpen && searchable) TopAppBar(
+                title = {
+                    val q = if (pager.currentPage == 2) serviceQuery else expenseQuery
+                    TopBarSearchField(q) { if (pager.currentPage == 2) serviceQuery = it else expenseQuery = it }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { closeSearch() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = str(R.string.search_close))
+                    }
+                },
+                actions = {
+                    val q = if (pager.currentPage == 2) serviceQuery else expenseQuery
+                    if (q.isNotEmpty()) IconButton(onClick = { if (pager.currentPage == 2) serviceQuery = "" else expenseQuery = "" }) {
+                        Icon(Icons.Default.Close, contentDescription = str(R.string.search_clear))
+                    }
+                },
+            ) else TopAppBar(
                 title = { Text(v?.name ?: "") },
                 navigationIcon = { BackButton(nav) },
                 actions = {
+                    if (searchable) IconButton(onClick = { searchOpen = true }) {
+                        Icon(Icons.Default.Search, contentDescription = str(R.string.search_hint))
+                    }
                     when (pager.currentPage) {
                         0 -> {
                             if (v != null && FuelPrices.typeFor(v.defaultFuelType) != null) {
@@ -414,12 +442,12 @@ fun VehicleDetailContent(
                         1 -> refuelItems(nav, v, refuelYears, stats, distances)
                         2 -> {
                             tireSetItems(nav, v, tireSets, services)
-                            serviceItems(nav, v, services, serviceFilter, serviceQuery, { serviceQuery = it }, lineColor, dotColor) {
+                            serviceItems(nav, v, services, serviceFilter, serviceQuery, lineColor, dotColor) {
                                 serviceFilter = it
                                 ServiceFilter.save(ctx, vehicleId, it)
                             }
                         }
-                        3 -> expenseItems(nav, v, expenses, expenseQuery) { expenseQuery = it }
+                        3 -> expenseItems(nav, v, expenses, expenseQuery)
                     }
                 }
             }
@@ -693,7 +721,6 @@ private fun LazyListScope.serviceItems(
     all: List<ServiceEntry>,
     filter: Map<String, Boolean>,
     query: String,
-    onQuery: (String) -> Unit,
     lineColor: Color,
     dotColor: Color,
     onFilter: (Map<String, Boolean>) -> Unit,
@@ -708,7 +735,6 @@ private fun LazyListScope.serviceItems(
         }
         return
     }
-    item(key = "svc-search") { SearchField(query, onQuery) }
     item(key = "svc-filter") { ServiceFilterChips(all, filter, onFilter) }
     val services = ServiceFilter.apply(all, filter).filter { Search.service(it, query, v.currency) }
     if (services.isEmpty()) {

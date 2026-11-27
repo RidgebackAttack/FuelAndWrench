@@ -726,6 +726,7 @@
     <string name="search_hint">Search</string>
     <string name="search_clear">Clear search</string>
     <string name="search_none">No matches</string>
+    <string name="search_close">Close search</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d refuel</item>
         <item quantity="other">%d refuels</item>

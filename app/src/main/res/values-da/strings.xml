@@ -726,6 +726,7 @@
     <string name="search_hint">Søg</string>
     <string name="search_clear">Ryd søgning</string>
     <string name="search_none">Ingen resultater</string>
+    <string name="search_close">Luk søgning</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d tankning</item>
         <item quantity="other">%d tankninger</item>

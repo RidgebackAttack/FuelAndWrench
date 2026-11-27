@@ -71,7 +71,7 @@ fun expenseIcon(category: String): ImageVector = when (category) {
 
 private fun yearOf(ts: Long) = Calendar.getInstance().apply { timeInMillis = ts }.get(Calendar.YEAR)
 
-fun LazyListScope.expenseItems(nav: NavController, v: Vehicle, all: List<Expense>, query: String, onQuery: (String) -> Unit) {
+fun LazyListScope.expenseItems(nav: NavController, v: Vehicle, all: List<Expense>, query: String) {
     if (all.isEmpty()) {
         item {
             EmptyState(
@@ -81,7 +81,6 @@ fun LazyListScope.expenseItems(nav: NavController, v: Vehicle, all: List<Expense
         }
         return
     }
-    item(key = "exp-search") { SearchField(query, onQuery) }
     val expenses = all.filter { Search.expense(it, query, v.currency) }
     if (expenses.isEmpty()) {
         item(key = "exp-none") { Text(str(R.string.search_none), style = MaterialTheme.typography.bodyMedium) }

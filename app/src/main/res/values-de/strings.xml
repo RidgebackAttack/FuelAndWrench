@@ -726,6 +726,7 @@
     <string name="search_hint">Suchen</string>
     <string name="search_clear">Suche leeren</string>
     <string name="search_none">Keine Treffer</string>
+    <string name="search_close">Suche schließen</string>
     <plurals name="pl_refuels">
         <item quantity="one">%d Betankung</item>
         <item quantity="other">%d Betankungen</item>
