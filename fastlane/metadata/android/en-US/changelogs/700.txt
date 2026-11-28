@@ -1,0 +1,1 @@
+Tabs without counters. A dot on "Overview" shows due reminders: orange = due soon, red = overdue.
