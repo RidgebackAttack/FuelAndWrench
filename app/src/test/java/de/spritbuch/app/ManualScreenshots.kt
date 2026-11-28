@@ -314,7 +314,7 @@ object DemoData {
         db.tireSets().upsert(TireSet(id = "demo-bike-tires", vehicleId = BIKE, season = "Ganzjahresreifen", brandFront = "Pirelli", modelFront = "Diablo Rosso IV", sizeFront = "120/70 ZR17", brandRear = "Pirelli", modelRear = "Diablo Rosso IV", sizeRear = "180/55 ZR17", dotFront = "0825", dotRear = "2224"))
 
         // Erinnerungen und Kosten
-        db.reminders().upsert(Reminder(id = "rm1", vehicleId = CAR, title = "Ölwechsel", intervalKm = 30_000, lastDoneKm = 136_400, intervalMonths = 24, lastDoneDate = ts(2025, 5, 12)))
+        db.reminders().upsert(Reminder(id = "rm1", vehicleId = CAR, title = "Ölwechsel", intervalKm = 18_000, lastDoneKm = 136_400, intervalMonths = 24, lastDoneDate = ts(2025, 5, 12)))
         db.reminders().upsert(Reminder(id = "$CAR-hu", vehicleId = CAR, title = "HU/TÜV", intervalKm = 0, intervalMonths = 24, lastDoneDate = ts(2025, 9, 8)))
         db.reminders().upsert(Reminder(id = "rm3", vehicleId = BIKE, title = "Kette schmieren", intervalKm = 800, lastDoneKm = bodo - 300, warnBeforeKm = 100))
         for (y in 2025..2026) {
