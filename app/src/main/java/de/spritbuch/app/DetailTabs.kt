@@ -394,21 +394,24 @@ fun VehicleDetailContent(
         if (v == null || v.deleted) return@Scaffold
         Column(Modifier.padding(pad).fillMaxSize()) {
             // Feste Reiter: Symbol mit Anzahl als Abzeichen, darunter der Name – alle vier passen nebeneinander
+            // Fälligkeit für den Punkt am Reiter: rot = überfällig, orange = bald fällig, sonst keiner
+            val dueTone = remember(reminders, currentOdo, v?.archived) {
+                val states = if (v?.archived == true) emptyList() else reminders.map { it.state(currentOdo) }
+                when {
+                    states.any { it.overdue } -> Color(0xFFC62828)
+                    states.any { it.warn } -> Color(0xFFEF6C00)
+                    else -> null
+                }
+            }
             TabRow(selectedTabIndex = pager.currentPage) {
                 val icons = listOf(Icons.Default.Dashboard, Icons.Default.LocalGasStation, Icons.Default.Build, Icons.Default.Payments)
                 tabs.forEachIndexed { i, t ->
-                    val count = when (i) { 1 -> refuels.size; 2 -> services.size; 3 -> expenses.size; else -> 0 }
                     Tab(
                         selected = pager.currentPage == i,
                         onClick = { scope.launch { pager.animateScrollToPage(i) } },
                         icon = {
-                            // dezente Zählmarke in Reiterfarbe – rot wirkte wie „ungelesen“
-                            BadgedBox(badge = {
-                                if (count > 0) Badge(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                ) { Text(if (count > 999) "999+" else count.toString()) }
-                            }) {
+                            // Punkt nur, wenn etwas zu tun ist: Erinnerungen stehen in der Übersicht
+                            BadgedBox(badge = { if (i == 0 && dueTone != null) Badge(containerColor = dueTone) }) {
                                 Icon(icons[i], contentDescription = null)
                             }
                         },
